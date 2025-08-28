@@ -1,0 +1,52 @@
+[project]
+name = "hydra"
+version = "0.12.0"
+description = "The Hydra language for type-safe transformations"
+authors = ["Joshua Shinavier <josh@fortytwo.net>"]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tasks]
+build-all = "rattler-build build --recipe-dir recipes"
+build-java = "rattler-build build --recipe-dir recipes/hydra-java"
+build-python = "rattler-build build --recipe-dir recipes/hydra-python"
+build-haskell = "rattler-build build --recipe-dir recipes/hydra-haskell"
+build-scala = "rattler-build build --recipe-dir recipes/hydra-scala"
+build-ext = "rattler-build build --recipe-dir recipes/hydra-ext"
+clean = { cmd = "rm -rf .pixi/envs/*/conda-bld build/ .stack-work/ target/ dist/ *.egg-info/ __pycache__/ .gradle/", cwd = "." }
+validate = "bash scripts/validate-setup.sh"
+
+[dependencies]
+rattler-build = ">=0.20.0"
+nushell = ">=0.80.0"
+
+[feature.java.dependencies]
+openjdk = ">=11"
+gradle = ">=7.0"
+
+[feature.python.dependencies]
+python = ">=3.12"
+pip = "*"
+
+[feature.haskell.dependencies]
+ghc = ">=8.10"
+stack = "*"
+
+[feature.scala.dependencies]
+openjdk = ">=11"
+sbt = "*"
+
+[feature.ext.dependencies]
+openjdk = ">=11"
+gradle = ">=7.0"
+ghc = ">=8.10"
+stack = "*"
+
+[environments]
+default = { features = [] }
+java = { features = ["java"] }
+python = { features = ["python"], solve-group = "python" }
+haskell = { features = ["haskell"], solve-group = "haskell" }
+scala = { features = ["scala"] }
+ext = { features = ["ext"], solve-group = "ext" }
+all = { features = ["java", "scala"] }

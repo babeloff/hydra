@@ -1,0 +1,150 @@
+context:
+  name: hydra-ext
+  version: "0.12.0"
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  path: ../../hydra-ext
+
+build:
+  number: 0
+  script:
+    interpreter: nushell
+    content: |
+      # Build the Hydra extensions package (both Java and Haskell components)
+      cd $env.SRC_DIR
+
+      # Create installation directories
+      mkdir ($env.PREFIX | path join "lib" "hydra-ext")
+      mkdir ($env.PREFIX | path join "bin")
+      mkdir ($env.PREFIX | path join "share" "hydra-ext")
+
+      # Skip Java components as they require multi-project setup
+      print "Skipping Java components (requires full project structure)"
+
+      # Build Haskell components if package.yaml and stack.yaml exist
+      if (("package.yaml" | path exists) and ("stack.yaml" | path exists)) {
+        print "Building Haskell components..."
+
+        # Configure Stack environment with fresh root
+        $env.STACK_ROOT = ($env.SRC_DIR | path join ".stack-local")
+        mkdir $env.STACK_ROOT
+
+        # Configure Stack to not use system GHC (let it manage its own)
+        stack config set system-ghc --global false
+
+        # Clear Stack's cache to avoid using old compiler paths
+        print "Clearing all Stack caches..."
+        if (".stack-work" | path exists) { rm -rf .stack-work }
+        if (($env.HOME | path join ".stack") | path exists) {
+          rm -rf ($env.HOME | path join ".stack/programs")
+          rm -rf ($env.HOME | path join ".stack/setup-exe-cache")
+        }
+
+        # Set up compilers for the conda environment
+        let build_bin = ($env.BUILD_PREFIX | path join "bin")
+
+        # Set compilers (try conda cross-platform ones first, fallback to system)
+        if (which x86_64-conda-linux-gnu-gcc | is-not-empty) {
+          $env.CC = "x86_64-conda-linux-gnu-gcc"
+        } else {
+          $env.CC = "gcc"
+        }
+
+        if (which x86_64-conda-linux-gnu-g++ | is-not-empty) {
+          $env.CXX = "x86_64-conda-linux-gnu-g++"
+        } else {
+          $env.CXX = "g++"
+        }
+
+        $env.LD = "ld"
+
+        # Ensure conda compilers are in PATH first
+        $env.PATH = ($env.PATH | split row ":" | prepend $build_bin | str join ":")
+
+        # Add hydra dependency to package.yaml
+        print "Adding hydra dependency to package.yaml..."
+        let package_content = (open package.yaml)
+        let updated_deps = ($package_content.dependencies | append "hydra")
+        let updated_package = ($package_content | upsert dependencies $updated_deps)
+        $updated_package | to yaml | save --force package.yaml
+
+        # Force Stack to reinstall and reconfigure GHC
+        print "Installing fresh GHC..."
+        stack setup --reinstall
+
+        # Clean and rebuild everything from scratch
+        print "Building hydra-ext..."
+        stack clean
+        stack build --no-test --local-bin-path ($env.PREFIX | path join "bin")
+
+        # Install the hydra-ext library
+        stack install --local-bin-path ($env.PREFIX | path join "bin")
+
+        # Copy built artifacts
+        if (".stack-work/dist" | path exists) {
+          glob ".stack-work/dist/**/*.a" | each { |file|
+            cp $file ($env.PREFIX | path join "lib" "hydra-ext")
+          }
+          glob ".stack-work/dist/**/*.so" | each { |file|
+            cp $file ($env.PREFIX | path join "lib" "hydra-ext")
+          }
+        }
+      }
+
+      # Copy data files if they exist
+      if ("data" | path exists) {
+        cp -r data/* ($env.PREFIX | path join "share" "hydra-ext")
+      }
+
+      # Create wrapper scripts for any executables
+      let hydra_ext_bin = ($env.PREFIX | path join "bin" "hydra-ext")
+      if ($hydra_ext_bin | path exists) {
+        chmod +x $hydra_ext_bin
+      }
+
+      # Copy documentation and configuration files
+      if ("LICENSE" | path exists) { cp LICENSE $env.PREFIX }
+      if ("README.md" | path exists) { cp README.md $env.PREFIX }
+      if ("package.yaml" | path exists) { cp package.yaml ($env.PREFIX | path join "lib" "hydra-ext") }
+      if ("stack.yaml" | path exists) { cp stack.yaml ($env.PREFIX | path join "lib" "hydra-ext") }
+      if ("build.gradle" | path exists) { cp build.gradle ($env.PREFIX | path join "lib" "hydra-ext") }
+
+requirements:
+  build:
+    - openjdk >=11
+    - gradle >=7.0
+    - ghc >=8.10
+    - stack
+  host:
+    - openjdk >=11
+    - ghc >=8.10
+  run:
+    - openjdk >=11
+    - ghc >=8.10
+
+tests:
+  - script:
+      - java -version
+      - ghc --version
+
+about:
+  homepage: https://github.com/CategoricalData/hydra
+  license: Apache-2.0
+  license_file: LICENSE
+  summary: Hydra extensions - additional functionality for the Hydra language
+  description: |
+    Hydra is a domain-specific language for data models and data transformations.
+    It is based on a typed lambda calculus, and transforms data and schemas between
+    languages in a way which maintains type conformance. This package contains
+    extensions and additional functionality for Hydra, supporting both Java and
+    Haskell implementations.
+  repository: https://github.com/CategoricalData/hydra
+  documentation: https://github.com/CategoricalData/hydra/tree/main/hydra-ext
+
+extra:
+  recipe-maintainers:
+    - joshsh

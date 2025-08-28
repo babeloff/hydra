@@ -1,0 +1,240 @@
+context:
+  name: hydra
+  version: "0.12.0"
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  path: ../
+
+build:
+  number: 0
+  script:
+    interpreter: nushell
+    content: |
+      # Build the complete Hydra package (all variants)
+      cd $env.SRC_DIR
+
+      print "Building Hydra - complete package with all variants"
+      print "=================================================="
+
+      # Create installation directories
+      mkdir ($env.PREFIX | path join "lib" "hydra")
+      mkdir ($env.PREFIX | path join "bin")
+      mkdir ($env.PREFIX | path join "share" "hydra")
+
+      # Build Java components (hydra-java and hydra-ext Java parts)
+      print "Building Java components..."
+      if ("build.gradle" | path exists) {
+        ./gradlew build -x test --no-daemon
+
+        # Copy built JAR files from main project
+        glob "**/*.jar" | where ($it | str contains "build/tmp" | not) | where ($it | str contains "hydra-" | not) | each { |jar|
+          cp $jar ($env.PREFIX | path join "lib" "hydra")
+        }
+      }
+
+      # Build hydra-java
+      if ("hydra-java" | path exists) {
+        print "Building hydra-java..."
+        cd hydra-java
+        if ("build.gradle" | path exists) {
+          ../gradlew build -x test --no-daemon
+          glob "**/*.jar" | where ($it | str contains "build/tmp" | not) | each { |jar|
+            cp $jar ($env.PREFIX | path join "lib" "hydra")
+          }
+        }
+        cd ..
+      }
+
+      # Build hydra-ext Java components
+      if ("hydra-ext" | path exists) {
+        print "Building hydra-ext Java components..."
+        cd hydra-ext
+        if ("build.gradle" | path exists) {
+          ../gradlew build -x test --no-daemon
+          glob "**/*.jar" | where ($it | str contains "build/tmp" | not) | each { |jar|
+            cp $jar ($env.PREFIX | path join "lib" "hydra")
+          }
+        }
+        cd ..
+      }
+
+      # Build Python components
+      if ("hydra-python" | path exists) {
+        print "Building hydra-python..."
+        cd hydra-python
+        if ("pyproject.toml" | path exists) {
+          python -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
+        }
+        cd ..
+      }
+
+      # Build Haskell components
+      print "Building Haskell components..."
+
+      # Configure Stack to use system GHC
+      stack config set system-ghc --global true
+
+      # Build hydra-haskell
+      if ("hydra-haskell" | path exists) {
+        print "Building hydra-haskell..."
+        cd hydra-haskell
+        if ("stack.yaml" | path exists) {
+          stack build --no-test --local-bin-path ($env.PREFIX | path join "bin")
+          stack install --local-bin-path ($env.PREFIX | path join "bin")
+
+          # Copy built artifacts
+          if (".stack-work/dist" | path exists) {
+            glob ".stack-work/dist/**/*.a" | each { |file|
+              cp $file ($env.PREFIX | path join "lib" "hydra")
+            }
+              glob ".stack-work/dist/**/*.so" | each { |file|
+              cp $file ($env.PREFIX | path join "lib" "hydra")
+            }
+          }
+        }
+        cd ..
+      }
+
+      # Build hydra-ext Haskell components
+      if ("hydra-ext" | path exists) {
+        print "Building hydra-ext Haskell components..."
+        cd hydra-ext
+        if ("stack.yaml" | path exists) {
+          stack build --no-test --local-bin-path ($env.PREFIX | path join "bin")
+          stack install --local-bin-path ($env.PREFIX | path join "bin")
+
+          # Copy built artifacts
+          if (".stack-work/dist" | path exists) {
+            glob ".stack-work/dist/**/*.a" | each { |file|
+              cp $file ($env.PREFIX | path join "lib" "hydra")
+            }
+            glob ".stack-work/dist/**/*.so" | each { |file|
+              cp $file ($env.PREFIX | path join "lib" "hydra")
+            }
+          }
+        }
+        cd ..
+      }
+
+      # Build Scala components
+      if ("hydra-scala" | path exists) {
+        print "Building hydra-scala..."
+        cd hydra-scala
+        if ("build.sbt" | path exists) {
+          sbt clean compile package
+          glob "target/**/*.jar" | each { |jar|
+            cp $jar ($env.PREFIX | path join "lib" "hydra")
+          }
+        }
+        cd ..
+      }
+
+      # Create wrapper scripts
+      print "Creating wrapper scripts..."
+
+      # Copy and install unified JVM wrapper for both Java and Scala
+      cp jvm-wrapper.sh ($env.PREFIX | path join "bin" "hydra-java")
+      chmod +x ($env.PREFIX | path join "bin" "hydra-java")
+
+      cp jvm-wrapper.sh ($env.PREFIX | path join "bin" "hydra-scala")
+      chmod +x ($env.PREFIX | path join "bin" "hydra-scala")
+
+      # Copy and install main hydra wrapper
+      cp hydra-wrapper.sh ($env.PREFIX | path join "bin" "hydra")
+      chmod +x ($env.PREFIX | path join "bin" "hydra")
+
+      # Copy documentation and data files
+      print "Copying documentation and data files..."
+      if ("LICENSE" | path exists) { cp LICENSE $env.PREFIX }
+      if ("README.md" | path exists) { cp README.md $env.PREFIX }
+
+      # Copy data from hydra-ext if it exists
+      if ("hydra-ext/data" | path exists) {
+        cp -r hydra-ext/data/* ($env.PREFIX | path join "share" "hydra")
+      }
+
+      # Copy configuration files
+      if ("build.gradle" | path exists) { cp build.gradle ($env.PREFIX | path join "lib" "hydra") }
+      if ("settings.gradle" | path exists) { cp settings.gradle ($env.PREFIX | path join "lib" "hydra") }
+
+      # Copy variant-specific documentation
+      for variant in [hydra-java hydra-python hydra-haskell hydra-scala hydra-ext] {
+        if ($variant | path exists) {
+          mkdir ($env.PREFIX | path join "share" "hydra" $variant)
+          let readme_path = ($variant | path join "README.md")
+          if ($readme_path | path exists) {
+            cp $readme_path ($env.PREFIX | path join "share" "hydra" $variant)
+          }
+        }
+      }
+
+      print "Hydra build completed successfully!"
+
+requirements:
+  build:
+    - openjdk >=11
+    - gradle >=7.0
+    - python >=3.12
+    - pip
+    - hatchling
+    - ghc >=9.4
+    - stack
+    - sbt
+  host:
+    - openjdk >=11
+    - python >=3.12
+    - ghc >=9.4
+  run:
+    - openjdk >=11
+    - python >=3.12
+    - ghc >=9.4
+    - hydra-java ${{ version }}
+    - hydra-python ${{ version }}
+    - hydra-haskell ${{ version }}
+    - hydra-scala ${{ version }}
+    - hydra-ext ${{ version }}
+
+tests:
+  - python:
+      imports:
+        - hydra
+  - script:
+      - java -version
+      - python --version
+      - ghc --version
+      - sbt --version
+      - hydra-java --help || echo "Hydra Java available"
+      - python -c "import hydra; print('Hydra Python imported successfully')" || echo "Hydra Python available"
+
+about:
+  homepage: https://github.com/CategoricalData/hydra
+  license: Apache-2.0
+  license_file: LICENSE
+  summary: The Hydra language for type-safe transformations - complete package
+  description: |
+    Hydra is a unique functional programming language based on the LambdaGraph data model.
+    It explores an isomorphism between labeled hypergraphs and typed lambda calculus:
+    in Hydra, programs are graphs, and graphs are programs.
+
+    Hydra has the ability to translate its own kernel into several other languages, including
+    Haskell (Hydra-Haskell), Java (Hydra-Java), Python (Hydra-Python), and Scala (Hydra-Scala).
+
+    This meta-package installs all available Hydra implementations and extensions, providing
+    a complete development environment for working with the Hydra language across multiple
+    target languages.
+
+    Typical use cases include:
+    - Graph construction with TinkerPop-style property graphs and RDF/SHACL support
+    - Data integration with support for Protobuf, Avro, JSON, YAML, GraphQL, and more
+    - Computational graphs with deep support for polymorphism
+    - Type-safe data transformations and schema validation
+  repository: https://github.com/CategoricalData/hydra
+  documentation: https://github.com/CategoricalData/hydra
+
+extra:
+  recipe-maintainers:
+    - joshsh

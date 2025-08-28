@@ -5,8 +5,40 @@ stack.yaml.lock
 
 # Java / Gradle
 .gradle
-gradle.properties`
+gradle.properties
 build
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Pixi
+.pixi/
+pixi.lock
+
+# Conda / Rattler-build
+conda-bld/
+.conda/
+*.conda
+*.tar.bz2
 
 # IDEs
 .idea
@@ -15,3 +47,5 @@ build
 
 # Other
 *.swp
+output/
+*.log

@@ -49,4 +49,38 @@ as well as a couple of earlier presentations [here](https://www.slideshare.net/j
 and [here](https://docs.google.com/presentation/d/1PF0K3KtopV0tMVa0sGBW2hDA7nw-cSwQm6h1AED1VSA),
 and the original design document [here](https://bit.ly/hydra-design-doc).
 
+## Building with Pixi
+
+This project is configured as a [pixi](https://pixi.sh) project that can build conda packages for all Hydra language variants using [rattler-build](https://github.com/prefix-dev/rattler-build).
+
+### Quick Start
+
+```bash
+# Install pixi dependencies
+pixi install
+
+# Build all conda packages
+pixi run build-all
+
+# Build specific variants
+pixi run build-java
+pixi run build-python
+pixi run build-haskell
+pixi run build-scala
+
+# Validate setup
+pixi run validate
+```
+
+### Available Packages
+
+- **hydra-java** - Java implementation 
+- **hydra-python** - Python implementation (in progress)
+- **hydra-haskell** - Haskell implementation
+- **hydra-scala** - Scala implementation 
+- **hydra-ext** - Extensions and additional functionality
+- **hydra** - Meta-package including all variants
+
+See [PIXI_README.md](PIXI_README.md) for detailed build instructions and troubleshooting.
+
 Share and enjoy.
