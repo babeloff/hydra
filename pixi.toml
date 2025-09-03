@@ -16,13 +16,19 @@ build-ext = "rattler-build build --recipe-dir recipes/hydra-ext"
 clean = { cmd = "rm -rf .pixi/envs/*/conda-bld build/ .stack-work/ target/ dist/ *.egg-info/ __pycache__/ .gradle/", cwd = "." }
 validate = "bash scripts/validate-setup.sh"
 
+
 [dependencies]
 rattler-build = ">=0.20.0"
 nushell = ">=0.80.0"
 
 [feature.java.dependencies]
-openjdk = ">=11"
-gradle = ">=7.0"
+openjdk = "17.*"
+
+[feature.java.tasks]
+gradle = { cmd = "./gradlew", env = { JAVA_HOME = "$CONDA_PREFIX" } }
+gradle-tasks = { cmd = "./gradlew tasks", env = { JAVA_HOME = "$CONDA_PREFIX" } }
+gradle-build = { cmd = "./gradlew build", env = { JAVA_HOME = "$CONDA_PREFIX" } }
+gradle-clean = { cmd = "./gradlew clean", env = { JAVA_HOME = "$CONDA_PREFIX" } }
 
 [feature.python.dependencies]
 python = ">=3.12"
@@ -33,17 +39,16 @@ ghc = ">=8.10"
 stack = "*"
 
 [feature.scala.dependencies]
-openjdk = ">=11"
+openjdk = "17.*"
 sbt = "*"
 
 [feature.ext.dependencies]
-openjdk = ">=11"
-gradle = ">=7.0"
+openjdk = "17.*"
 ghc = ">=8.10"
 stack = "*"
 
 [environments]
-default = { features = [] }
+default = { features = ["java"] }
 java = { features = ["java"] }
 python = { features = ["python"], solve-group = "python" }
 haskell = { features = ["haskell"], solve-group = "haskell" }
