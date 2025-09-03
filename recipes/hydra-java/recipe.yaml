@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
 context:
   name: hydra-java
   version: "0.12.0"
@@ -7,7 +9,7 @@ package:
   version: ${{ version }}
 
 source:
-  path: ../../hydra-java
+  path: ../..
 
 build:
   number: 0
@@ -18,14 +20,33 @@ build:
       cd $env.SRC_DIR
 
       # Run Gradle build
-      ./gradlew build -x test --no-daemon
+      match ($nu.os-info.name) {
+        "linux" => {
+          ^./gradlew build -x test --no-daemon
+        }
+        "windows" => {
+          ^./gradlew.bat build -x test --no-daemon
+        }
+        "macos" => {
+          ^./gradlew build -x test --no-daemon
+        }
+        _ => {
+          print $"WARNING: Unknown OS name '($nu.os-info.name)' detected. Full os-info: ($nu.os-info). Using unix gradlew."
+          ^./gradlew build -x test --no-daemon
+        }
+      }
 
       # Create installation directories
       mkdir ($env.PREFIX | path join "lib" "hydra-java")
       mkdir ($env.PREFIX | path join "bin")
 
+      # Create Scripts directory for Windows
+      if ($env.target_platform | str contains "win") {
+        mkdir ($env.PREFIX | path join "Scripts")
+      }
+
       # Copy built JAR files
-      glob "**/*.jar" | where ($it | str contains "build/tmp" | not) | each { |jar|
+      glob "**/*.jar" | where ($it | str contains "build/tmp") == false | each { |jar|
         cp $jar ($env.PREFIX | path join "lib" "hydra-java")
       }
 
@@ -36,9 +57,21 @@ build:
         }
       }
 
-      # Copy and install the wrapper script
-      cp wrapper.sh ($env.PREFIX | path join "bin" "hydra-java")
-      chmod +x ($env.PREFIX | path join "bin" "hydra-java")
+      # Copy and install the appropriate wrapper script
+      match ($nu.os-info.family) {
+        "unix" => {
+          cp ($env.RECIPE_DIR | path join "wrapper.sh") ($env.PREFIX | path join "bin" "hydra-java")
+          ^chmod +x ($env.PREFIX | path join "bin" "hydra-java")
+        }
+        "windows" => {
+          cp ($env.RECIPE_DIR | path join "wrapper.bat") ($env.PREFIX | path join "Scripts" "hydra-java.bat")
+        }
+        _ => {
+          print $"WARNING: Unknown OS family '($nu.os-info.family)' detected. Full os-info: ($nu.os-info). Target platform: ($env.target_platform). Defaulting to unix wrapper."
+          cp ($env.RECIPE_DIR | path join "wrapper.sh") ($env.PREFIX | path join "bin" "hydra-java")
+          ^chmod +x ($env.PREFIX | path join "bin" "hydra-java")
+        }
+      }
 
       # Copy license and documentation
       if ("LICENSE" | path exists) { cp LICENSE $env.PREFIX }
@@ -46,16 +79,30 @@ build:
 
 requirements:
   build:
-    - openjdk >=11
-    - gradle >=7.0
+    - openjdk >=11,<12
+    - gradle >=7.4,<8.0
+    - nushell >=0.80,<1.0
   host:
-    - openjdk >=11
+    - openjdk >=11,<12
   run:
-    - openjdk >=11
+    - openjdk >=11,<12
 
 tests:
-  - script:
-      - java -version
+  - package_contents:
+      files:
+        - lib/hydra-java/*
+        - if: unix
+          then: bin/hydra-java
+        - if: win
+          then: Scripts/hydra-java.bat
+  - script: test_hydra_diagnostic.py
+    requirements:
+      build:
+        - python >=3.8,<4.0
+        - openjdk >=11,<12
+      run:
+        - python >=3.8,<4.0
+        - openjdk >=11,<12
 
 about:
   homepage: https://github.com/CategoricalData/hydra
@@ -73,3 +120,4 @@ about:
 extra:
   recipe-maintainers:
     - joshsh
+    - phreed

@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
 context:
   name: hydra-haskell
   version: "0.12.0"
@@ -7,24 +9,59 @@ package:
   version: ${{ version }}
 
 source:
-  path: ../../hydra-haskell
+  path: ../..
 
 build:
   number: 0
+  # Skip Windows builds - GHC is not available as a conda package on Windows
+  skip:
+    - win
   script:
     interpreter: nushell
     content: |
       # Build the Haskell package using Stack
-      cd $env.SRC_DIR
+      cd ($env.SRC_DIR | path join "hydra-haskell")
 
-      # Configure Stack to use system GHC
-      stack config set system-ghc --global true
+      # macOS-specific configuration to fix GHC linker issues
+      if ($env.target_platform | str contains "osx") {
+        # Set proper compiler environment variables for macOS
+        $env.CC = "clang"
+        $env.CXX = "clang++"
+        $env.MACOSX_DEPLOYMENT_TARGET = "10.13"
 
-      # Build the project
-      stack build --no-test --local-bin-path ($env.PREFIX | path join "bin")
+        # Ensure we have proper SDK path
+        $env.SDKROOT = (xcrun --show-sdk-path)
 
-      # Install the library
-      stack install --local-bin-path ($env.PREFIX | path join "bin")
+        # Create a properly formatted stack.yaml with macOS-specific options
+        if ("stack.yaml" | path exists) {
+          echo "\n\n# macOS-specific build configurations added by conda-forge\n" | save --append stack.yaml
+        } else {
+          echo "# Stack configuration for conda-forge build\nresolver: lts\n\n# macOS-specific build configurations\n" | save stack.yaml
+        }
+        # Read the macOS configuration template
+        open ($env.RECIPE_DIR | path join "stack-macos.yaml") | save --append stack.yaml
+
+        # Validate the merged YAML syntax
+        try {
+          let test_parse = open stack.yaml | from yaml
+          print "[+] stack.yaml syntax validation passed"
+        } catch {
+          print "[-] stack.yaml syntax validation failed"
+        }
+
+        # Debug: show current directory and files
+        print $"Current working directory: (pwd)"
+        ls | print
+
+        # Build with modified stack configuration
+        ^stack build --no-test --local-bin-path ($env.PREFIX | path join "bin")
+        ^stack install --local-bin-path ($env.PREFIX | path join "bin")
+
+      } else {
+        # For non-macOS, use existing stack.yaml and build normally
+        ^stack build --no-test --local-bin-path ($env.PREFIX | path join "bin")
+        ^stack install --local-bin-path ($env.PREFIX | path join "bin")
+      }
 
       # Create library directory
       mkdir ($env.PREFIX | path join "lib" "hydra-haskell")
@@ -35,6 +72,9 @@ build:
           cp $file ($env.PREFIX | path join "lib" "hydra-haskell")
         }
         glob ".stack-work/dist/**/*.so" | each { |file|
+          cp $file ($env.PREFIX | path join "lib" "hydra-haskell")
+        }
+        glob ".stack-work/dist/**/*.dylib" | each { |file|
           cp $file ($env.PREFIX | path join "lib" "hydra-haskell")
         }
       }
@@ -50,17 +90,36 @@ build:
 
 requirements:
   build:
-    - ghc >=8.10
-    - stack
+    - ghc >=8.10,<9.8
+    - stack >=2.7,<3.0
+    - nushell >=0.80,<1.0
+    - if: osx
+      then:
+        - ${{ stdlib("c") }}
+        - ${{ compiler("c") }}
+        - ${{ compiler("cxx") }}
   host:
-    - ghc >=8.10
-    - stack
+    - ghc >=8.10,<9.8
+    - stack >=2.7,<3.0
   run:
-    - ghc >=8.10
+    - ghc >=8.10,<9.8
 
 tests:
+  - package_contents:
+      files:
+        - lib/hydra-haskell/*
+        # - bin/hydra-haskell
   - script:
+      - ghc --version
       - hydra-haskell --help || echo "Hydra Haskell library installed"
+    requirements:
+      build:
+        - python >=3.8,<4.0
+        - ghc >=8.10,<9.8
+      run:
+        - python >=3.8,<4.0
+        - ghc >=8.10,<9.8
+  - script: test_hydra_diagnostic.py
 
 about:
   homepage: https://github.com/CategoricalData/hydra
@@ -78,3 +137,4 @@ about:
 extra:
   recipe-maintainers:
     - joshsh
+    - phreed
