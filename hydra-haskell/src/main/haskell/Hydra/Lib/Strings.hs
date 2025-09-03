@@ -4,7 +4,7 @@ module Hydra.Lib.Strings where
 
 import qualified Data.Char as C
 import qualified Data.List as L
-import qualified Data.List.Split as LS
+-- import qualified Data.List.Split as LS
 
 
 cat :: [String] -> String
@@ -32,7 +32,15 @@ null :: String -> Bool
 null = L.null
 
 splitOn :: String -> String -> [String]
-splitOn = LS.splitOn
+splitOn delim str = splitOnImpl delim str
+  where
+    splitOnImpl _ [] = [""]
+    splitOnImpl delim str
+      | delim `L.isPrefixOf` str = "" : splitOnImpl delim (drop (L.length delim) str)
+      | otherwise =
+          let (x:xs) = str
+              (first:rest) = splitOnImpl delim xs
+          in (x:first) : rest
 
 toList :: String -> [Int]
 toList = fmap C.ord

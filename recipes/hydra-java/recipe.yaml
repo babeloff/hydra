@@ -14,7 +14,7 @@ source:
 build:
   number: 0
   script:
-    interpreter: "nushell"
+    interpreter: nushell
     content: |
       # Build the Java components using Gradle
       cd $env.SRC_DIR

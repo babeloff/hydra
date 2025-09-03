@@ -6,7 +6,65 @@ See the main Hydra [README](https://github.com/CategoricalData/hydra) for more d
 This Haskell package contains Hydra's Haskell API and Haskell sources specifically.
 Releases are available [on Hackage](https://hackage.haskell.org/package/hydra).
 
-## Build
+## Multi-Package Project Structure
+
+Hydra-Haskell is part of a multi-package Stack project that includes:
+
+- **`hydra-haskell`** (this package) - Core Hydra library and kernel
+- **`hydra-ext`** - Extensions, coders, and additional functionality that depends on hydra-haskell
+
+## Prerequisites and Setup
+
+For the best development experience, use the conda-based environment setup from the project root:
+
+```bash
+# From the project root directory (hydra/)
+# Install system dependencies
+./install-haskell-deps.sh
+
+# Set up ghcup-managed GHC and Stack with conda integration
+pixi run -e haskell ./setup-ghcup-with-conda.sh
+```
+
+## Build and Interactive Development
+
+### Multi-Package Development (Recommended)
+
+From the project root, you can work with both packages simultaneously:
+
+```bash
+# Start GHCi with both hydra-haskell and hydra-ext loaded
+pixi run -e haskell ./run-stack-ghci.sh
+
+# Or build both packages
+pixi run -e haskell stack-build
+```
+
+### Single Package Development
+
+If you only need the core hydra-haskell package:
+
+```bash
+# From project root
+pixi run -e haskell hydra-ghci
+
+# Or from this directory with system Stack (less reliable)
+stack ghci
+```
+
+### Traditional Stack Approach
+
+If you prefer traditional Stack (may have compatibility issues):
+
+First install the [Haskell Tool Stack](https://docs.haskellstack.org/en/stable) ("Stack"), then:
+
+```bash
+# From project root (for multi-package support)
+stack ghci
+
+# From this directory (hydra-haskell only)
+stack ghci
+```
 
 Haskell is Hydra's bootstrapping language, which means that,
 while the entire Hydra kernel is written in the Hydra language itself,
@@ -14,25 +72,41 @@ the sources are written in a Haskell-based domain-specific language (DSL).
 You can find the DSL-based sources [here](https://github.com/CategoricalData/hydra/tree/main/hydra-haskell/src/main/haskell/Hydra/Sources);
 anything written in the DSL is also mapped into the generated Java and Python sources.
 You can find the generated Haskell sources [here](https://github.com/CategoricalData/hydra/tree/main/hydra-haskell/src/gen-main/haskell).
-To build Hydra-Haskell and enter the GHCi REPL,
-first install the [Haskell Tool Stack](https://docs.haskellstack.org/en/stable) ("Stack"),
-and then use:
-
-```bash
-stack ghci
-```
 
 ## Test
 
-To run all tests at the command line, use:
+### Multi-Package Testing (Recommended)
+
+From the project root:
 
 ```bash
+# Test all packages
+pixi run -e haskell stack-test
+
+# Test specific packages
+pixi run -e haskell hydra-test  
+pixi run -e haskell ext-test
+```
+
+### Traditional Stack Testing
+
+```bash
+# From project root (tests both packages)
+stack test
+
+# From this directory (hydra-haskell only)  
 stack test
 ```
+
+### Interactive Testing
 
 If you are familiar with Hydra-Haskell internals and you want to enter the test environment interactively:
 
 ```bash
+# Multi-package approach (from project root)
+pixi run -e haskell ./run-stack-ghci.sh
+
+# Traditional approach
 stack ghci hydra:lib hydra:hydra-test
 ```
 

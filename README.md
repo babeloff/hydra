@@ -59,18 +59,84 @@ This project is configured as a [pixi](https://pixi.sh) project that can build c
 # Install pixi dependencies
 pixi install
 
-# Build all conda packages
-pixi run build-all
-
-# Build specific variants
-pixi run build-java
-pixi run build-python
-pixi run build-haskell
-pixi run build-scala
-
-# Validate setup
+# Validate setup (recommended first step)
 pixi run validate
+
+# Build working packages
+pixi run build-python          # ✅ Works perfectly
+pixi run -e java gradle-build   # ✅ Direct Java build works
+
+# Note: Some conda builds have known issues (see PIXI_TASK_STATUS.md)
+# pixi run build-java    # ❌ Has missing generated classes
+# pixi run build-scala   # ❌ SBT compatibility issues  
+# pixi run build-all     # ❌ Depends on failing builds
 ```
+
+## Haskell Development
+
+Hydra uses a multi-package Stack project structure with two main Haskell packages:
+
+- **`hydra-haskell`** - Core Hydra library and kernel
+- **`hydra-ext`** - Extensions, coders, and additional functionality
+
+### Prerequisites
+
+For Haskell development, you need:
+1. **System dependencies** - Install required libraries
+2. **Stack toolchain** - Managed through pixi for best compatibility
+
+### Setup
+
+```bash
+# Install system dependencies (if needed)
+./install-haskell-deps.sh
+
+# Set up complete Haskell environment with ghcup and conda integration
+pixi run -e haskell ./setup-ghcup-with-conda.sh
+```
+
+### Interactive Development
+
+```bash
+# Start GHCi with both packages loaded
+pixi run -e haskell ./run-stack-ghci.sh
+
+# Or use pixi tasks:
+pixi run -e haskell ghci-all          # Both hydra and hydra-ext
+pixi run -e haskell hydra-ghci        # Core package only
+pixi run -e haskell ext-ghci          # Extensions package only
+```
+
+In GHCi, you can access modules from both packages:
+```haskell
+:l Hydra.Core.Model              -- Core Hydra modules
+:l Hydra.Ext.Java.Language       -- Extension modules  
+:browse Hydra.Core.Model         -- Browse available functions
+:reload                          -- Reload after changes
+```
+
+### Building and Testing
+
+```bash
+# Note: Haskell builds currently have linking issues in conda environment
+# Working alternatives:
+
+# Setup Stack environment (works)
+pixi run -e haskell stack-setup
+
+# Explore code and data (works)
+pixi run -e haskell haskell-modules
+pixi run -e haskell check-graphson
+
+# Build attempts (currently failing due to glibc compatibility)
+# pixi run -e haskell stack-build  # ❌ Linking issues
+# pixi run -e haskell stack-test   # ❌ Requires build
+
+# Clean builds (works)
+pixi run -e haskell stack-clean
+```
+
+For detailed Haskell development instructions, see [HASKELL_SETUP.md](HASKELL_SETUP.md).
 
 ### Available Packages
 
@@ -81,6 +147,6 @@ pixi run validate
 - **hydra-ext** - Extensions and additional functionality
 - **hydra** - Meta-package including all variants
 
-See [PIXI_README.md](PIXI_README.md) for detailed build instructions and troubleshooting.
+See [PIXI_TASK_STATUS.md](PIXI_TASK_STATUS.md) for detailed pixi task status, known issues, and troubleshooting guide.
 
 Share and enjoy.

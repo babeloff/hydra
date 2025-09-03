@@ -1,0 +1,39 @@
+resolver: lts-24.7
+
+packages:
+  - hydra-haskell
+  - hydra-ext
+
+extra-deps:
+
+# Allow newer versions of dependencies if needed
+allow-newer: true
+
+# Build configuration
+build:
+  haddock: false
+  haddock-deps: false
+
+# Use system GHC installed by ghcup
+system-ghc: true
+install-ghc: false
+
+# Skip GHC version check - use whatever system GHC is available
+skip-ghc-check: true
+
+# Configure GHC installation to respect conda environment
+ghc-options:
+  "$everything": -optl-L$CONDA_PREFIX/lib -optl-Wl,-rpath,$CONDA_PREFIX/lib
+
+# Configure C compiler and linker paths
+# Note: configure-options with "*" is not supported in recent stack versions
+# These options are handled by ghc-options and extra-lib-dirs instead
+
+# Set library and include paths
+extra-include-dirs:
+  - $CONDA_PREFIX/include
+extra-lib-dirs:
+  - $CONDA_PREFIX/lib
+
+# Force Stack to rebuild setup executables with environment libraries
+rebuild-ghc-options: true

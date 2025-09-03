@@ -7,15 +7,14 @@ channels = ["conda-forge"]
 platforms = ["linux-64"]
 
 [tasks]
-build-all = "rattler-build build --recipe-dir recipes"
+build-all = { cmd = "bash scripts/build-all.sh", cwd = "." }
 build-java = "rattler-build build --recipe-dir recipes/hydra-java"
 build-python = "rattler-build build --recipe-dir recipes/hydra-python"
-build-haskell = "rattler-build build --recipe-dir recipes/hydra-haskell"
 build-scala = "rattler-build build --recipe-dir recipes/hydra-scala"
+build-haskell = { cmd = "pixi run -e haskell hydra-build", cwd = "." }
 build-ext = "rattler-build build --recipe-dir recipes/hydra-ext"
-clean = { cmd = "rm -rf .pixi/envs/*/conda-bld build/ .stack-work/ target/ dist/ *.egg-info/ __pycache__/ .gradle/", cwd = "." }
+clean = { cmd = "bash -c 'rm -rf build/ .stack-work/ target/ dist/ .gradle/ && find . -name \"*.egg-info\" -type d -exec rm -rf {} + 2>/dev/null || true && find . -name \"__pycache__\" -type d -exec rm -rf {} + 2>/dev/null || true'", cwd = "." }
 validate = "bash scripts/validate-setup.sh"
-
 
 [dependencies]
 rattler-build = ">=0.20.0"
@@ -35,18 +34,76 @@ python = ">=3.12"
 pip = "*"
 
 [feature.haskell.dependencies]
-ghc = ">=8.10"
-stack = "*"
-gcc_linux-64 = "*"
-binutils_linux-64 = "*"
+gxx = "*"
+gcc = "*"
+gmp = "*"
+zlib = "*"
+ncurses = "*"
+libffi = "*"
+ghcup = "*"
+
+[feature.haskell.activation]
+env = { PATH = "$CONDA_PREFIX/.ghcup/bin:$PATH" }
 
 [feature.haskell.tasks]
-ghci = { cmd = "ghci -isrc/main/haskell -isrc/gen-main/haskell", cwd = "hydra-haskell" }
-ghci-simple = { cmd = "ghci", cwd = "hydra-haskell" }
-haskell-build = { cmd = "stack build", cwd = "hydra-haskell", env = { STACK_YAML = "stack.yaml" } }
-haskell-test = { cmd = "stack test", cwd = "hydra-haskell", env = { STACK_YAML = "stack.yaml" } }
-haskell-clean = { cmd = "stack clean", cwd = "hydra-haskell" }
+# GHC and Stack setup using ghcup
+ghcup-install-ghc = { cmd = "ghcup install ghc 9.10.1", cwd = ".", env = { GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX", LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH" } }
+ghcup-set-ghc = { cmd = "ghcup set ghc 9.10.1", cwd = ".", env = { GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+ghcup-install-stack = { cmd = "ghcup install stack 2.15.7", cwd = ".", env = { GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+ghcup-set-stack = { cmd = "ghcup set stack 2.15.7", cwd = ".", env = { GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+haskell-setup = { depends-on = [
+    "ghcup-install-ghc",
+    "ghcup-set-ghc",
+    "ghcup-install-stack",
+    "ghcup-set-stack",
+] }
+
+# Stack tasks using ghcup-installed GHC
+stack-setup = { cmd = "stack setup --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+stack-build = { cmd = "stack build --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+stack-test = { cmd = "stack test --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+stack-clean = { cmd = "stack clean", cwd = "." }
+stack-ghci = { cmd = "stack ghci --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+stack-install = { cmd = "stack install --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+
+# Individual package builds
+hydra-build = { cmd = "stack build hydra --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+hydra-test = { cmd = "stack test hydra --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+hydra-ghci = { cmd = "stack ghci hydra --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+
+ext-build = { cmd = "stack build hydra-ext --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+ext-test = { cmd = "stack test hydra-ext --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+ext-ghci = { cmd = "stack ghci hydra-ext --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+
+# Combined development tasks
+ghci-all = { cmd = "stack ghci --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+ghci-interactive = { cmd = "stack ghci hydra-ext --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+
+# Module and code exploration tasks
 haskell-modules = { cmd = "find src -name '*.hs' | head -n 20", cwd = "hydra-haskell" }
+haskell-functions = { cmd = "grep -n '^[a-zA-Z_][a-zA-Z0-9_]*[ ]*::' src/gen-main/haskell/Hydra/*/*.hs | head -n 10", cwd = "hydra-haskell" }
+
+# GraphSON generation tasks
+graphson-help = { cmd = "ghc --make run-graphson.hs -o run-graphson && ./run-graphson", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+run-copilot-graphson = { cmd = "printf ':l Hydra.Ext.Demos.GenPG.Demo\\ngenerateCopilotGraphSON\\n:quit\\n' | stack ghci hydra-ext --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+run-example-graphson = { cmd = "printf ':l Hydra.Ext.Demos.GenPG.Demo\\ngenerateExampleGraphSON\\n:quit\\n' | stack ghci hydra-ext --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+
+# Data checking tasks
+check-data = { cmd = "ls -la data/genpg/sources/", cwd = "hydra-ext" }
+check-graphson = { cmd = "ls -la data/genpg/*.json", cwd = "hydra-ext" }
+check-copilot-data = { cmd = "head -n 3 data/genpg/copilot.json", cwd = "hydra-ext" }
+check-sales-data = { cmd = "head -n 3 data/genpg/sales.json", cwd = "hydra-ext" }
+
+# Stack cache management
+clear-stack-cache-haskell = { cmd = "stack clean --full && rm -rf .stack-work", cwd = "hydra-haskell" }
+clear-stack-cache-ext = { cmd = "stack clean --full && rm -rf .stack-work", cwd = "hydra-ext" }
+clear-stack-cache-all = { cmd = "stack clean --full && rm -rf .stack-work", cwd = "." }
+
+# Unified Haskell tasks
+haskell-setup-all = { depends-on = ["haskell-setup", "stack-setup"] }
+haskell-build-all = { depends-on = ["stack-build"] }
+haskell-test-all = { depends-on = ["stack-test"] }
+haskell-clean-all = { depends-on = ["stack-clean"] }
 
 [feature.scala.dependencies]
 openjdk = "17.*"
@@ -54,8 +111,6 @@ sbt = "*"
 
 [feature.ext.dependencies]
 openjdk = "17.*"
-ghc = ">=8.10"
-stack = "*"
 
 [environments]
 default = { features = ["java"] }

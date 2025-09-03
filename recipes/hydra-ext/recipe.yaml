@@ -7,15 +7,18 @@ package:
   version: ${{ version }}
 
 source:
-  path: ../../hydra-ext
+  path: ../..
 
 build:
   number: 0
   script:
     interpreter: nushell
     content: |
-      # Build the Hydra extensions package (both Java and Haskell components)
+      # Build the Haskell extensions package (both Java and Haskell components)
       cd $env.SRC_DIR
+
+      # Navigate to the hydra-ext directory
+      cd hydra-ext
 
       # Create installation directories
       mkdir ($env.PREFIX | path join "lib" "hydra-ext")
@@ -26,7 +29,7 @@ build:
       print "Skipping Java components (requires full project structure)"
 
       # Build Haskell components if package.yaml and stack.yaml exist
-      if (("package.yaml" | path exists) and ("stack.yaml" | path exists)) {
+      if (("package.yaml" | path exists) and ("../stack.yaml" | path exists)) {
         print "Building Haskell components..."
 
         # Configure Stack environment with fresh root

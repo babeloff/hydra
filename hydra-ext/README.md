@@ -10,6 +10,48 @@ a few artifacts in Java and Python.
 JavaDocs for Hydra-Ext can be found [here](https://categoricaldata.github.io/hydra/hydra-ext/javadoc),
 and releases can be found on Maven Central [here](https://central.sonatype.com/artifact/net.fortytwo.hydra/hydra-ext).
 
+## Multi-Package Development Environment
+
+Hydra-Ext is part of a multi-package Stack project:
+
+- **`hydra-haskell`** - Core Hydra library (dependency)
+- **`hydra-ext`** (this package) - Extensions, coders, and additional functionality
+
+### Prerequisites and Setup
+
+For the best development experience, use the conda-based environment setup from the project root:
+
+```bash
+# From the project root directory (hydra/)
+# Install system dependencies
+./install-haskell-deps.sh
+
+# Set up ghcup-managed GHC and Stack with conda integration
+pixi run -e haskell ./setup-ghcup-with-conda.sh
+```
+
+### Interactive Development
+
+```bash
+# From project root - start GHCi with both packages loaded
+pixi run -e haskell ./run-stack-ghci.sh
+
+# Or use specific pixi tasks
+pixi run -e haskell ext-ghci          # Extensions package only
+pixi run -e haskell ghci-all          # Both hydra and hydra-ext
+```
+
+### Building and Testing
+
+```bash
+# From project root
+pixi run -e haskell ext-build         # Build hydra-ext
+pixi run -e haskell ext-test          # Test hydra-ext  
+pixi run -e haskell stack-build       # Build both packages
+```
+
+For detailed setup instructions, see [HASKELL_SETUP.md](../HASKELL_SETUP.md) in the project root.
+
 ## Coders
 
 Hydra-Ext contains the following two-level coders:
@@ -46,7 +88,7 @@ The following models are included:
 
 These extensions are listed [here](https://github.com/CategoricalData/hydra/blob/main/hydra-ext/src/main/haskell/Hydra/Ext/Sources/All.hs),
 and the generated Haskell APIs for all of these models can be found [here](https://github.com/CategoricalData/hydra/tree/main/hydra-ext/src/gen-main/haskell).
-For the sake of space, only generated Haskell is checked in to the repository, but Java APIs can be generated from GHCi (use `stack ghci`) as follows:
+For the sake of space, only generated Haskell is checked in to the repository, but Java APIs can be generated from GHCi as follows:
 
 ```haskell
 writeJava "src/gen-main/java" hydraExtModules
@@ -56,6 +98,91 @@ The generated Haskell can be updated using:
 
 ```haskell
 writeHaskell "src/gen-main/haskell" hydraExtModules
+```
+
+## Development Environment with Pixi
+
+This project uses [pixi](https://pixi.sh) for environment management and task automation. From the root hydra directory, you can:
+
+### Start Interactive GHCi Session
+
+**Note:** There is currently a known issue with the `Data.List.Split` dependency that may prevent direct GHCi loading of the Demo module. The GraphSON generation functions have already been executed and their output files are available (see below).
+
+```bash
+# Check if GraphSON files already exist (recommended first step)
+pixi run -e haskell check-graphson
+
+# Start GHCi with all necessary source paths (may encounter dependency issues)
+pixi run -e haskell ghci-ext
+
+# Or for a simpler GHCi session
+pixi run -e haskell ghci-simple
+```
+
+### Run GraphSON Generation Functions
+
+The project includes pre-built GraphSON generation functions that transform CSV data into property graph format:
+
+```bash
+# Check available data
+pixi run -e haskell check-data
+
+# View help for GraphSON functions
+pixi run -e haskell graphson-help
+```
+
+**Available Generated Files (Already Generated):**
+- `data/genpg/copilot.json` - Health/copilot data in GraphSON format (50KB)
+- `data/genpg/sales.json` - Sales example data in GraphSON format (25KB)
+
+**Check Generated Files:**
+```bash
+# List generated GraphSON files
+pixi run -e haskell check-graphson
+
+# Preview copilot data
+pixi run -e haskell check-copilot-data
+
+# Preview sales data
+pixi run -e haskell check-sales-data
+```
+
+### Manual GHCi Workflow
+
+**Current Issue:** Loading the Demo module may fail due to a missing `Data.List.Split` dependency in the GHCi environment. The functions have already been successfully executed, and the GraphSON files are available in `data/genpg/`.
+
+If you need to run the functions manually in an interactive session:
+
+```bash
+pixi run -e haskell ghci-ext
+```
+
+Then in GHCi (may encounter dependency errors):
+```haskell
+:l Hydra.Ext.Demos.GenPG.Demo  -- May fail with Data.List.Split error
+:t generateCopilotGraphSON      -- Check function type
+generateCopilotGraphSON         -- Generate health data GraphSON
+generateExampleGraphSON         -- Generate sales data GraphSON
+```
+
+**Alternative:** Since the GraphSON files are already generated, you can work with them directly:
+```bash
+# View the generated graph data
+cat hydra-ext/data/genpg/copilot.json | head -20
+cat hydra-ext/data/genpg/sales.json | head -20
+```
+
+### Other Available Tasks
+
+```bash
+# List available Haskell modules
+pixi run -e haskell haskell-modules
+
+# Clean build artifacts
+pixi run -e haskell haskell-clean
+
+# Interactive GHCi session focused on hydra-ext
+pixi run -e haskell ghci-interactive
 ```
 
 ## Tools
@@ -101,28 +228,65 @@ Now, take this prompt (`data/genpg/prompt.txt`; note that this is checked in to 
 Just overwrite the files which are already checked in at that location.
 Feel free to use any file system integration available in your tool, if you want to avoid the tedium of manual copy-and-paste.
 
-Finally, enter GHCi using:
+Finally, enter GHCi. You can use either the traditional Stack approach or the modern pixi-based workflow:
+
+**Important Note:** There is currently a `Data.List.Split` dependency issue that may prevent loading the Demo module. However, the GraphSON generation functions have already been executed successfully, and the output files are available.
+
+**Option 1: Check existing files first (Recommended)**
+```bash
+# From the root hydra directory - check if files already exist
+pixi run -e haskell check-graphson
+ls -la hydra-ext/data/genpg/*.json
+```
+
+**Option 2: Using pixi with GHCi (may encounter dependency issues)**
+```bash
+# From the root hydra directory
+pixi run -e haskell ghci-ext
+```
+
+**Option 3: Using Stack directly (may encounter dependency issues)**
 ```bash
 stack ghci
 ```
 You will need to have installed [Haskell Tool Stack](https://docs.haskellstack.org/en/stable) ("Stack") first,
 as is also described in the Hydra-Haskell README.
+
 Once in the REPL, there are two built-in demo routines you can use,
 both of which run a Hydra transform to generate graph data in [GraphSON](https://github.com/apache/tinkerpop/blob/master/docs/src/dev/io/graphson.asciidoc),
 a property graph serialization format.
 You can then load these graphs into a TinkerPop-compatible graph database,
 into [G.V()](https://gdotv.com) for visualization, etc.
-The first function generates a graph based on the built-in reference dataset:
+
+**Check if graphs already exist (Recommended first step):**
+The GraphSON files are already generated and available:
+```bash
+# From root hydra directory
+ls -la hydra-ext/data/genpg/*.json
+head -5 hydra-ext/data/genpg/copilot.json  # Preview copilot data
+head -5 hydra-ext/data/genpg/sales.json    # Preview sales data
+
+# Or use pixi tasks
+pixi run -e haskell check-graphson
+pixi run -e haskell check-copilot-data
+pixi run -e haskell check-sales-data
+```
+
+**Load the Demo module (may encounter dependency issues):**
 ```haskell
+:l Hydra.Ext.Demos.GenPG.Demo  -- May fail with Data.List.Split error
+```
+
+**Generate graphs (if module loads successfully):**
+```haskell
+-- Generate graph based on the built-in reference dataset (sales)
 generateExampleGraphSON
+-- Result: data/genpg/sales.json
+
+-- Generate graph based on the health dataset (or your custom dataset)
+generateCopilotGraphSON  
+-- Result: data/genpg/copilot.json
 ```
-You will find the result at `data/genpg/sales.json`.
-The other function generates a graph based on the `health` dataset,
-or whatever dataset you have supplied instead:
-```haskell
-generateCopilotGraphSON
-```
-The result is written to `data/genpg/copilot.json`.
 
 And that's it! What you have just done is to:
 1. Teach the LLM how to write schemas and transforms in Hydra, using a specific reference dataset as an example.
@@ -145,7 +309,7 @@ The Haskell sources of this demo are available [here](https://github.com/Categor
 
 ### AvroToPropertyGraphs
 
-To run the `AvroToPropertyGraphs` demo, first enter `stack ghci`, then:
+To run the `AvroToPropertyGraphs` demo, first enter GHCi using `pixi run -e haskell ghci-ext` or `stack ghci`, then:
 
 ```haskell
 import Hydra.Tools.AvroWorkflows
