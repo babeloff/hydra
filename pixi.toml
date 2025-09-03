@@ -37,6 +37,16 @@ pip = "*"
 [feature.haskell.dependencies]
 ghc = ">=8.10"
 stack = "*"
+gcc_linux-64 = "*"
+binutils_linux-64 = "*"
+
+[feature.haskell.tasks]
+ghci = { cmd = "ghci -isrc/main/haskell -isrc/gen-main/haskell", cwd = "hydra-haskell" }
+ghci-simple = { cmd = "ghci", cwd = "hydra-haskell" }
+haskell-build = { cmd = "stack build", cwd = "hydra-haskell", env = { STACK_YAML = "stack.yaml" } }
+haskell-test = { cmd = "stack test", cwd = "hydra-haskell", env = { STACK_YAML = "stack.yaml" } }
+haskell-clean = { cmd = "stack clean", cwd = "hydra-haskell" }
+haskell-modules = { cmd = "find src -name '*.hs' | head -n 20", cwd = "hydra-haskell" }
 
 [feature.scala.dependencies]
 openjdk = "17.*"
