@@ -51,7 +51,7 @@ module_ = Module (Namespace "hydra.languages")
   kernelTypesModules $
   Just "Language constraints for Hydra Core"
 
-hydraLanguageDef :: TElement Language
+hydraLanguageDef :: TBinding Language
 hydraLanguageDef = definitionInModule module_ "hydraLanguage" $
   doc "Language constraints for Hydra Core, i.e. no constraints." $ lets [
   "eliminationVariants">: Sets.fromList $ ref Variants.eliminationVariantsDef,
@@ -61,7 +61,7 @@ hydraLanguageDef = definitionInModule module_ "hydraLanguage" $
   "integerTypes">: Sets.fromList $ ref Variants.integerTypesDef,
   "termVariants">: Sets.fromList $ ref Variants.termVariantsDef,
   "typeVariants">: Sets.fromList $ ref Variants.typeVariantsDef,
-  "types">: constant true] $
+  "types">: "t" ~> cases _Type (var "t") (Just true) []] $
   Coders.language
     (Coders.languageName "hydra.core")
     (Coders.languageConstraints

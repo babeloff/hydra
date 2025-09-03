@@ -9,6 +9,7 @@ import qualified Hydra.Dsl.Terms as Terms
 import qualified Hydra.Dsl.Types as Types
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 
 apply :: TTerm (Flow s (x -> y)) -> TTerm (Flow s x) -> TTerm (Flow s y)
@@ -23,14 +24,23 @@ fail = primitive1 _flows_fail
 map :: TTerm (x -> y) -> TTerm (Flow s x) -> TTerm (Flow s y)
 map = primitive2 _flows_map
 
+mapElems :: TTerm (v1 -> Flow s v2) -> TTerm (M.Map k v1) -> TTerm (Flow s (M.Map k v2))
+mapElems = primitive2 _flows_mapElems
+
+mapKeys :: TTerm (k1 -> Flow s k2) -> TTerm (M.Map k1 v) -> TTerm (Flow s (M.Map k2 v))
+mapKeys = primitive2 _flows_mapKeys
+
 mapList :: TTerm (x -> Flow s y) -> TTerm [x] -> TTerm (Flow s [y])
 mapList = primitive2 _flows_mapList
+
+mapOptional :: TTerm (x -> Flow s y) -> TTerm (Maybe x) -> TTerm (Flow s (Maybe y))
+mapOptional = primitive2 _flows_mapOptional
+
+mapSet :: TTerm (x -> Flow s y) -> TTerm (S.Set x) -> TTerm (Flow s (S.Set y))
+mapSet = primitive2 _flows_mapSet
 
 pure :: TTerm x -> TTerm (Flow s x)
 pure = primitive1 _flows_pure
 
 sequence :: TTerm [Flow s a] -> TTerm (Flow s [a])
 sequence = primitive1 _flows_sequence
-
-traverseOptional :: TTerm (x -> Flow s y) -> TTerm (Maybe x) -> TTerm (Flow s (Maybe y))
-traverseOptional = primitive2 _flows_traverseOptional

@@ -46,14 +46,14 @@ Now in the REPL, you can access test resources,
 or run individual Hspec test cases.
 
 ```haskell
-hspec Hydra.TermAdaptersSpec.termsAreAdaptedRecursively
+Test.Hspec.hspec Hydra.TestSuiteSpec.spec
 ```
 
 ## Code generation
 
 Hydra is a self-hosting compiler in Haskell, which means that it can generate
 all of its own Haskell source code, with the exception of a few built-in
-artifacts including Haskell-specific implementations of Hydra's primitive
+artifacts such as Haskell-specific implementations of Hydra's primitive
 functions.
 
 We are currently working on "closing the loop" in Java and Python, as well,
@@ -65,17 +65,23 @@ Protobuf, C++, Scala, and others.
 You can generate Hydra's Haskell sources by first entering the GHCi REPL as above, then:
 
 ```haskell
-import Hydra.Codegen
+import Hydra.Generation
 
 writeHaskell "src/gen-main/haskell" mainModules
 ```
 
 The first argument to `writeHaskell` is the base directory to which the generated files are to be written,
 and the second is the list of modules you want to generate (in this case, a special list containing all built-in modules).
+To generate only the Hydra kernel, use:
+
+```haskell
+writeHaskell "src/gen-main/haskell" kernelModules
+```
+
 For individual modules, use list syntax, e.g.
 
 ```haskell
-writeHaskell "src/gen-main/haskell" [rdfSyntaxModule, shaclModelModule]
+writeHaskell "src/gen-main/haskell" [haskellLanguageModule, haskellCoderModule]
 ```
 
 To generate test modules, use:
@@ -211,3 +217,27 @@ is pulled out of raw Haskell and into the DSLs.
 If you are curious how these types work, see the [Phantoms](https://github.com/CategoricalData/hydra/blob/main/hydra-haskell/src/main/haskell/Hydra/Impl/Haskell/Sources/Phantoms.hs) model
 and [these slides](https://www.slideshare.net/joshsh/transpilers-gone-wild-introducing-hydra/34).
 Phantom types are available both in Haskell and Java.
+
+## Self-hosting in Haskell
+
+Hyra-Haskell is what is known as a [self-hosting compiler](https://en.wikipedia.org/wiki/Self-hosting_(compilers)),
+in that it is capable of generating its own Haskell source code from a Hydra source-of-truth.
+It is a goal of the Hydra project to become self-hosting in Java, Python, and other languages as well.
+The following is a simple demonstration of Hydra's self-hosting capabilities in Haskell:
+
+```
+stack ghci in hydra-haskell
+writeHaskell "src/gen-main/haskell" mainModules
+writeHaskell "src/gen-test/haskell" testModules
+:q (quit)
+stack test
+```
+
+And there you go! You have just generated the entire Hydra kernel and test suite, then run the test suite.
+The only files and directories which stayed in place are:
+* `Hydra.Lib` (libraries)
+* `Hydra.Sources` (which are no longer needed after generation, and can be removed)
+* The test runner
+* Four small files including `Hydra.Generation` which contain I/O and Haskell-specific helpers 
+
+Everything else is created from sources written in Hydra.

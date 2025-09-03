@@ -59,7 +59,7 @@ applyAll fun args = foldl apply fun args
 lets :: [Field] -> Term -> Term
 lets bindings env = TermLet $ Let (toBinding <$> bindings) env
   where
-    toBinding (Field name value) = LetBinding name value Nothing
+    toBinding (Field name value) = Binding name value Nothing
 
 -- | Create a variable reference
 -- Example: var "x"
@@ -109,6 +109,15 @@ primitive = TermFunction . FunctionPrimitive
 
 -- * Polymorphism (System F)
 
+-- | Create a type abstraction (universal quantification)
+-- Example: typeLambda [Name "a", Name "b"] (lambdaTyped "f" (Types.function (Types.var "a") (Types.var "b"))
+--                                               (lambdaTyped "x" (Types.var "a") (var "f" @@ var "x")))
+-- This creates a polymorphic term with type variables.
+-- The example creates a higher-order function with type 'forall a b. (a -> b) -> a -> b',
+-- which is the polymorphic apply function that works for any types a and b.
+typeLambda :: [Name] -> Term -> Term
+typeLambda vars body = L.foldl (\b v -> TermTypeLambda $ TypeLambda v b) body vars
+
 -- | Apply type arguments to a polymorphic term
 -- Example: typeApplication (var "map") [Types.int32, Types.string]
 -- This instantiates a polymorphic function with concrete types.
@@ -116,15 +125,6 @@ primitive = TermFunction . FunctionPrimitive
 -- the example would instantiate it to '(int32 -> string) -> list int32 -> list string'.
 typeApplication :: Term -> [Type] -> Term
 typeApplication term types = L.foldl (\t ty -> TermTypeApplication $ TypedTerm t ty) term types
-
--- | Create a type abstraction (universal quantification)
--- Example: typeAbstraction [Name "a", Name "b"] (lambdaTyped "f" (Types.function (Types.var "a") (Types.var "b"))
---                                               (lambdaTyped "x" (Types.var "a") (var "f" @@ var "x")))
--- This creates a polymorphic term with type variables.
--- The example creates a higher-order function with type 'forall a b. (a -> b) -> a -> b',
--- which is the polymorphic apply function that works for any types a and b.
-typeAbstraction :: [Name] -> Term -> Term
-typeAbstraction vars body = L.foldl (\b v -> TermTypeAbstraction $ TypeAbstraction v b) body vars
 
 -- * Literal values
 

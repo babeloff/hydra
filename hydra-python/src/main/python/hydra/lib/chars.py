@@ -1,31 +1,31 @@
 """Python implementations of hydra.lib.chars primitives."""
 
 
-def is_alpha_num(c: int) -> bool:
-    """Check if a character is alphanumeric."""
-    return chr(c).isalnum()
+def is_alpha_num(value: int) -> bool:
+    """Check if a character (as int) is alphanumeric."""
+    return chr(value).isalnum()
 
 
-def is_lower(c: int) -> bool:
-    """Check if a character is lowercase."""
-    return chr(c).islower()
+def is_lower(value: int) -> bool:
+    """Check if a character (as int) is lowercase."""
+    return chr(value).islower()
 
 
-def is_space(c: int) -> bool:
-    """Check if a character is a whitespace character."""
-    return chr(c).isspace()
+def is_space(value: int) -> bool:
+    """Check if a character (as int) is whitespace."""
+    return chr(value).isspace()
 
 
-def is_upper(c: int) -> bool:
-    """Check if a character is uppercase."""
-    return chr(c).isupper()
+def is_upper(value: int) -> bool:
+    """Check if a character (as int) is uppercase."""
+    return chr(value).isupper()
 
 
-def to_lower(c: int) -> int:
-    """Convert a character to lowercase."""
-    return ord(chr(c).lower())
+def to_lower(value: int) -> int:
+    """Convert a character (as int) to lowercase, returning the int value."""
+    return ord(chr(value).lower())
 
 
-def to_upper(c: int) -> int:
-    """Convert a character to uppercase."""
-    return ord(chr(c).upper())
+def to_upper(value: int) -> int:
+    """Convert a character (as int) to uppercase, returning the int value."""
+    return ord(chr(value).upper())

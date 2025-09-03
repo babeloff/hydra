@@ -80,7 +80,7 @@ import qualified Data.Set                                   as S
 import qualified Data.Maybe                                 as Y
 
 
-pythonLanguageDefinition :: String -> TTerm a -> TElement a
+pythonLanguageDefinition :: String -> TTerm a -> TBinding a
 pythonLanguageDefinition = definitionInModule pythonLanguageModule
 
 pythonLanguageModule :: Module
@@ -90,7 +90,7 @@ pythonLanguageModule = Module (Namespace "hydra.ext.python.language")
   KernelTypes.kernelTypesModules $
   Just "Language constraints and reserved words for Python 3"
 
-pythonLanguageDef :: TElement Language
+pythonLanguageDef :: TBinding Language
 pythonLanguageDef = pythonLanguageDefinition "pythonLanguage" $
     doc "Language constraints for Python 3" $ lets [
     "eliminationVariants">: Sets.fromList $ list [ -- TODO: verify whether all are supported
@@ -105,14 +105,16 @@ pythonLanguageDef = pythonLanguageDefinition "pythonLanguage" $
       Mantle.literalVariantInteger, -- (see integer types)
       Mantle.literalVariantString], -- str
     "floatTypes">: Sets.fromList $ list [
-      Core.floatTypeFloat64], -- Python has only one floating-point type
+      Core.floatTypeBigfloat, -- Decimal. mpmath's mpf type would be another option.
+      Core.floatTypeFloat64], -- float
     "functionVariants">: Sets.fromList $ list [
       Mantle.functionVariantElimination,
       Mantle.functionVariantLambda,
       Mantle.functionVariantPrimitive],
     "integerTypes">: Sets.fromList $ list [
-      Core.integerTypeBigint], -- Python has only one integer type
+      Core.integerTypeBigint], -- Python has only one built-in integer type
     "termVariants">: Sets.fromList $ list [ -- TODO: verify whether all are supported
+      Mantle.termVariantAnnotated,
       Mantle.termVariantApplication,
       Mantle.termVariantFunction,
       Mantle.termVariantLet,
@@ -123,8 +125,10 @@ pythonLanguageDef = pythonLanguageDefinition "pythonLanguage" $
       Mantle.termVariantProduct,
       Mantle.termVariantRecord,
       Mantle.termVariantSet,
+      Mantle.termVariantTypeApplication,
+      Mantle.termVariantTypeLambda,
       Mantle.termVariantUnion,
-      -- TODO: TermVariantUnit, mapping to Python's None
+      Mantle.termVariantUnit,
       Mantle.termVariantVariable,
       Mantle.termVariantWrap],
     "typeVariants">: Sets.fromList $ list [ -- TODO: verify whether all are supported
@@ -140,7 +144,7 @@ pythonLanguageDef = pythonLanguageDefinition "pythonLanguage" $
       Mantle.typeVariantRecord,
       Mantle.typeVariantSet,
       Mantle.typeVariantUnion,
-      -- TODO: TypeVariantUnit, mapping to Python's NoneType
+      Mantle.typeVariantUnit,
       Mantle.typeVariantVariable,
       Mantle.typeVariantWrap],
     "typePredicate">: constant true] $ -- TODO: verify whether all are supported
@@ -156,7 +160,7 @@ pythonLanguageDef = pythonLanguageDefinition "pythonLanguage" $
         (var "typeVariants")
         (var "typePredicate"))
 
-pythonReservedWordsDef :: TElement (S.Set String)
+pythonReservedWordsDef :: TBinding (S.Set String)
 pythonReservedWordsDef = pythonLanguageDefinition "pythonReservedWords" $
   doc "A set of reserved words in Python" $
   lets [

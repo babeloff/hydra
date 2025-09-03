@@ -191,10 +191,10 @@ module_ = Module ns elements [] [module_] $ -- Note: hydra.core uniquely takes i
       def "Let" $
         doc "A set of (possibly recursive) 'let' bindings together with an environment in which they are bound" $
         record [
-          "bindings">: list $ core "LetBinding",
+          "bindings">: list $ core "Binding",
           "environment">: core "Term"],
 
-      def "LetBinding" $
+      def "Binding" $
         doc "A field with an optional type scheme, used to bind variables to terms in a 'let' expression" $
         record [
           "name">: core "Name",
@@ -314,12 +314,12 @@ module_ = Module ns elements [] [module_] $ -- Note: hydra.core uniquely takes i
           "sum">:
             doc "A variant tuple" $
             core "Sum",
-          "typeAbstraction">:
-            doc "A System F type abstraction term" $
-            core "TypeAbstraction",
           "typeApplication">:
             doc "A System F type application term" $
             core "TypedTerm",
+          "typeLambda">:
+            doc "A System F type abstraction term" $
+            core "TypeLambda",
           "union">:
             doc "An injection; an instance of a union type" $
             core "Injection",
@@ -366,7 +366,7 @@ module_ = Module ns elements [] [module_] $ -- Note: hydra.core uniquely takes i
           "variable">: core "Name",
           "wrap">: core "WrappedType"],
 
-      def "TypeAbstraction" $
+      def "TypeLambda" $
         doc "A System F type abstraction term" $
         record [
           "parameter">:

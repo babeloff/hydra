@@ -85,12 +85,12 @@ termToDotStmts namespaces term = fst $ encode Nothing False M.empty Nothing ([],
           where
             (stmts1, visited2) = L.foldl addBinding (selfStmts, selfVisited) bindings
               where
-                addBinding (stmts, visited) (LetBinding name trm _) = encode (Just (lab, NodeStyleElement)) True ids1 (Just selfId) (stmts, visited) (TermAccessorLetBinding name, trm)
+                addBinding (stmts, visited) (Binding name trm _) = encode (Just (lab, NodeStyleElement)) True ids1 (Just selfId) (stmts, visited) (TermAccessorLetBinding name, trm)
                   where
                     lab = Dot.unId $ Y.fromJust $ M.lookup name ids1
             (ids1, visited1) = L.foldl addBinding (ids, visited) bindings
               where
-                addBinding (ids, visited) (LetBinding name trm _) = (M.insert name (Dot.Id lab) ids, S.insert lab visited)
+                addBinding (ids, visited) (Binding name trm _) = (M.insert name (Dot.Id lab) ids, S.insert lab visited)
                   where
                     (lab, style) = labelOf visited trm
         TermVariable name -> case M.lookup name ids of
@@ -156,7 +156,7 @@ termLabel compact namespaces term = case term of
     TermOptional _ -> simpleLabel $ if compact then "opt" else "optional"
     TermProduct _ -> simpleLabel $ if compact then "\x2227" else "product"
     TermRecord (Record name _) -> simpleLabel $ "\x2227" ++ Names.compactName namespaces name
-    TermTypeAbstraction (TypeAbstraction v term1) -> simpleLabel "tyabs"
+    TermTypeLambda (TypeLambda v term1) -> simpleLabel "tyabs"
     TermTypeApplication (TypedTerm term _) -> simpleLabel "tyapp"
     TermUnion (Injection tname _) -> simpleLabel $ "\x22BB" ++ Names.compactName namespaces tname
     TermVariable name -> simpleLabel $ Names.compactName namespaces name

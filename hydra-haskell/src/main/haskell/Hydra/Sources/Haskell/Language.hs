@@ -79,7 +79,7 @@ import qualified Data.Set                                   as S
 import qualified Data.Maybe                                 as Y
 
 
-haskellLanguageDefinition :: String -> TTerm a -> TElement a
+haskellLanguageDefinition :: String -> TTerm a -> TBinding a
 haskellLanguageDefinition = definitionInModule haskellLanguageModule
 
 haskellLanguageModule :: Module
@@ -89,9 +89,14 @@ haskellLanguageModule = Module (Namespace "hydra.ext.haskell.language")
   KernelTypes.kernelTypesModules $
   Just "Language constraints and reserved words for Haskell"
 
-haskellLanguageDef :: TElement Language
+haskellLanguageDef :: TBinding Language
 haskellLanguageDef = haskellLanguageDefinition "haskellLanguage" $
   doc "Language constraints for Haskell" $ lets [
+  "eliminationVariants">: Sets.fromList $ list [
+    Mantle.eliminationVariantProduct,
+    Mantle.eliminationVariantRecord,
+    Mantle.eliminationVariantUnion,
+    Mantle.eliminationVariantWrap],
   "literalVariants">: Sets.fromList $ list [
     Mantle.literalVariantBoolean,
     Mantle.literalVariantFloat,
@@ -101,6 +106,10 @@ haskellLanguageDef = haskellLanguageDefinition "haskellLanguage" $
     -- Bigfloat is excluded for now
     Core.floatTypeFloat32, -- Float
     Core.floatTypeFloat64], -- Double
+  "functionVariants">: Sets.fromList $ list [
+    Mantle.functionVariantElimination,
+    Mantle.functionVariantLambda,
+    Mantle.functionVariantPrimitive],
   "integerTypes">: Sets.fromList $ list [
     Core.integerTypeBigint, -- Integer
     Core.integerTypeInt8, -- Int8
@@ -151,7 +160,7 @@ haskellLanguageDef = haskellLanguageDefinition "haskellLanguage" $
       (var "typeVariants")
       (var "typePredicate"))
 
-reservedWordsDef :: TElement (S.Set String)
+reservedWordsDef :: TBinding (S.Set String)
 reservedWordsDef = haskellLanguageDefinition "reservedWords" $
   doc ("Created on 2025-02-28 using GHCi 9.6.6\n\n"
     <> "You can reproduce these lists of symbols by issuing the command `:browse Prelude` in GHCi, pasting the results into\n"

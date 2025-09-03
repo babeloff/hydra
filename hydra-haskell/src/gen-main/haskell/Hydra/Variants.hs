@@ -4,7 +4,6 @@ module Hydra.Variants where
 
 import qualified Hydra.Core as Core
 import qualified Hydra.Lib.Lists as Lists
-import qualified Hydra.Lib.Maps as Maps
 import qualified Hydra.Mantle as Mantle
 import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
 import qualified Data.Int as I
@@ -133,6 +132,17 @@ literalTypeVariant x = case x of
   Core.LiteralTypeInteger _ -> Mantle.LiteralVariantInteger
   Core.LiteralTypeString -> Mantle.LiteralVariantString
 
+-- | All literal types, in a canonical order
+literalTypes :: [Core.LiteralType]
+literalTypes = (Lists.concat [
+  [
+    Core.LiteralTypeBinary,
+    Core.LiteralTypeBoolean],
+  Lists.map (\x -> Core.LiteralTypeFloat x) floatTypes,
+  Lists.map (\x -> Core.LiteralTypeInteger x) integerTypes,
+  [
+    Core.LiteralTypeString]])
+
 -- | Find the literal variant (constructor) for a given literal value
 literalVariant :: (Core.Literal -> Mantle.LiteralVariant)
 literalVariant arg_ = (literalTypeVariant (literalType arg_))
@@ -161,8 +171,8 @@ termVariant x = case x of
   Core.TermRecord _ -> Mantle.TermVariantRecord
   Core.TermSet _ -> Mantle.TermVariantSet
   Core.TermSum _ -> Mantle.TermVariantSum
-  Core.TermTypeAbstraction _ -> Mantle.TermVariantTypeAbstraction
   Core.TermTypeApplication _ -> Mantle.TermVariantTypeApplication
+  Core.TermTypeLambda _ -> Mantle.TermVariantTypeLambda
   Core.TermUnion _ -> Mantle.TermVariantUnion
   Core.TermUnit -> Mantle.TermVariantUnit
   Core.TermVariable _ -> Mantle.TermVariantVariable
@@ -182,7 +192,7 @@ termVariants = [
   Mantle.TermVariantRecord,
   Mantle.TermVariantSet,
   Mantle.TermVariantSum,
-  Mantle.TermVariantTypeAbstraction,
+  Mantle.TermVariantTypeLambda,
   Mantle.TermVariantTypeApplication,
   Mantle.TermVariantUnion,
   Mantle.TermVariantUnit,
@@ -228,13 +238,3 @@ typeVariants = [
   Mantle.TypeVariantUnion,
   Mantle.TypeVariantUnit,
   Mantle.TypeVariantVariable]
-
-fieldMap :: ([Core.Field] -> M.Map Core.Name Core.Term)
-fieldMap fields = (Maps.fromList (Lists.map toPair fields)) 
-  where 
-    toPair = (\f -> (Core.fieldName f, (Core.fieldTerm f)))
-
-fieldTypeMap :: ([Core.FieldType] -> M.Map Core.Name Core.Type)
-fieldTypeMap fields = (Maps.fromList (Lists.map toPair fields)) 
-  where 
-    toPair = (\f -> (Core.fieldTypeName f, (Core.fieldTypeType f)))

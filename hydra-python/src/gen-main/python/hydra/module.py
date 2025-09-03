@@ -3,7 +3,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from hydra.dsl.python import FrozenDict, frozenlist, Node
-from typing import Annotated, Generic, TypeVar
+from typing import Annotated, Generic, Tuple, TypeVar
 import hydra.core
 import hydra.graph
 
@@ -43,7 +43,7 @@ class Module:
     """A logical collection of elements in the same namespace, having dependencies on zero or more other modules."""
     
     namespace: Annotated[Namespace, "A common prefix for all element names in the module"]
-    elements: Annotated[frozenlist[hydra.graph.Element], "The elements defined in this module"]
+    elements: Annotated[frozenlist[hydra.core.Binding], "The elements defined in this module"]
     term_dependencies: Annotated[frozenlist[Module], "Any modules which the term expressions of this module directly depend upon"]
     type_dependencies: Annotated[frozenlist[Module], "Any modules which the type expressions of this module directly depend upon"]
     description: Annotated[str | None, "An optional human-readable description of the module"]
@@ -64,7 +64,7 @@ NAMESPACE__NAME = hydra.core.Name("hydra.module.Namespace")
 class Namespaces(Generic[N]):
     """A mapping from namespaces to values of type n, with a focus on one namespace."""
     
-    focus: "type = TypeProduct [TypeVariable (Name {unName = \"hydra.module.Namespace\"}),TypeVariable (Name {unName = \"n\"})]"
+    focus: Tuple[Namespace, N]
     mapping: FrozenDict[Namespace, N]
 
 NAMESPACES__NAME = hydra.core.Name("hydra.module.Namespaces")

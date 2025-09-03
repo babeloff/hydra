@@ -15,22 +15,7 @@ comparisonEqualTo = unitVariant _Comparison _Comparison_equalTo
 comparisonGreaterThan :: TTerm Comparison
 comparisonGreaterThan = unitVariant _Comparison _Comparison_greaterThan
 
-element :: TTerm Name -> TTerm Term -> TTerm (Maybe TypeScheme) -> TTerm Element
-element name term mtyp = record _Element [
-  _Element_name>>: name,
-  _Element_term>>: term,
-  _Element_type>>: mtyp]
-
-elementName :: TTerm Element -> TTerm Name
-elementName el = project _Element _Element_name @@ el
-
-elementTerm :: TTerm Element -> TTerm Term
-elementTerm el = project _Element _Element_term @@ el
-
-elementType :: TTerm Element -> TTerm (Maybe TypeScheme)
-elementType el = project _Element _Element_type @@ el
-
-graph :: TTerm (M.Map Name Element)
+graph :: TTerm (M.Map Name Binding)
     -> TTerm (M.Map Name (Maybe Term))
     -> TTerm (M.Map Name TypeScheme)
     -> TTerm Term
@@ -45,7 +30,7 @@ graph elements environment types body primitives schema = record _Graph [
     _Graph_primitives>>: primitives,
     _Graph_schema>>: schema]
 
-graphElements :: TTerm Graph -> TTerm (M.Map Name Element)
+graphElements :: TTerm Graph -> TTerm (M.Map Name Binding)
 graphElements g = project _Graph _Graph_elements @@ g
 
 graphEnvironment :: TTerm Graph -> TTerm (M.Map Name (Maybe Term))
@@ -63,7 +48,7 @@ graphPrimitives g = project _Graph _Graph_primitives @@ g
 graphSchema :: TTerm Graph -> TTerm (Maybe Graph)
 graphSchema g = project _Graph _Graph_schema @@ g
 
-graphWithElements :: TTerm Graph -> TTerm (M.Map Name Element) -> TTerm Graph
+graphWithElements :: TTerm Graph -> TTerm (M.Map Name Binding) -> TTerm Graph
 graphWithElements g newElements = graph
     newElements
     (Hydra.Dsl.Graph.graphEnvironment g)
@@ -117,6 +102,15 @@ graphWithSchema g newSchema = graph
     (Hydra.Dsl.Graph.graphPrimitives g)
     newSchema
 
+primitive :: TTerm Name
+    -> TTerm TypeScheme
+    -> TTerm ([Term] -> Flow Graph Term)
+    -> TTerm Primitive
+primitive name typ implementation = record _Primitive [
+    _Primitive_name>>: name,
+    _Primitive_type>>: typ,
+    _Primitive_implementation>>: implementation]
+
 primitiveName :: TTerm Primitive -> TTerm Name
 primitiveName p = project _Primitive _Primitive_name @@ p
 
@@ -125,6 +119,12 @@ primitiveType p = project _Primitive _Primitive_type @@ p
 
 primitiveImplementation :: TTerm Primitive -> TTerm ([Term] -> Flow Graph Term)
 primitiveImplementation p = project _Primitive _Primitive_implementation @@ p
+
+primitiveWithType :: TTerm Primitive -> TTerm TypeScheme -> TTerm Primitive
+primitiveWithType p newType = Hydra.Dsl.Graph.primitive
+    (Hydra.Dsl.Graph.primitiveName p)
+    newType
+    (Hydra.Dsl.Graph.primitiveImplementation p)
 
 typeClassEquality :: TTerm TypeClass
 typeClassEquality = unitVariant _TypeClass _TypeClass_equality

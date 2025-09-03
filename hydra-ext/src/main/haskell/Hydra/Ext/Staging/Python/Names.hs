@@ -18,7 +18,8 @@ _useFutureAnnotations_ = True
 
 data PythonEnvironment = PythonEnvironment {
   pythonEnvironmentNamespaces :: Namespaces Py.DottedName,
-  pythonEnvironmentBoundTypeVariables :: ([Name], M.Map Name Py.Name)}
+  pythonEnvironmentBoundTypeVariables :: ([Name], M.Map Name Py.Name),
+  pythonEnvironmentTypeContext :: TypeContext}
 
 encodeConstantForFieldName :: PythonEnvironment -> Name -> Name -> Py.Name
 encodeConstantForFieldName _ tname fname = Py.Name $
@@ -70,7 +71,7 @@ sanitizePythonName :: String -> String
 sanitizePythonName = sanitizeWithUnderscores pythonReservedWords
 
 termVariableReference :: PythonEnvironment -> Name -> Py.Expression
-termVariableReference = variableReference CaseConventionLowerSnake True
+termVariableReference = variableReference CaseConventionLowerSnake False
 
 typeVariableReference :: PythonEnvironment -> Name -> Py.Expression
 typeVariableReference = variableReference CaseConventionPascal False
@@ -80,9 +81,12 @@ variantName isQualified env tname fname = encodeName isQualified CaseConventionP
   $ Name $ unName tname ++ capitalize (unName fname)
 
 variableReference :: CaseConvention -> Bool -> PythonEnvironment -> Name -> Py.Expression
-variableReference conv quoted env name = if quoted && Y.isJust (namespaceOf name)
+variableReference conv quoted env name = if quoted && sameNamespace
     then doubleQuotedString $ Py.unName pyName
     else unquoted
   where
     pyName = encodeName True conv env name
     unquoted = pyNameToPyExpression pyName
+    sameNamespace = case namespaceOf name of
+      Nothing -> False
+      Just ns -> ns == fst (namespacesFocus $ pythonEnvironmentNamespaces env)

@@ -233,8 +233,8 @@ untypedTermToJson term =
       let bindings = (Core.letBindings v1) 
           env = (Core.letEnvironment v1)
           fromBinding = (\b -> Core.Field {
-                  Core.fieldName = (Core.letBindingName b),
-                  Core.fieldTerm = (Core.letBindingTerm b)})
+                  Core.fieldName = (Core.bindingName b),
+                  Core.fieldTerm = (Core.bindingTerm b)})
       in (asRecord [
         Core.Field {
           Core.fieldName = (Core.Name "bindings"),
@@ -270,13 +270,13 @@ untypedTermToJson term =
       Core.Field {
         Core.fieldName = (Core.Name "term"),
         Core.fieldTerm = (Core.sumTerm v1)}])
-    Core.TermTypeAbstraction v1 -> (asRecord [
+    Core.TermTypeLambda v1 -> (asRecord [
       Core.Field {
         Core.fieldName = (Core.Name "parameter"),
-        Core.fieldTerm = (Core.TermVariable (Core.typeAbstractionParameter v1))},
+        Core.fieldTerm = (Core.TermVariable (Core.typeLambdaParameter v1))},
       Core.Field {
         Core.fieldName = (Core.Name "body"),
-        Core.fieldTerm = (Core.typeAbstractionBody v1)}])
+        Core.fieldTerm = (Core.typeLambdaBody v1)}])
     Core.TermTypeApplication v1 -> (asRecord [
       Core.Field {
         Core.fieldName = (Core.Name "term"),

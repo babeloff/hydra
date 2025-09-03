@@ -167,6 +167,14 @@ testExpandLambdas g = do
           (lets ["foo">: splitOn] $ var "foo")
           (lets ["foo">: lambda "v1" $ lambda "v2" $ splitOn @@ var "v1" @@ var "v2"] $ var "foo")
 
+    H.describe "Check that complete applications are no-ops" $ do
+      H.it "test #1" $
+        noChange
+          (toLower @@ "FOO")
+      H.it "test #2" $
+        noChange
+          (splitOn @@ "foo" @@ "bar")
+
     H.describe "Try other subterms" $ do
       H.it "test #1" $
         expandsTo
@@ -182,9 +190,10 @@ testExpandLambdas g = do
     length = primitive $ Name "hydra.lib.strings.length"
     splitOn = primitive $ Name "hydra.lib.strings.splitOn"
     toLower = primitive $ Name "hydra.lib.strings.toLower"
+    fromList = primitive $ Name "hydra.lib.sets.fromList"
     expandsTo termBefore termAfter = do
        let result = expandLambdas g termBefore
-       H.shouldBe (show result) (show termAfter)
+       H.shouldBe (ShowCore.term result) (ShowCore.term termAfter)
     noChange term = expandsTo term term
 
 -- TODO: merge this into expandLambdas
@@ -312,7 +321,7 @@ testFlattenLetTerms = do
   where
     makeLet body pairs = TermLet $ Let (makeBinding <$> pairs) body
       where
-        makeBinding (k, v) = LetBinding (Name k) v Nothing
+        makeBinding (k, v) = Binding (Name k) v Nothing
     letTerm1 = makeLet (TermList [Terms.var "x", Terms.var "y"]) [
       ("x", Terms.int32 1),
       ("y", Terms.int32 2)]
@@ -428,7 +437,7 @@ testNormalizeTypeVariablesInTerm = do
     normalize = normalizeTypeVariablesInTerm
     tlet env triples = TermLet $ Let (toBinding <$> triples) env
       where
-        toBinding (key, mts, value) = LetBinding (Name key) value mts
+        toBinding (key, mts, value) = Binding (Name key) value mts
     t0 = Types.var "t0"
     t1 = Types.var "t1"
     t2 = Types.var "t2"
@@ -570,7 +579,7 @@ testTopologicalSortBindings = do
           [["c"], ["a", "b"], ["d"]]
   where
     checkBindings bindings expectedVars = H.shouldBe
-        (topologicalSortBindings bindingMap)
+        (topologicalSortBindingMap bindingMap)
         expected
       where
         bindingMap = M.mapKeys (\k -> Name k) $ M.fromList bindings

@@ -60,12 +60,12 @@ substituteInTerm subst =
                         Core.lambdaBody = (substituteInTerm subst2 (Core.lambdaBody l))})))) 
                   withLet = (\lt ->  
                           let bindings = (Core.letBindings lt) 
-                              names = (Sets.fromList (Lists.map Core.letBindingName bindings))
+                              names = (Sets.fromList (Lists.map Core.bindingName bindings))
                               subst2 = (Typing.TermSubst (Maps.filterWithKey (\k -> \v -> Logic.not (Sets.member k names)) s))
-                              rewriteBinding = (\b -> Core.LetBinding {
-                                      Core.letBindingName = (Core.letBindingName b),
-                                      Core.letBindingTerm = (substituteInTerm subst2 (Core.letBindingTerm b)),
-                                      Core.letBindingType = (Core.letBindingType b)})
+                              rewriteBinding = (\b -> Core.Binding {
+                                      Core.bindingName = (Core.bindingName b),
+                                      Core.bindingTerm = (substituteInTerm subst2 (Core.bindingTerm b)),
+                                      Core.bindingType = (Core.bindingType b)})
                           in (Core.TermLet (Core.Let {
                             Core.letBindings = (Lists.map rewriteBinding bindings),
                             Core.letEnvironment = (substituteInTerm subst2 (Core.letEnvironment lt))})))
@@ -109,10 +109,10 @@ substTypesInTerm subst =
                       Core.lambdaDomain = (Optionals.map (substInType subst) (Core.lambdaDomain l)),
                       Core.lambdaBody = (Core.lambdaBody l)}))))
               forLet = (\l ->  
-                      let rewriteBinding = (\b -> Core.LetBinding {
-                              Core.letBindingName = (Core.letBindingName b),
-                              Core.letBindingTerm = (Core.letBindingTerm b),
-                              Core.letBindingType = (Optionals.map (substInTypeScheme subst) (Core.letBindingType b))})
+                      let rewriteBinding = (\b -> Core.Binding {
+                              Core.bindingName = (Core.bindingName b),
+                              Core.bindingTerm = (Core.bindingTerm b),
+                              Core.bindingType = (Optionals.map (substInTypeScheme subst) (Core.bindingType b))})
                       in (recurse (Core.TermLet (Core.Let {
                         Core.letBindings = (Lists.map rewriteBinding (Core.letBindings l)),
                         Core.letEnvironment = (Core.letEnvironment l)}))))
@@ -120,16 +120,16 @@ substTypesInTerm subst =
                       Core.tupleProjectionArity = (Core.tupleProjectionArity tp),
                       Core.tupleProjectionIndex = (Core.tupleProjectionIndex tp),
                       Core.tupleProjectionDomain = (Optionals.map (\types -> Lists.map (substInType subst) types) (Core.tupleProjectionDomain tp))})))))
-              forTypeAbstraction = (\ta ->  
-                      let param = (Core.typeAbstractionParameter ta) 
+              forTypeLambda = (\ta ->  
+                      let param = (Core.typeLambdaParameter ta) 
                           subst2 = (Typing.TypeSubst (Maps.remove param (Typing.unTypeSubst subst)))
-                      in (Core.TermTypeAbstraction (Core.TypeAbstraction {
-                        Core.typeAbstractionParameter = param,
-                        Core.typeAbstractionBody = (substTypesInTerm subst2 (Core.typeAbstractionBody ta))})))
+                      in (Core.TermTypeLambda (Core.TypeLambda {
+                        Core.typeLambdaParameter = param,
+                        Core.typeLambdaBody = (substTypesInTerm subst2 (Core.typeLambdaBody ta))})))
           in ((\x -> case x of
             Core.TermFunction v1 -> (forFunction v1)
             Core.TermLet v1 -> (forLet v1)
-            Core.TermTypeAbstraction v1 -> (forTypeAbstraction v1)
+            Core.TermTypeLambda v1 -> (forTypeLambda v1)
             Core.TermTypeApplication v1 -> (recurse (Core.TermTypeApplication (Core.TypedTerm {
               Core.typedTermTerm = (Core.typedTermTerm v1),
               Core.typedTermType = (substInType subst (Core.typedTermType v1))})))

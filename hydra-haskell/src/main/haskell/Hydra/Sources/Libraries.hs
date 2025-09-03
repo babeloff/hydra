@@ -101,28 +101,40 @@ hydraLibEquality = standardLibrary _hydra_lib_equality [
 _hydra_lib_flows :: Namespace
 _hydra_lib_flows = Namespace "hydra.lib.flows"
 
-_flows_apply            = qname _hydra_lib_flows "apply" :: Name
-_flows_bind             = qname _hydra_lib_flows "bind" :: Name
-_flows_fail             = qname _hydra_lib_flows "fail" :: Name
-_flows_map              = qname _hydra_lib_flows "map" :: Name
-_flows_mapList          = qname _hydra_lib_flows "mapList" :: Name
-_flows_pure             = qname _hydra_lib_flows "pure" :: Name
-_flows_sequence         = qname _hydra_lib_flows "sequence" :: Name
-_flows_traverseOptional = qname _hydra_lib_flows "traverseOptional" :: Name
+_flows_apply       = qname _hydra_lib_flows "apply" :: Name
+_flows_bind        = qname _hydra_lib_flows "bind" :: Name
+_flows_fail        = qname _hydra_lib_flows "fail" :: Name
+_flows_map         = qname _hydra_lib_flows "map" :: Name
+_flows_mapElems    = qname _hydra_lib_flows "mapElems" :: Name
+_flows_mapKeys     = qname _hydra_lib_flows "mapKeys" :: Name
+_flows_mapList     = qname _hydra_lib_flows "mapList" :: Name
+_flows_mapOptional = qname _hydra_lib_flows "mapOptional" :: Name
+_flows_mapSet      = qname _hydra_lib_flows "mapSet" :: Name
+_flows_pure        = qname _hydra_lib_flows "pure" :: Name
+_flows_sequence    = qname _hydra_lib_flows "sequence" :: Name
 
 hydraLibFlows :: Library
 hydraLibFlows = standardLibrary _hydra_lib_flows [
-    prim2 _flows_apply    Flows.apply    ["s", "x", "y"] (flow s (function x y)) (flow s x) (flow s y),
-    prim2 _flows_bind     Flows.bind     ["s", "x", "y"] (flow s x) (function x (flow s y)) (flow s y),
-    prim1 _flows_fail     Flows.fail     ["s", "x"]      string (flow s x),
-    prim2 _flows_map      Flows.map      ["s", "x", "y"] (function x y) (flow s x) (flow s y),
-    prim2 _flows_mapList  Flows.mapList  ["s", "x", "y"] (function x (flow s y)) (list x) (flow s (list y)),
-    prim1 _flows_pure     Flows.pure     ["s", "x"]      x (flow s x),
-    prim1 _flows_sequence Flows.sequence ["s", "x"]      (list (flow s x)) (flow s (list x)),
-    prim2 _flows_traverseOptional Flows.traverseOptional ["s", "x", "y"] (function x $ flow s y) (optional x) (flow s $ optional y)]
+    prim2 _flows_apply       Flows.apply    ["s", "x", "y"]        (flow s (function x y)) (flow s x) (flow s y),
+    prim2 _flows_bind        Flows.bind     ["s", "x", "y"]        (flow s x) (function x (flow s y)) (flow s y),
+    prim1 _flows_fail        Flows.fail     ["s", "x"]             string (flow s x),
+    prim2 _flows_map         Flows.map      ["s", "x", "y"]        (function x y) (flow s x) (flow s y),
+    prim2 _flows_mapElems    Flows.mapElems ["s", "k", "v1", "v2"] (function v1 (flow s v2)) (Prims.map k v1) (flow s (Prims.map k v2)),
+    prim2 _flows_mapKeys     Flows.mapKeys  ["s", "k1", "k2", "v"] (function k1 (flow s k2)) (Prims.map k1 v) (flow s (Prims.map k2 v)),
+    prim2 _flows_mapList     Flows.mapList  ["s", "x", "y"]        (function x (flow s y)) (list x) (flow s (list y)),
+    prim2 _flows_mapOptional Flows.mapOptional ["s", "x", "y"]     (function x $ flow s y) (optional x) (flow s $ optional y),
+    prim2 _flows_mapSet      Flows.mapSet   ["s", "x", "y"]        (function x (flow s y)) (set x) (flow s (set y)),
+    prim1 _flows_pure        Flows.pure     ["s", "x"]             x (flow s x),
+    prim1 _flows_sequence    Flows.sequence ["s", "x"]             (list (flow s x)) (flow s (list x))]
   where
     s = variable "s"
+    k = variable "k"
+    k1 = variable "k1"
+    k2 = variable "k2"
     x = variable "x"
+    v = variable "v"
+    v1 = variable "v1"
+    v2 = variable "v2"
     y = variable "y"
 
 -- * hydra.lib.lists primitives
@@ -209,8 +221,8 @@ hydraLibLists = standardLibrary _hydra_lib_lists [
 -- | Interpreted implementation of hydra.lib.lists.apply
 applyInterp :: Term -> Term -> Flow Graph Term
 applyInterp funs' args' = do
-    funs <- ExtractCore.list Prelude.pure funs'
-    args <- ExtractCore.list Prelude.pure args'
+    funs <- ExtractCore.list funs'
+    args <- ExtractCore.list args'
     return $ Terms.list $ L.concat (helper args <$> funs)
   where
     helper args f = Terms.apply f <$> args
@@ -218,13 +230,13 @@ applyInterp funs' args' = do
 -- | Interpreted implementation of hydra.lib.lists.bind
 bindInterp :: Term -> Term -> Flow Graph Term
 bindInterp args' fun = do
-    args <- ExtractCore.list Prelude.pure args'
+    args <- ExtractCore.list args'
     return $ Terms.apply (Terms.primitive _lists_concat) (Terms.list $ Terms.apply fun <$> args)
 
 -- | Interpreted implementation of hydra.lib.lists.map
 mapInterp :: Term -> Term -> Flow Graph Term
 mapInterp fun args' = do
-    args <- ExtractCore.list Prelude.pure args'
+    args <- ExtractCore.list args'
     return $ Terms.list (Terms.apply fun <$> args)
 
 -- * hydra.lib.literals primitives

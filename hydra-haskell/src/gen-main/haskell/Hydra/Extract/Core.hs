@@ -13,7 +13,6 @@ import qualified Hydra.Lib.Literals as Literals
 import qualified Hydra.Lib.Logic as Logic
 import qualified Hydra.Lib.Maps as Maps
 import qualified Hydra.Lib.Optionals as Optionals
-import qualified Hydra.Lib.Sets as Sets
 import qualified Hydra.Lib.Strings as Strings
 import qualified Hydra.Monads as Monads
 import qualified Hydra.Rewriting as Rewriting
@@ -195,10 +194,10 @@ letBinding :: (String -> Core.Term -> Compute.Flow Graph.Graph Core.Term)
 letBinding n term =  
   let name = (Core.Name n)
   in (Flows.bind (letTerm term) (\letExpr ->  
-    let matchingBindings = (Lists.filter (\b -> Equality.equal (Core.unName (Core.letBindingName b)) (Core.unName name)) (Core.letBindings letExpr))
+    let matchingBindings = (Lists.filter (\b -> Equality.equal (Core.unName (Core.bindingName b)) (Core.unName name)) (Core.letBindings letExpr))
     in (Logic.ifElse (Lists.null matchingBindings) (Flows.fail (Strings.cat [
       "no such binding: ",
-      n])) (Logic.ifElse (Equality.equal (Lists.length matchingBindings) 1) (Flows.pure (Core.letBindingTerm (Lists.head matchingBindings))) (Flows.fail (Strings.cat [
+      n])) (Logic.ifElse (Equality.equal (Lists.length matchingBindings) 1) (Flows.pure (Core.bindingTerm (Lists.head matchingBindings))) (Flows.fail (Strings.cat [
       "multiple bindings named ",
       n]))))))
 
@@ -208,14 +207,18 @@ letTerm term0 = (Flows.bind (Lexical.stripAndDereferenceTerm term0) (\term -> (\
   Core.TermLet v1 -> (Flows.pure v1)
   _ -> (Monads.unexpected "let term" (Core_.term term))) term))
 
-list :: ((Core.Term -> Compute.Flow Graph.Graph t0) -> Core.Term -> Compute.Flow Graph.Graph [t0])
-list f term0 = (Flows.bind (Lexical.stripAndDereferenceTerm term0) (\term -> (\x -> case x of
-  Core.TermList v1 -> (Flows.mapList f v1)
-  _ -> (Monads.unexpected "list" (Core_.term term))) term))
+-- | Extract a list of terms from a term
+list :: (Core.Term -> Compute.Flow Graph.Graph [Core.Term])
+list term = (Flows.bind (Lexical.stripAndDereferenceTerm term) (\stripped -> (\x -> case x of
+  Core.TermList v1 -> (Flows.pure v1)
+  _ -> (Monads.unexpected "list" (Core_.term stripped))) stripped))
 
 -- | Extract the first element of a list term
 listHead :: (Core.Term -> Compute.Flow Graph.Graph Core.Term)
-listHead term = (Flows.bind (list Flows.pure term) (\l -> Logic.ifElse (Lists.null l) (Flows.fail "empty list") (Flows.pure (Lists.head l))))
+listHead term = (Flows.bind (list term) (\l -> Logic.ifElse (Lists.null l) (Flows.fail "empty list") (Flows.pure (Lists.head l))))
+
+listOf :: ((Core.Term -> Compute.Flow Graph.Graph t0) -> Core.Term -> Compute.Flow Graph.Graph [t0])
+listOf f term = (Flows.bind (list term) (\els -> Flows.mapList f els))
 
 listType :: (Core.Type -> Compute.Flow t0 Core.Type)
 listType typ =  
@@ -294,10 +297,14 @@ recordType ename typ =
       (Core.unName (Core.rowTypeTypeName v1))])))
     _ -> (Monads.unexpected "record type" (Core_.type_ typ))) stripped)
 
-set :: (Ord t0) => ((Core.Term -> Compute.Flow Graph.Graph t0) -> Core.Term -> Compute.Flow Graph.Graph (S.Set t0))
-set f term0 = (Flows.bind (Lexical.stripAndDereferenceTerm term0) (\term -> (\x -> case x of
-  Core.TermSet v1 -> (Flows.map Sets.fromList (Flows.mapList f (Sets.toList v1)))
-  _ -> (Monads.unexpected "set" (Core_.term term))) term))
+-- | Extract a set of terms from a term
+set :: (Core.Term -> Compute.Flow Graph.Graph (S.Set Core.Term))
+set term = (Flows.bind (Lexical.stripAndDereferenceTerm term) (\stripped -> (\x -> case x of
+  Core.TermSet v1 -> (Flows.pure v1)
+  _ -> (Monads.unexpected "set" (Core_.term stripped))) stripped))
+
+setOf :: (Ord t0) => ((Core.Term -> Compute.Flow Graph.Graph t0) -> Core.Term -> Compute.Flow Graph.Graph (S.Set t0))
+setOf f term = (Flows.bind (set term) (\els -> Flows.mapSet f els))
 
 setType :: (Core.Type -> Compute.Flow t0 Core.Type)
 setType typ =  

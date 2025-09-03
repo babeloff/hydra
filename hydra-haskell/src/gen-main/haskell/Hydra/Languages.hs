@@ -3,6 +3,7 @@
 module Hydra.Languages where
 
 import qualified Hydra.Coders as Coders
+import qualified Hydra.Core as Core
 import qualified Hydra.Lib.Sets as Sets
 import qualified Hydra.Variants as Variants
 import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
@@ -16,11 +17,21 @@ hydraLanguage :: Coders.Language
 hydraLanguage = Coders.Language {
   Coders.languageName = (Coders.LanguageName "hydra.core"),
   Coders.languageConstraints = Coders.LanguageConstraints {
-    Coders.languageConstraintsEliminationVariants = (Sets.fromList Variants.eliminationVariants),
-    Coders.languageConstraintsLiteralVariants = (Sets.fromList Variants.literalVariants),
-    Coders.languageConstraintsFloatTypes = (Sets.fromList Variants.floatTypes),
-    Coders.languageConstraintsFunctionVariants = (Sets.fromList Variants.functionVariants),
-    Coders.languageConstraintsIntegerTypes = (Sets.fromList Variants.integerTypes),
-    Coders.languageConstraintsTermVariants = (Sets.fromList Variants.termVariants),
-    Coders.languageConstraintsTypeVariants = (Sets.fromList Variants.typeVariants),
-    Coders.languageConstraintsTypes = (\_ -> True)}}
+    Coders.languageConstraintsEliminationVariants = eliminationVariants,
+    Coders.languageConstraintsLiteralVariants = literalVariants,
+    Coders.languageConstraintsFloatTypes = floatTypes,
+    Coders.languageConstraintsFunctionVariants = functionVariants,
+    Coders.languageConstraintsIntegerTypes = integerTypes,
+    Coders.languageConstraintsTermVariants = termVariants,
+    Coders.languageConstraintsTypeVariants = typeVariants,
+    Coders.languageConstraintsTypes = types}} 
+  where 
+    eliminationVariants = (Sets.fromList Variants.eliminationVariants)
+    literalVariants = (Sets.fromList Variants.literalVariants)
+    floatTypes = (Sets.fromList Variants.floatTypes)
+    functionVariants = (Sets.fromList Variants.functionVariants)
+    integerTypes = (Sets.fromList Variants.integerTypes)
+    termVariants = (Sets.fromList Variants.termVariants)
+    typeVariants = (Sets.fromList Variants.typeVariants)
+    types = (\t -> (\x -> case x of
+      _ -> True) t)

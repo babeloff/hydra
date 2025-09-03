@@ -239,28 +239,28 @@ lambdaBody l = Phantoms.project _Lambda _Lambda_body @@ l
 lambdaDomain :: TTerm Lambda -> TTerm (Maybe Type)
 lambdaDomain l = Phantoms.project _Lambda _Lambda_domain @@ l
 
-let_ :: TTerm [LetBinding] -> TTerm Term -> TTerm Let
+let_ :: TTerm [Binding] -> TTerm Term -> TTerm Let
 let_ bindings environment = Phantoms.record _Let [
   _Let_bindings>>: bindings,
   _Let_environment>>: environment]
 
-letBinding :: TTerm Name -> TTerm Term -> TTerm (Maybe TypeScheme) -> TTerm LetBinding
-letBinding name term mtype = Phantoms.record _LetBinding [
-  _LetBinding_name>>: name,
-  _LetBinding_term>>: term,
-  _LetBinding_type>>: mtype]
+binding :: TTerm Name -> TTerm Term -> TTerm (Maybe TypeScheme) -> TTerm Binding
+binding name term mtype = Phantoms.record _Binding [
+  _Binding_name>>: name,
+  _Binding_term>>: term,
+  _Binding_type>>: mtype]
 
-letBindings :: TTerm Let -> TTerm [LetBinding]
+letBindings :: TTerm Let -> TTerm [Binding]
 letBindings l = Phantoms.project _Let _Let_bindings @@ l
 
-letBindingName :: TTerm LetBinding -> TTerm Name
-letBindingName lb = Phantoms.project _LetBinding _LetBinding_name @@ lb
+bindingName :: TTerm Binding -> TTerm Name
+bindingName lb = Phantoms.project _Binding _Binding_name @@ lb
 
-letBindingTerm :: TTerm LetBinding -> TTerm Term
-letBindingTerm lb = Phantoms.project _LetBinding _LetBinding_term @@ lb
+bindingTerm :: TTerm Binding -> TTerm Term
+bindingTerm lb = Phantoms.project _Binding _Binding_term @@ lb
 
-letBindingType :: TTerm LetBinding -> TTerm (Y.Maybe TypeScheme)
-letBindingType lb = Phantoms.project _LetBinding _LetBinding_type @@ lb
+bindingType :: TTerm Binding -> TTerm (Y.Maybe TypeScheme)
+bindingType lb = Phantoms.project _Binding _Binding_type @@ lb
 
 letEnvironment :: TTerm Let -> TTerm Term
 letEnvironment l = Phantoms.project _Let _Let_environment @@ l
@@ -396,8 +396,8 @@ termSet = variant _Term _Term_set
 termSum :: TTerm Sum -> TTerm Term
 termSum = variant _Term _Term_sum
 
-termTypeAbstraction :: TTerm TypeAbstraction -> TTerm Term
-termTypeAbstraction = variant _Term _Term_typeAbstraction
+termTypeLambda :: TTerm TypeLambda -> TTerm Term
+termTypeLambda = variant _Term _Term_typeLambda
 
 termTypeApplication :: TTerm TypedTerm -> TTerm Term
 termTypeApplication = variant _Term _Term_typeApplication
@@ -429,16 +429,16 @@ tupleProjectionIndex tp = Phantoms.project _TupleProjection _TupleProjection_ind
 tupleProjectionDomain :: TTerm TupleProjection -> TTerm (Maybe [Type])
 tupleProjectionDomain tp = Phantoms.project _TupleProjection _TupleProjection_domain @@ tp
 
-typeAbstraction :: TTerm Name -> TTerm Term -> TTerm TypeAbstraction
-typeAbstraction parameter body = Phantoms.record _TypeAbstraction [
-  _TypeAbstraction_parameter>>: parameter,
-  _TypeAbstraction_body>>: body]
+typeLambda :: TTerm Name -> TTerm Term -> TTerm TypeLambda
+typeLambda parameter body = Phantoms.record _TypeLambda [
+  _TypeLambda_parameter>>: parameter,
+  _TypeLambda_body>>: body]
 
-typeAbstractionParameter :: TTerm TypeAbstraction -> TTerm Name
-typeAbstractionParameter ta = Phantoms.project _TypeAbstraction _TypeAbstraction_parameter @@ ta
+typeLambdaParameter :: TTerm TypeLambda -> TTerm Name
+typeLambdaParameter ta = Phantoms.project _TypeLambda _TypeLambda_parameter @@ ta
 
-typeAbstractionBody :: TTerm TypeAbstraction -> TTerm Term
-typeAbstractionBody ta = Phantoms.project _TypeAbstraction _TypeAbstraction_body @@ ta
+typeLambdaBody :: TTerm TypeLambda -> TTerm Term
+typeLambdaBody ta = Phantoms.project _TypeLambda _TypeLambda_body @@ ta
 
 typeAnnotated :: TTerm AnnotatedType -> TTerm Type
 typeAnnotated = variant _Type _Type_annotated
@@ -451,9 +451,6 @@ typeForall = variant _Type _Type_forall
 
 typeFunction :: TTerm FunctionType -> TTerm Type
 typeFunction = variant _Type _Type_function
-
-typeLambda :: TTerm ForallType -> TTerm Type
-typeLambda = variant _Type _Type_forall
 
 typeList :: TTerm Type -> TTerm Type
 typeList = variant _Type _Type_list

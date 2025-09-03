@@ -135,12 +135,12 @@ lambda = (Optionals.compose matchFunction matchLambda)
       Core.FunctionLambda v1 -> (Optionals.pure v1)
       _ -> Nothing)
 
-letBinding :: (Core.Name -> Core.Term -> Maybe Core.LetBinding)
+letBinding :: (Core.Name -> Core.Term -> Maybe Core.Binding)
 letBinding fname term = (Optionals.bind (Optionals.map Core.letBindings (letTerm term)) (letBindingWithKey fname))
 
-letBindingWithKey :: (Core.Name -> [Core.LetBinding] -> Maybe Core.LetBinding)
+letBindingWithKey :: (Core.Name -> [Core.Binding] -> Maybe Core.Binding)
 letBindingWithKey fname bindings =  
-  let matches = (Lists.filter (\b -> Equality.equal (Core.letBindingName b) fname) bindings)
+  let matches = (Lists.filter (\b -> Equality.equal (Core.bindingName b) fname) bindings)
   in (Logic.ifElse (Equality.equal 1 (Lists.length matches)) (Just (Lists.head matches)) Nothing)
 
 letTerm :: (Core.Term -> Maybe Core.Let)
@@ -166,7 +166,7 @@ map arg_ = ((\x -> case x of
 name :: (Core.Term -> Maybe Core.Name)
 name term = (Optionals.map (\s -> Core.Name s) (Optionals.bind (wrap (Core.Name "hydra.core.Name") term) string))
 
-nominal :: ((t1 -> Core.Name) -> (t1 -> t2) -> (t0 -> Maybe t1) -> Core.Name -> t0 -> Maybe t2)
+nominal :: ((t0 -> Core.Name) -> (t0 -> t1) -> (t2 -> Maybe t0) -> Core.Name -> t2 -> Maybe t1)
 nominal getName getB getA expected =  
   let namesEqual = (\n1 -> \n2 -> Equality.equal (Core.unName n1) (Core.unName n2))
   in (Optionals.compose getA (\a -> Logic.ifElse (namesEqual (getName a) expected) (Just (getB a)) Nothing))

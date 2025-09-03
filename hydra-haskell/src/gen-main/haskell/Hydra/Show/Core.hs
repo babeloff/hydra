@@ -19,6 +19,18 @@ import qualified Data.Set as S
 readTerm :: (t0 -> Maybe t1)
 readTerm _ = Nothing
 
+-- | Show a binding as a string
+binding :: (Core.Binding -> String)
+binding el =  
+  let name = (Core.unName (Core.bindingName el)) 
+      t = (Core.bindingTerm el)
+      typeStr = (Optionals.maybe "" (\ts -> Strings.cat2 " : " (typeScheme ts)) (Core.bindingType el))
+  in (Strings.cat [
+    name,
+    " = ",
+    term t,
+    typeStr])
+
 -- | Show an elimination as a string
 elimination :: (Core.Elimination -> String)
 elimination elm = ((\x -> case x of
@@ -78,9 +90,15 @@ fields flds =
 -- | Show a float value as a string
 float :: (Core.FloatValue -> String)
 float fv = ((\x -> case x of
-  Core.FloatValueBigfloat v1 -> (Literals.showBigfloat v1)
-  Core.FloatValueFloat32 v1 -> (Literals.showFloat32 v1)
-  Core.FloatValueFloat64 v1 -> (Literals.showFloat64 v1)) fv)
+  Core.FloatValueBigfloat v1 -> (Strings.cat [
+    Literals.showBigfloat v1,
+    ":bigfloat"])
+  Core.FloatValueFloat32 v1 -> (Strings.cat [
+    Literals.showFloat32 v1,
+    ":float32"])
+  Core.FloatValueFloat64 v1 -> (Strings.cat [
+    Literals.showFloat64 v1,
+    ":float64"])) fv)
 
 -- | Show a float type as a string
 floatType :: (Core.FloatType -> String)
@@ -112,15 +130,33 @@ injection inj =
 -- | Show an integer value as a string
 integer :: (Core.IntegerValue -> String)
 integer iv = ((\x -> case x of
-  Core.IntegerValueBigint v1 -> (Literals.showBigint v1)
-  Core.IntegerValueInt8 v1 -> (Literals.showInt8 v1)
-  Core.IntegerValueInt16 v1 -> (Literals.showInt16 v1)
-  Core.IntegerValueInt32 v1 -> (Literals.showInt32 v1)
-  Core.IntegerValueInt64 v1 -> (Literals.showInt64 v1)
-  Core.IntegerValueUint8 v1 -> (Literals.showUint8 v1)
-  Core.IntegerValueUint16 v1 -> (Literals.showUint16 v1)
-  Core.IntegerValueUint32 v1 -> (Literals.showUint32 v1)
-  Core.IntegerValueUint64 v1 -> (Literals.showUint64 v1)) iv)
+  Core.IntegerValueBigint v1 -> (Strings.cat [
+    Literals.showBigint v1,
+    ":bigint"])
+  Core.IntegerValueInt8 v1 -> (Strings.cat [
+    Literals.showInt8 v1,
+    ":int8"])
+  Core.IntegerValueInt16 v1 -> (Strings.cat [
+    Literals.showInt16 v1,
+    ":int16"])
+  Core.IntegerValueInt32 v1 -> (Strings.cat [
+    Literals.showInt32 v1,
+    ":int32"])
+  Core.IntegerValueInt64 v1 -> (Strings.cat [
+    Literals.showInt64 v1,
+    ":int64"])
+  Core.IntegerValueUint8 v1 -> (Strings.cat [
+    Literals.showUint8 v1,
+    ":uint8"])
+  Core.IntegerValueUint16 v1 -> (Strings.cat [
+    Literals.showUint16 v1,
+    ":uint16"])
+  Core.IntegerValueUint32 v1 -> (Strings.cat [
+    Literals.showUint32 v1,
+    ":uint32"])
+  Core.IntegerValueUint64 v1 -> (Strings.cat [
+    Literals.showUint64 v1,
+    ":uint64"])) iv)
 
 -- | Show an integer type as a string
 integerType :: (Core.IntegerType -> String)
@@ -183,17 +219,9 @@ term t =
               rhs = (Core.applicationArgument app)
           in ((\x -> case x of
             Core.TermApplication v1 -> (gatherTerms (Lists.cons rhs prev) v1)
-            _ -> (Lists.cons lhs (Lists.cons rhs prev))) lhs)) 
-      showBinding = (\binding ->  
-              let v = (Core.unName (Core.letBindingName binding)) 
-                  bindingTerm = (Core.letBindingTerm binding)
-                  typeStr = (Optionals.maybe "" (\ts -> Strings.cat2 ":" (typeScheme ts)) (Core.letBindingType binding))
-              in (Strings.cat [
-                v,
-                "=",
-                term bindingTerm,
-                typeStr]))
+            _ -> (Lists.cons lhs (Lists.cons rhs prev))) lhs))
   in ((\x -> case x of
+    Core.TermAnnotated v1 -> (term (Core.annotatedTermSubject v1))
     Core.TermApplication v1 ->  
       let terms = (gatherTerms [] v1) 
           termStrs = (Lists.map term terms)
@@ -205,7 +233,7 @@ term t =
     Core.TermLet v1 ->  
       let bindings = (Core.letBindings v1) 
           env = (Core.letEnvironment v1)
-          bindingStrs = (Lists.map showBinding bindings)
+          bindingStrs = (Lists.map binding bindings)
       in (Strings.cat [
         "let ",
         Strings.intercalate ", " bindingStrs,
@@ -261,9 +289,9 @@ term t =
         "=",
         term t2,
         ")"])
-    Core.TermTypeAbstraction v1 ->  
-      let param = (Core.unName (Core.typeAbstractionParameter v1)) 
-          body = (Core.typeAbstractionBody v1)
+    Core.TermTypeLambda v1 ->  
+      let param = (Core.unName (Core.typeLambdaParameter v1)) 
+          body = (Core.typeLambdaBody v1)
       in (Strings.cat [
         "\923",
         param,
@@ -298,7 +326,7 @@ type_ typ =
               ftyp = (Core.fieldTypeType ft)
           in (Strings.cat [
             fname,
-            " = ",
+            ":",
             (type_ ftyp)])) 
       showRowType = (\rt ->  
               let flds = (Core.rowTypeFields rt) 

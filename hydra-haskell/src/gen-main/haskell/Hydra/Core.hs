@@ -317,7 +317,7 @@ _Lambda_body = (Name "body")
 -- | A set of (possibly recursive) 'let' bindings together with an environment in which they are bound
 data Let = 
   Let {
-    letBindings :: [LetBinding],
+    letBindings :: [Binding],
     letEnvironment :: Term}
   deriving (Eq, Ord, Read, Show)
 
@@ -328,20 +328,20 @@ _Let_bindings = (Name "bindings")
 _Let_environment = (Name "environment")
 
 -- | A field with an optional type scheme, used to bind variables to terms in a 'let' expression
-data LetBinding = 
-  LetBinding {
-    letBindingName :: Name,
-    letBindingTerm :: Term,
-    letBindingType :: (Maybe TypeScheme)}
+data Binding = 
+  Binding {
+    bindingName :: Name,
+    bindingTerm :: Term,
+    bindingType :: (Maybe TypeScheme)}
   deriving (Eq, Ord, Read, Show)
 
-_LetBinding = (Name "hydra.core.LetBinding")
+_Binding = (Name "hydra.core.Binding")
 
-_LetBinding_name = (Name "name")
+_Binding_name = (Name "name")
 
-_LetBinding_term = (Name "term")
+_Binding_term = (Name "term")
 
-_LetBinding_type = (Name "type")
+_Binding_type = (Name "type")
 
 -- | A term constant; an instance of a literal type
 data Literal = 
@@ -483,6 +483,7 @@ data Term =
   TermApplication Application |
   -- | A function term
   TermFunction Function |
+  -- | A 'let' term, which binds variables to terms
   TermLet Let |
   -- | A list
   TermList [Term] |
@@ -500,16 +501,17 @@ data Term =
   TermSet (S.Set Term) |
   -- | A variant tuple
   TermSum Sum |
-  -- | A System F type abstraction term
-  TermTypeAbstraction TypeAbstraction |
   -- | A System F type application term
   TermTypeApplication TypedTerm |
+  -- | A System F type abstraction term
+  TermTypeLambda TypeLambda |
   -- | An injection; an instance of a union type
   TermUnion Injection |
   -- | A unit value; a term with no value
   TermUnit  |
   -- | A variable reference
   TermVariable Name |
+  -- | A wrapped term; an instance of a wrapper type (newtype)
   TermWrap WrappedTerm
   deriving (Eq, Ord, Read, Show)
 
@@ -539,9 +541,9 @@ _Term_set = (Name "set")
 
 _Term_sum = (Name "sum")
 
-_Term_typeAbstraction = (Name "typeAbstraction")
-
 _Term_typeApplication = (Name "typeApplication")
+
+_Term_typeLambda = (Name "typeLambda")
 
 _Term_union = (Name "union")
 
@@ -625,19 +627,19 @@ _Type_variable = (Name "variable")
 _Type_wrap = (Name "wrap")
 
 -- | A System F type abstraction term
-data TypeAbstraction = 
-  TypeAbstraction {
+data TypeLambda = 
+  TypeLambda {
     -- | The type variable introduced by the abstraction
-    typeAbstractionParameter :: Name,
+    typeLambdaParameter :: Name,
     -- | The body of the abstraction
-    typeAbstractionBody :: Term}
+    typeLambdaBody :: Term}
   deriving (Eq, Ord, Read, Show)
 
-_TypeAbstraction = (Name "hydra.core.TypeAbstraction")
+_TypeLambda = (Name "hydra.core.TypeLambda")
 
-_TypeAbstraction_parameter = (Name "parameter")
+_TypeLambda_parameter = (Name "parameter")
 
-_TypeAbstraction_body = (Name "body")
+_TypeLambda_body = (Name "body")
 
 -- | A term applied to a type; a type application
 data TypedTerm = 
@@ -678,7 +680,7 @@ _WrappedTerm_typeName = (Name "typeName")
 
 _WrappedTerm_object = (Name "object")
 
--- | A type wrapped in a type name
+-- | A type wrapped in a type name; a newtype
 data WrappedType = 
   WrappedType {
     wrappedTypeTypeName :: Name,

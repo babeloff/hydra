@@ -1,15 +1,18 @@
 module Hydra.Ext.Staging.Python.Coder (moduleToPython) where
 
 import Hydra.Kernel
-import Hydra.Adapt.Modules
 import Hydra.Ext.Python.Language
 import Hydra.Dsl.Terms
 import qualified Hydra.Ext.Python.Syntax as Py
 import Hydra.Ext.Staging.Python.Names
 import Hydra.Ext.Staging.Python.Utils
 import qualified Hydra.Encode.Core as EncodeCore
+import qualified Hydra.Show.Core as ShowCore
 import qualified Hydra.Ext.Staging.Python.Serde as PySer
 import qualified Hydra.Dsl.Types as Types
+import qualified Hydra.Lib.Literals as Literals
+import qualified Hydra.Rewriting as Rewriting
+import qualified Hydra.Sorting as Sorting
 import Hydra.Dsl.ShorthandTypes
 import Hydra.Formatting
 
@@ -27,22 +30,46 @@ data PythonModuleMetadata = PythonModuleMetadata {
   pythonModuleMetadataUsesAnnotated :: Bool,
   pythonModuleMetadataUsesCallable :: Bool,
   pythonModuleMetadataUsesDataclass :: Bool,
+  pythonModuleMetadataUsesDecimal :: Bool,
   pythonModuleMetadataUsesEnum :: Bool,
   pythonModuleMetadataUsesFrozenDict :: Bool,
   pythonModuleMetadataUsesFrozenList :: Bool,
   pythonModuleMetadataUsesGeneric :: Bool,
   pythonModuleMetadataUsesName :: Bool,
   pythonModuleMetadataUsesNode :: Bool,
+  pythonModuleMetadataUsesTuple :: Bool,
   pythonModuleMetadataUsesTypeVar :: Bool}
 
-argsAndBindings :: Term -> Type -> ([Name], [LetBinding], Term, [Type], Type)
-argsAndBindings = gather [] [] []
+argsAndBindings :: PythonEnvironment -> Term -> Type -> Flow s ([Name], [Binding], Term, [Type], Type, PythonEnvironment)
+argsAndBindings env term _ = gather env [] [] [] term
   where
-    gather prevArgs prevBindings prevDoms term typ = case deannotateTerm term of
-      TermFunction (FunctionLambda (Lambda var _ body)) -> case deannotateType typ of
-        TypeFunction (FunctionType dom cod) -> gather (var:prevArgs) prevBindings (dom:prevDoms) body cod
-      TermLet (Let bindings body) -> gather prevArgs (bindings ++ prevBindings) prevDoms body typ
-      t -> (L.reverse prevArgs, L.reverse prevBindings, t, L.reverse prevDoms, typ)
+    gather env prevArgs prevBindings prevDoms term = case deannotateTerm term of
+      TermFunction (FunctionLambda lam@(Lambda var (Just dom) body)) -> gather env2 (var:prevArgs) prevBindings (dom:prevDoms) body
+        where
+          env2 = extendEnvironmentForLambda env lam
+      TermLet lt@(Let bindings body) -> gather env2 prevArgs (L.reverse bindings ++ prevBindings) prevDoms body
+        where
+          env2 = extendEnvironmentForLet env lt
+      t -> do
+        typ <- typeOf (pythonEnvironmentTypeContext env) t
+        return (L.reverse prevArgs, L.reverse prevBindings, t, L.reverse prevDoms, typ, env)
+
+-- | Rewrite case statements in which the top-level lambda variables are re-used, e.g.
+--   cases _Type Nothing [_Type_list>>: "t" ~> ..., _Type_set>>: "t" ~> ...].
+--   Such case statements are legal in Hydra, but may lead to variable name collision in languages like Python.
+deduplicateCaseVariables :: [Field] -> [Field]
+deduplicateCaseVariables cases = L.reverse $ snd $ L.foldl rewriteCase (M.empty, []) cases
+  where
+    rewriteCase (countByName, done) (Field fname fterm) = case fterm of
+      -- Note: does not yet take annotations into account
+      TermFunction (FunctionLambda (Lambda v (Just dom) body)) -> case M.lookup v countByName of
+        Nothing -> (M.insert v 1 countByName, (Field fname fterm):done)
+        Just count -> (M.insert v count2 countByName, (Field fname rewritten):done)
+          where
+            count2 = count + 1
+            v2 = Name (unName v ++ Literals.showInt32 count2)
+            rewritten = TermFunction $ FunctionLambda $ Lambda v2 (Just dom) (alphaConvert v v2 body)
+      _ -> (countByName, (Field fname fterm):done)
 
 encodeApplication :: PythonEnvironment -> Application -> Flow Graph Py.Expression
 encodeApplication env app = do
@@ -61,19 +88,22 @@ encodeApplication env app = do
     applyArgs hargs = case fun of
         TermFunction f -> case f of
           FunctionElimination elm -> case elm of
-    --        EliminationProduct ...
+            EliminationProduct (TupleProjection arity idx _) -> do
+              pyIdx <- encodeIntegerValue $ IntegerValueInt32 idx
+              return $ pyPrimaryToPyExpression $ primaryWithExpressionSlices (pyExpressionToPyPrimary parg) [pyIdx]
             EliminationRecord (Projection _ fname) -> do
               return $ projectFromExpression parg $ encodeFieldName env fname
             EliminationUnion (CaseStatement tname mdef cases) -> do
               return $ stringToPyExpression Py.QuoteStyleDouble "inline match expressions are unsupported"
             EliminationWrap _ -> do
               return $ projectFromExpression parg $ Py.Name "value"
-            _ -> fail $ "elimination variant is not yet supported in applications: " ++ show (eliminationVariant elm)
           FunctionPrimitive name -> do
             return $ functionCall (pyNameToPyPrimary $ encodeName True CaseConventionLowerSnake env name) hargs
           _ -> def
-        TermVariable name -> do -- Special-casing variables prevents quoting; forward references are allowed for function calls
-          return $ functionCall (pyNameToPyPrimary $ encodeName True CaseConventionLowerSnake env name) hargs
+        -- Special-casing variables prevents quoting; forward references are allowed for function calls
+        TermVariable name -> return $ if L.null hargs
+          then termVariableReference env name
+          else functionCall (pyNameToPyPrimary $ encodeName True CaseConventionLowerSnake env name) hargs
         _ -> def
       where
         parg = L.head hargs
@@ -97,9 +127,10 @@ encodeDefinition env def = case def of
   DefinitionTerm (TermDefinition name term typ) -> withTrace ("data element " ++ unName name) $ do
     comment <- fmap normalizeComment <$> getTermDescription term
     g <- getState
-    stmts <- encodeTermAssignment env name (deannotateTerm $ expandLambdas g term) typ comment
+    stmts <- encodeTermAssignment env name term typ comment
     return [stmts]
   DefinitionType (TypeDefinition name typ) -> withTrace ("type element " ++ unName name) $ do
+--  DefinitionType (TypeDefinition name typ) -> withTrace ("type element " ++ unName name ++ ": " ++ ShowCore.type_ typ) $ do
     comment <- fmap normalizeComment <$> getTypeDescription typ
     encodeTypeAssignment env name typ comment
 
@@ -117,18 +148,18 @@ encodeFieldType env (FieldType fname ftype) = do
 
 encodeFloatValue :: FloatValue -> Flow s Py.Expression
 encodeFloatValue fv = case fv of
-  FloatValueBigfloat f -> pure $ pyAtomToPyExpression $ Py.AtomNumber $ Py.NumberFloat f
-  -- TODO: remove these variants; the fact that the float32 type is appearing here is a bug
-  FloatValueFloat32 f -> pure $ pyAtomToPyExpression $ Py.AtomNumber $ Py.NumberFloat $ realToFrac f
+  FloatValueBigfloat f -> pure $ functionCall (pyNameToPyPrimary $ Py.Name "Decimal") [singleQuotedString $ show f]
   FloatValueFloat64 f -> pure $ pyAtomToPyExpression $ Py.AtomNumber $ Py.NumberFloat $ realToFrac f
---  _ -> fail $ "unsupported floating point type: " ++ show (floatValueType fv)
+  _ -> fail $ "unsupported floating point type: " ++ show (floatValueType fv)
 
 encodeFunction :: PythonEnvironment -> Function -> Flow Graph Py.Expression
 encodeFunction env f = case f of
-  FunctionLambda (Lambda var _ body) -> do
-    pbody <- encodeTerm env body
-    return $ Py.ExpressionLambda $ Py.Lambda (Py.LambdaParameters Nothing [] [] $
-      Just $ Py.LambdaStarEtcParamNoDefault $ Py.LambdaParamNoDefault $ encodeNameQualified env var) pbody
+  FunctionLambda lam@(Lambda var (Just dom) body) -> do
+      pbody <- encodeTerm env2 body
+      return $ Py.ExpressionLambda $ Py.Lambda (Py.LambdaParameters Nothing [] [] $
+        Just $ Py.LambdaStarEtcParamNoDefault $ Py.LambdaParamNoDefault $ encodeNameQualified env2 var) pbody
+    where
+      env2 = extendEnvironmentForLambda env lam
   FunctionPrimitive name -> pure $ pyNameToPyExpression $ encodeName True CaseConventionLowerSnake env name -- Only nullary primitives should appear here.
   _ -> fail $ "unexpected function variant: " ++ show (functionVariant f)
 
@@ -138,20 +169,18 @@ encodeFunctionDefinition env name args body doms cod comment prefixes = do
     let params = Py.ParametersParamNoDefault $ Py.ParamNoDefaultParameters pyArgs [] Nothing
     stmts <- encodeTopLevelTerm env body
     let block = indentedBlock comment [prefixes ++ stmts]
-    returnType <- tryType cod
+    returnType <- getType cod
     return $ Py.StatementCompound $ Py.CompoundStatementFunction $ Py.FunctionDefinition Nothing
-      $ Py.FunctionDefRaw False (encodeName False CaseConventionLowerSnake env name) [] (Just params) returnType Nothing block
+      $ Py.FunctionDefRaw False (encodeName False CaseConventionLowerSnake env name) [] (Just params) (Just returnType) Nothing block
   where
     toParam name typ = do
-      pyTyp <- tryType typ
-      return $ Py.ParamNoDefault (Py.Param (encodeName False CaseConventionLowerSnake env name) $ fmap Py.Annotation pyTyp) Nothing
-    -- TODO: this is a workaround for unresolved type variables from type inference. This function should reduce to "encodeType env" once that issue is fixed.
-    tryType typ = if isTemporaryTypeVariable typ
-      then pure Nothing
-      else Just <$> encodeType env typ
-    isTemporaryTypeVariable typ = case deannotateType typ of
-      TypeVariable (Name v) -> L.head v == 't' && Y.isJust (TR.readMaybe (L.tail v) :: Maybe Int)
-      _ -> False
+      pyTyp <- getType typ
+      return $ Py.ParamNoDefault (Py.Param (encodeName False CaseConventionLowerSnake env name) $ Just $ Py.Annotation pyTyp) Nothing -- TODO
+    getType typ = case deannotateType typ of
+      TypeVariable v -> case M.lookup v (typeContextTypes $ pythonEnvironmentTypeContext env) of
+        Nothing -> encodeType env $ TypeVariable v
+        Just t -> encodeType env t
+      t -> encodeType env t
 
 encodeFunctionType :: PythonEnvironment -> FunctionType -> Flow Graph Py.Expression
 encodeFunctionType env ft = do
@@ -208,17 +237,17 @@ encodeLiteralType lt = do
       LiteralTypeBinary -> pure "bytes"
       LiteralTypeBoolean -> pure "bool"
       LiteralTypeFloat ft -> case ft of
+        FloatTypeBigfloat -> pure "Decimal"
         FloatTypeFloat64 -> pure "float"
         _ -> fail $ "unsupported floating-point type: " ++ show ft
       LiteralTypeInteger it -> case it of
         IntegerTypeBigint -> pure "int"
---        _ -> fail $ "unsupported integer type: " ++ show it
-        _ -> pure "int" -- TODO: restore the failure behavior; the fact that the int32 type is appearing here is a bug
+        _ -> fail $ "unsupported integer type: " ++ show it
       LiteralTypeString -> pure "str"
 
-encodeModule :: Module -> Flow Graph Py.Module
-encodeModule mod = do
-    defs <- reorderDefs <$> adaptedModuleDefinitions pythonLanguage mod
+encodeModule :: Module -> [Definition] -> Flow Graph Py.Module
+encodeModule mod defs0 = do
+    let defs = reorderDefs defs0
     let meta = gatherMetadata defs
     let namespaces = findNamespaces defs meta
     let tvars = pythonModuleMetadataTypeVariables meta
@@ -228,10 +257,12 @@ encodeModule mod = do
     let commentStmts = case normalizeComment <$> moduleDescription mod of
                        Nothing -> []
                        Just c -> [commentStatement c]
-
+    g <- getState
+    tcontext <- initialTypeContext g
     let env = PythonEnvironment {
-              pythonEnvironmentNamespaces = namespaces,
-              pythonEnvironmentBoundTypeVariables = ([], M.empty)}
+                pythonEnvironmentNamespaces = namespaces,
+                pythonEnvironmentBoundTypeVariables = ([], M.empty),
+                pythonEnvironmentTypeContext = tcontext}
     defStmts <- L.concat <$> (CM.mapM (encodeDefinition env) defs)
 
     let body = L.filter (not . L.null) $ [commentStmts, importStmts, tvarStmts] ++ defStmts
@@ -245,10 +276,18 @@ encodeModule mod = do
         namespaces = namespacesForDefinitions encodeNamespace (moduleNamespace mod) defs
     reorderDefs defs = fst p ++ snd p
       where
-        p = L.partition isNameDef defs
+        p = L.partition isNameDef sortedDefs
         isNameDef d = case d of
           DefinitionType (TypeDefinition name _) -> name == _Name
           _ -> False
+        sortedDefs = L.concat $ Sorting.topologicalSortNodes getKey getAdj defs
+          where
+            getKey def = case def of
+              DefinitionTerm (TermDefinition name _ _) -> name
+              DefinitionType (TypeDefinition name _) -> name
+            getAdj def = case def of
+              DefinitionTerm (TermDefinition _ term _) -> S.toList $ Rewriting.freeVariablesInTerm term
+              DefinitionType (TypeDefinition _ typ) -> S.toList $ Rewriting.freeVariablesInType typ
 
     tvarStmt name = assignmentStatement name $ functionCall (pyNameToPyPrimary $ Py.Name "TypeVar")
       [doubleQuotedString $ Py.unName name]
@@ -269,6 +308,8 @@ encodeModule mod = do
                   cond "Callable" $ pythonModuleMetadataUsesCallable meta]),
                 ("dataclasses", [
                   cond "dataclass" $ pythonModuleMetadataUsesDataclass meta]),
+                ("decimal", [
+                  cond "Decimal" $ pythonModuleMetadataUsesDecimal meta]),
                 ("enum", [
                   cond "Enum" $ pythonModuleMetadataUsesEnum meta]),
                 ("hydra.dsl.python", [
@@ -278,6 +319,7 @@ encodeModule mod = do
                 ("typing", [
                   cond "Annotated" $ pythonModuleMetadataUsesAnnotated meta,
                   cond "Generic" $ pythonModuleMetadataUsesGeneric meta,
+                  cond "Tuple" $ pythonModuleMetadataUsesTuple meta,
                   cond "TypeVar" $ pythonModuleMetadataUsesTypeVar meta])]
               where
                 cond name b = if b then Just name else Nothing
@@ -321,9 +363,10 @@ encodeTerm env term = case deannotateTerm term of
     TermApplication a -> encodeApplication env a
     TermFunction f -> encodeFunction env f
     TermLet _ -> pure $ stringToPyExpression Py.QuoteStyleDouble "let terms are not supported here"
-    TermList els -> do
-      pl <- pyAtomToPyExpression . Py.AtomList . pyList <$> CM.mapM encode els
-      return $ functionCall (pyNameToPyPrimary $ Py.Name "tuple") [pl]
+    TermList terms -> do
+      pyExprs <- CM.mapM encode terms
+      return $ pyAtomToPyExpression $ Py.AtomTuple $ Py.Tuple (pyExpressionToPyStarNamedExpression <$> pyExprs)
+--      return $ functionCall (pyNameToPyPrimary $ Py.Name "tuple") [pl]
     TermLiteral lit -> encodeLiteral lit
     TermMap m -> do
         pairs <- CM.mapM encodePair $ M.toList m
@@ -347,7 +390,9 @@ encodeTerm env term = case deannotateTerm term of
       pyEls <- CM.mapM encode $ S.toList s
       return $ functionCall (pyNameToPyPrimary $ Py.Name "frozenset")
         [pyAtomToPyExpression $ Py.AtomSet $ Py.Set (pyExpressionToPyStarNamedExpression <$> pyEls)]
-    TermTypeAbstraction (TypeAbstraction _ term1) -> encode term1
+    TermTypeLambda tl@(TypeLambda _ term1) -> encodeTerm env2 term1
+      where
+        env2 = extendEnvironmentForTypeLambda env tl
     TermTypeApplication (TypedTerm term1 _) -> encode term1
     TermUnion (Injection tname field) -> do
       rt <- requireUnionType tname
@@ -357,13 +402,14 @@ encodeTerm env term = case deannotateTerm term of
         else do
           parg <- encode $ fieldTerm field
           return $ functionCall (pyNameToPyPrimary $ variantName True env tname (fieldName field)) [parg]
+    TermUnit -> return $ pyNameToPyExpression pyNone
     TermVariable name -> do
       g <- getState
       return $ case lookupElement g name of
         -- Lambda-bound variables
         Nothing -> termVariableReference env name
         -- Let-bound variables
-        Just el -> if isUnaryFunction el
+        Just el -> if isNullaryFunction el
           then functionCall (pyNameToPyPrimary $ encodeName True CaseConventionLowerSnake env name) []
           else termVariableReference env name
     TermWrap (WrappedTerm tname term1) -> do
@@ -374,27 +420,28 @@ encodeTerm env term = case deannotateTerm term of
     encode = encodeTerm env
 
 encodeTermAssignment :: PythonEnvironment -> Name -> Term -> Type -> Maybe String -> Flow Graph [Py.Statement]
-encodeTermAssignment env name term typ comment = if L.null args && L.null bindings
+encodeTermAssignment env name term typ comment = do
+    (args, bindings, body, doms, cod, env2) <- argsAndBindings env term typ
+    if L.null args && L.null bindings
     -- If there are no arguments or let bindings, use a simple a = b assignment.
     then do
-      bodyExpr <- encodeTerm env body
-      return [annotatedStatement comment $ assignmentStatement (encodeName False CaseConventionLowerSnake env name) bodyExpr]
+      bodyExpr <- encodeTerm env2 body
+      return [annotatedStatement comment $ assignmentStatement (encodeName False CaseConventionLowerSnake env2 name) bodyExpr]
     -- If there are either arguments or let bindings, then only a function definition will work.
     else do
         -- TODO: topological sort of bindings
-        bindingStmts <- L.concat <$> CM.mapM encodeBinding bindings
+        bindingStmts <- L.concat <$> CM.mapM (encodeBinding env2) bindings
         g <- getState
         withState (extendGraphWithBindings bindings g) $ do
           bodyStmt <- encodeFunctionDefinition env name args body doms cod comment bindingStmts
           return [bodyStmt]
   where
-    encodeBinding (LetBinding name1 term1 mts) = do
+    encodeBinding env (Binding name1 term1 mts) = do
         comment <- fmap normalizeComment <$> getTermDescription term1
         typ1 <- case mts of
           Nothing -> fail $ "missing type for let binding " ++ unName name1 ++ " in " ++ unName name
           Just ts -> return $ typeSchemeType ts
         encodeTermAssignment env name1 term1 typ1 comment
-    (args, bindings, body, doms, cod) = argsAndBindings term typ
 
 encodeTopLevelTerm :: PythonEnvironment -> Term -> Flow Graph [Py.Statement]
 encodeTopLevelTerm env term = if L.length args == 1
@@ -414,7 +461,7 @@ encodeTopLevelTerm env term = if L.length args == 1
           let isEnum = isEnumRowType rt
           let isFull = L.length cases >= L.length (rowTypeFields rt)
           pyArg <- encodeTerm env arg
-          pyCases <- CM.mapM (toCaseBlock isEnum) cases
+          pyCases <- CM.mapM (toCaseBlock isEnum) $ deduplicateCaseVariables cases
           pyDflt <- toDefault isFull dflt
           let subj = Py.SubjectExpressionSimple $ Py.NamedExpressionSimple pyArg
           return [Py.StatementCompound $ Py.CompoundStatementMatch $ Py.MatchStatement subj $ pyCases ++ pyDflt]
@@ -429,27 +476,32 @@ encodeTopLevelTerm env term = if L.length args == 1
               let body = indentedBlock Nothing [[stmt]]
               return [Py.CaseBlock patterns Nothing body]
           toCaseBlock isEnum (Field fname fterm) = case deannotateTerm fterm of
-            TermFunction (FunctionLambda (Lambda v _ body)) -> do
-                pyReturn <- encodeTerm env body
+            TermFunction (FunctionLambda lam@(Lambda v (Just dom) body)) -> do
+                pyReturn <- encodeTerm env2 body
                 let body = indentedBlock Nothing [[returnSingle pyReturn]]
                 return $ Py.CaseBlock (pyClosedPatternToPyPatterns pattern) Nothing body
               where
+                env2 = extendEnvironmentForLambda env lam
                 pattern = if isEnum
                     then Py.ClosedPatternValue $ Py.ValuePattern $ Py.Attribute [
                       encodeName True CaseConventionPascal env tname,
-                      encodeEnumValue env fname]
-                    else Py.ClosedPatternClass
-                      $ Py.ClassPattern pyVarName (Just $ Py.PositionalPatterns [argPattern]) Nothing
+                      encodeEnumValue env2 fname]
+                    else if isFreeVariableInTerm v body
+                    then Py.ClosedPatternClass $
+                      Py.ClassPattern pyVarName Nothing Nothing
+                    else Py.ClosedPatternClass $
+                      Py.ClassPattern pyVarName Nothing (Just $ Py.KeywordPatterns [argPattern])
                   where
-                    pyVarName = Py.NameOrAttribute [variantName True env tname fname]
-                    argPattern = Py.PatternOr $ Py.OrPattern [
+                    pyVarName = Py.NameOrAttribute [variantName True env2 tname fname]
+                    argPattern = Py.KeywordPattern (Py.Name "value") $ Py.PatternOr $ Py.OrPattern [
                       Py.ClosedPatternCapture $ Py.CapturePattern
-                        $ Py.PatternCaptureTarget (encodeName False CaseConventionLowerSnake env v)]
+                        $ Py.PatternCaptureTarget (encodeName False CaseConventionLowerSnake env2 v)]
             _ -> fail "unsupported case"
       _ -> dflt
 
 encodeType :: PythonEnvironment -> Type -> Flow Graph Py.Expression
 encodeType env typ = case deannotateType typ of
+--encodeType env typ = withTrace ("encode type: " <> ShowCore.type_ typ) $ case deannotateType typ of
     TypeApplication at -> encodeApplicationType env at
     TypeFunction ft -> encodeFunctionType env ft
     TypeForall lt -> encodeForallType env lt
@@ -460,17 +512,17 @@ encodeType env typ = case deannotateType typ of
       return $ nameAndParams (Py.Name "FrozenDict") [pykt, pyvt]
     TypeLiteral lt -> encodeLiteralType lt
     TypeOptional et -> orNull . pyExpressionToPyPrimary <$> encode et
-    TypeRecord rt -> pure $ if EncodeCore.isUnitType (TypeRecord rt)
-      then pyNameToPyExpression pyNone
-      else typeVariableReference env $ rowTypeTypeName rt
+    TypeProduct types -> nameAndParams (Py.Name "Tuple") <$> (CM.mapM encode types)
+    TypeRecord rt -> pure $ typeVariableReference env $ rowTypeTypeName rt
     TypeSet et -> nameAndParams (Py.Name "frozenset") . L.singleton <$> encode et
     TypeUnion rt -> pure $ typeVariableReference env $ rowTypeTypeName rt
+    TypeUnit -> pure $ pyNameToPyExpression pyNone
     TypeVariable name -> pure $ typeVariableReference env name
     TypeWrap (WrappedType name _) -> pure $ typeVariableReference env name
     _ -> dflt
   where
     encode = encodeType env
-    dflt = pure $ doubleQuotedString $ "type = " ++ show (deannotateType typ)
+    dflt = pure $ doubleQuotedString $ "type = " ++ ShowCore.type_ (deannotateType typ)
 
 encodeTypeAssignment :: PythonEnvironment -> Name -> Type -> Maybe String -> Flow Graph [[Py.Statement]]
 encodeTypeAssignment env name typ comment = do
@@ -560,6 +612,18 @@ encodeWrappedType env name typ comment = do
 environmentTypeParameters :: PythonEnvironment -> [Py.TypeParameter]
 environmentTypeParameters env = pyNameToPyTypeParameter . encodeTypeVariable <$> (fst $ pythonEnvironmentBoundTypeVariables env)
 
+extendEnvironmentForLambda :: PythonEnvironment -> Lambda -> PythonEnvironment
+extendEnvironmentForLambda env lam = env {
+  pythonEnvironmentTypeContext = extendTypeContextForLambda (pythonEnvironmentTypeContext env) lam}
+
+extendEnvironmentForLet :: PythonEnvironment -> Let -> PythonEnvironment
+extendEnvironmentForLet env letrec = env {
+  pythonEnvironmentTypeContext = extendTypeContextForLet (pythonEnvironmentTypeContext env) letrec}
+
+extendEnvironmentForTypeLambda :: PythonEnvironment -> TypeLambda -> PythonEnvironment
+extendEnvironmentForTypeLambda env tlam = env {
+  pythonEnvironmentTypeContext = extendTypeContextForTypeLambda (pythonEnvironmentTypeContext env) tlam}
+
 findTypeParams :: PythonEnvironment -> Type -> [Name]
 findTypeParams env typ = L.filter isBound $ S.toList $ freeVariablesInType typ
   where
@@ -574,26 +638,41 @@ gatherMetadata defs = checkTvars $ L.foldl addDef start defs
       pythonModuleMetadataUsesAnnotated = False,
       pythonModuleMetadataUsesCallable = False,
       pythonModuleMetadataUsesDataclass = False,
+      pythonModuleMetadataUsesDecimal = False,
       pythonModuleMetadataUsesEnum = False,
       pythonModuleMetadataUsesFrozenDict = False,
       pythonModuleMetadataUsesFrozenList = False,
       pythonModuleMetadataUsesGeneric = False,
       pythonModuleMetadataUsesName = False,
       pythonModuleMetadataUsesNode = False,
+      pythonModuleMetadataUsesTuple = False,
       pythonModuleMetadataUsesTypeVar = False}
     addDef meta def = case def of
-      DefinitionTerm (TermDefinition _ term typ) -> foldOverTerm TraversalOrderPre extendMetaForTerm (extendMetaForType True meta typ) term
+      DefinitionTerm (TermDefinition _ term _) -> extendMetaForTerm True meta term
       DefinitionType (TypeDefinition _ typ) -> foldOverType TraversalOrderPre (extendMetaForType False) meta2 typ
         where
           meta2 = meta {pythonModuleMetadataUsesName = True}
-    extendMetaForTerm meta t = case t of
-      TermLet (Let bindings _) -> L.foldl forBinding meta bindings
-        where
-          forBinding meta (LetBinding _ _ mts) = case mts of
-            Nothing -> meta
-            Just ts -> extendMetaForType False meta $ typeSchemeType ts
-      TermMap _ -> meta {pythonModuleMetadataUsesFrozenDict = True}
-      _ -> meta
+    extendMetaForTerm topLevel meta t = case t of
+        TermFunction f -> case f of
+          FunctionLambda (Lambda _ (Just dom) body) -> if topLevel
+              then extendMetaForType False meta2 dom
+              else meta2
+            where
+              meta2 = extendMetaForTerm topLevel meta body
+          _ -> meta
+        TermLet (Let bindings body) -> L.foldl forBinding (extendMetaForTerm False meta body) bindings
+          where
+            forBinding meta (Binding _ term1 (Just ts)) = extendMetaForType True (extendMetaForTerm True meta term1) $
+              typeSchemeType ts
+        TermLiteral l -> case l of
+          LiteralFloat fv -> case fv of
+            FloatValueBigfloat _ -> meta {pythonModuleMetadataUsesDecimal = True}
+            _ -> meta
+          _ -> meta
+        TermMap _ -> meta {pythonModuleMetadataUsesFrozenDict = True}
+        _ -> meta2
+      where
+        meta2 = L.foldl (extendMetaForTerm False) meta $ subterms t
     extendMetaForType isTermAnnot meta typ = extendFor meta3 typ
       where
         tvars = pythonModuleMetadataTypeVariables meta
@@ -626,7 +705,13 @@ gatherMetadata defs = checkTvars $ L.foldl addDef start defs
                 TypeForall (ForallType _ body2) -> baseType body2
                 t2 -> t2
           TypeList _ -> meta {pythonModuleMetadataUsesFrozenList = True}
+          TypeLiteral lt -> case lt of
+            LiteralTypeFloat ft -> case ft of
+              FloatTypeBigfloat -> meta {pythonModuleMetadataUsesDecimal = True}
+              _ -> meta
+            _ -> meta
           TypeMap _ -> meta {pythonModuleMetadataUsesFrozenDict = True}
+          TypeProduct _ -> meta {pythonModuleMetadataUsesTuple = True}
           TypeRecord (RowType _ fields) -> meta {
               pythonModuleMetadataUsesAnnotated = L.foldl checkForAnnotated (pythonModuleMetadataUsesAnnotated meta) fields,
               pythonModuleMetadataUsesDataclass = pythonModuleMetadataUsesDataclass meta || not (L.null fields)}
@@ -647,16 +732,16 @@ genericArg tparamList = if L.null tparamList
   else Just $ pyPrimaryToPyExpression $ primaryWithExpressionSlices (pyNameToPyPrimary $ Py.Name "Generic")
     (pyNameToPyExpression . encodeTypeVariable <$> tparamList)
 
-isUnaryFunction :: Element -> Bool
-isUnaryFunction el = case elementType el of
-  Nothing -> False
-  Just ts -> L.null args && not (L.null bindings)
-    where
-      (args, bindings, _, _, _) = argsAndBindings (elementTerm el) (typeSchemeType ts)
+isNullaryFunction :: Binding -> Bool
+isNullaryFunction (Binding _ term (Just ts)) = typeArity (typeSchemeType ts) == 0 && isLet
+  where
+    isLet = case deannotateAndDetypeTerm term of
+      TermLet _ -> True
+      _ -> False
 
-moduleToPython :: Module -> Flow Graph (M.Map FilePath String)
-moduleToPython mod = do
-  file <- encodeModule mod
+moduleToPython :: Module -> [Definition] -> Flow Graph (M.Map FilePath String)
+moduleToPython mod defs = do
+  file <- encodeModule mod defs
   let s = printExpr $ parenthesize $ PySer.encodeModule file
   let path = namespaceToFilePath CaseConventionLowerSnake (FileExtension "py") $ moduleNamespace mod
   return $ M.fromList [(path, s)]

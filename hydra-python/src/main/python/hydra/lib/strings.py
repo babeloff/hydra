@@ -25,14 +25,24 @@ def intercalate(separator: str, values: Sequence[str]) -> str:
     return separator.join(values)
 
 
-def is_empty(x: str) -> bool:
+def is_empty(s: str) -> bool:
     """Check if a string is empty."""
-    return len(x) == 0
+    return len(s) == 0
 
 
-def length(x: str) -> int:
-    """Get the length of a string."""
-    return len(x)
+def length(s: str) -> int:
+    """Return the length of a string."""
+    return len(s)
+
+
+def lines(s: str) -> frozenlist[str]:
+    """Split a string into lines."""
+    return tuple(s.splitlines())
+
+
+def null(s: str) -> bool:
+    """Check if a string is null/empty."""
+    return len(s) == 0
 
 
 def split_on(delimiter: str, x: str) -> frozenlist[str]:
@@ -45,11 +55,16 @@ def to_list(x: str) -> frozenlist[int]:
     return tuple(ord(c) for c in x)
 
 
-def to_lower(x: str) -> str:
+def to_lower(s: str) -> str:
     """Convert a string to lowercase."""
-    return x.lower()
+    return s.lower()
 
 
-def to_upper(x: str) -> str:
+def to_upper(s: str) -> str:
     """Convert a string to uppercase."""
-    return x.upper()
+    return s.upper()
+
+
+def unlines(xs: Sequence[str]) -> str:
+    """Join strings with newlines."""
+    return '\n'.join(xs)

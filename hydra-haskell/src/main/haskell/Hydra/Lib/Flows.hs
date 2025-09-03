@@ -6,6 +6,9 @@ import Hydra.Compute
 import qualified Hydra.Monads as Monads
 
 import qualified Control.Monad as CM
+import qualified Data.Map as M
+import qualified Data.Set as S
+
 
 -- Haskell-specific helpers
 
@@ -33,14 +36,23 @@ fail = Monads.fail
 map :: (x -> y) -> Flow s x -> Flow s y
 map = Monads.map
 
+mapElems :: Ord k => (v1 -> Flow s v2) -> M.Map k v1 -> Flow s (M.Map k v2)
+mapElems f m = M.fromList <$> (CM.mapM (\(k, v) -> (,) <$> Monads.pure k <*> f v) $ M.toList m)
+
+mapKeys :: Ord k2 => (k1 -> Flow s k2) -> M.Map k1 v -> Flow s (M.Map k2 v)
+mapKeys f m = M.fromList <$> (CM.mapM (\(k, v) -> (,) <$> f k <*> Monads.pure v) $ M.toList m)
+
 mapList :: (x -> Flow s y) -> [x] -> Flow s [y]
 mapList = CM.mapM
+
+mapOptional :: (x -> Flow s y) -> Maybe x -> Flow s (Maybe y)
+mapOptional = traverse
+
+mapSet :: Ord y => (x -> Flow s y) -> S.Set x -> Flow s (S.Set y)
+mapSet f xs = S.fromList <$> (CM.mapM f $ S.toList xs)
 
 pure :: x -> Flow s x
 pure = Monads.pure
 
 sequence :: [Flow s x] -> Flow s [x]
 sequence = CM.sequence
-
-traverseOptional :: (x -> Flow s y) -> Maybe x -> Flow s (Maybe y)
-traverseOptional = traverse

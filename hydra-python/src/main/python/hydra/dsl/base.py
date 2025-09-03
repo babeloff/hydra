@@ -1,9 +1,8 @@
 """Base DSL which makes use of phantom types. Use this DSL for defining programs as opposed to data type definitions."""
 
 import hydra.dsl.terms as terms
-from hydra.core import Field, Name, TermVariable
-from hydra.graph import Element
-from hydra.phantoms import TCase, TElement, TField, TTerm
+from hydra.core import Binding, Field, Name, TermVariable
+from hydra.phantoms import TCase, TBinding, TField, TTerm
 
 # module Hydra.Dsl.Base (
 #   module Hydra.Dsl.Base,
@@ -67,9 +66,9 @@ from hydra.phantoms import TCase, TElement, TField, TTerm
 # annot key mvalue (TTerm term) = TTerm $ Ann.annotateTerm key mvalue term
 
 
-def apply[T](lhs: TTerm[T], rhs: TTerm[T]) -> TTerm[T]:
+def apply[T](func: TTerm[T], a: TTerm[T]) -> TTerm[T]:
     """Apply a function to an argument."""
-    return TTerm[T](terms.apply(lhs.value, rhs.value))
+    return TTerm[T](terms.apply(func.value, a.value))
 
 
 def apply2[T](func: TTerm[T], a: TTerm[T], b: TTerm[T]) -> TTerm[T]:
@@ -99,11 +98,11 @@ def constant[T](term: TTerm[T]) -> TTerm[T]:
     return TTerm[T](terms.constant(term.value))
 
 
-# definitionInModule :: Module -> String -> TTerm a -> TElement a
+# definitionInModule :: Module -> String -> TTerm a -> TBinding a
 # definitionInModule mod = definitionInNamespace $ moduleNamespace mod
 
-# definitionInNamespace :: Namespace -> String -> TTerm a -> TElement a
-# definitionInNamespace ns lname = TElement $ unqualifyName $ QualifiedName (Just ns) lname
+# definitionInNamespace :: Namespace -> String -> TTerm a -> TBinding a
+# definitionInNamespace ns lname = TBinding $ unqualifyName $ QualifiedName (Just ns) lname
 
 # doc :: String -> TTerm a -> TTerm a
 # doc s (TTerm term) = TTerm $ setTermDescription (Just s) term
@@ -115,9 +114,9 @@ def constant[T](term: TTerm[T]) -> TTerm[T]:
 # doc80 = doc . wrapLine 80
 
 
-def el[T](element: TElement[T]) -> Element:
-    """Element."""
-    return Element(element.name, element.term.value, None)
+def el[T](element: TBinding[T]) -> Binding:
+    """Binding."""
+    return Binding(element.name, element.term.value, None)
 
 
 def field[T](fname: Name, val: TTerm[T]) -> Field:
@@ -127,7 +126,7 @@ def field[T](fname: Name, val: TTerm[T]) -> Field:
 
 def first[T]():
     """Construct a first."""
-    return TTerm[T](terms.untuple(2, 0))
+    return TTerm[T](terms.untuple(2, 0, None))
 
 
 # firstClassType :: TTerm Type -> TTerm Type
@@ -190,7 +189,7 @@ def lam[T](v: str, body: TTerm[T]) -> TTerm[T]:
 # lets :: [Field] -> TTerm a -> TTerm a
 # lets fields (TTerm env) = TTerm $ TermLet $ Let (toBinding <$> fields) env
 #   where
-#      toBinding (Field name value) = LetBinding name value Nothing
+#      toBinding (Field name value) = Binding name value Nothing
 
 # list :: [TTerm a] -> TTerm [a]
 # list els = TTerm $ Terms.list (unTTerm <$> els)
@@ -244,9 +243,11 @@ def primitive[T](name: Name):
     return TTerm[T](terms.primitive(name))
 
 
-def primitive1[T](prim_name: Name, term: TTerm[T]) -> TTerm[T]:
+def primitive1[A, B](
+    prim_name: Name, term: TTerm[A], meaningless: B | None = None
+) -> TTerm[B]:
     """Construct a primitive1."""
-    return TTerm[T](terms.apply(terms.primitive(prim_name), term.value))
+    return TTerm[B](terms.apply(terms.primitive(prim_name), term.value))
 
 
 def primitive2[T](prim_name: Name, a: TTerm[T], b: TTerm[T]) -> TTerm[T]:
@@ -276,14 +277,14 @@ def record[T](name: Name, fields: list[Field]):
     return TTerm[T](terms.record(name, fields))
 
 
-def ref[T](name: TElement[T]):
+def ref[T](name: TBinding[T]):
     """Construct a reference."""
     return TTerm[T](TermVariable(name.name))
 
 
 def second[T]():
     """Construct a second."""
-    return TTerm[T](terms.untuple(2, 1))
+    return TTerm[T](terms.untuple(2, 1, None))
 
 
 # set :: [TTerm a] -> TTerm (S.Set a)
@@ -302,7 +303,7 @@ def unit_variant[T](name: Name, fname: Name):
 
 def untuple[T](arity: int, idx: int):
     """Construct a tuple."""
-    return TTerm[T](terms.untuple(arity, idx))
+    return TTerm[T](terms.untuple(arity, idx, None))
 
 
 def unwrap[T](name: Name):
