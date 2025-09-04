@@ -1,0 +1,25 @@
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+
+participant "DSL Sources\n(Tier-3)" as DSL
+participant "Code Generator" as Generator
+participant "Generated Sources" as GenSrc
+participant "Compilation" as Compile
+participant "Native Binaries" as Binaries
+
+DSL -> Generator : Transform
+note right of Generator
+  Multiple Languages
+  - Haskell
+  - Java
+  - Python
+  - Scala
+  - etc.
+end note
+Generator -> GenSrc : Generate
+GenSrc -> Compile : Build
+Compile -> Binaries : Produce
+
+@enduml

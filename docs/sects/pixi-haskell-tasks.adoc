@@ -1,0 +1,484 @@
+= Pixi Haskell Development Tasks Reference
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+
+This document provides a quick reference for all available pixi tasks for Haskell development in the Hydra project using *ghcup* for toolchain management.
+
+[NOTE]
+====
+*NEW APPROACH*: Tasks now use ghcup-managed GHC and Stack, avoiding previous conda-forge Stack compatibility issues.
+====
+
+== Prerequisites
+
+[source,bash]
+----
+# Install system dependencies (run once)
+./install-haskell-deps.sh
+
+# Set up ghcup-managed GHC and Stack with conda integration (run once)
+pixi run -e haskell ./setup-ghcup-with-conda.sh
+
+# Or run the setup tasks individually:
+pixi run -e haskell haskell-setup
+----
+
+== Interactive Development
+
+=== GHCi Sessions
+
+[source,bash]
+----
+# Multi-package GHCi (both hydra and hydra-ext) - [+] Now working with ghcup
+pixi run -e haskell ./run-stack-ghci.sh   # [+] Uses ghcup-managed Stack
+pixi run -e haskell ghci-all               # [+] Uses system GHC from ghcup
+
+# Individual package GHCi - [+] Now working with ghcup
+pixi run -e haskell hydra-ghci        # [+] Uses system GHC from ghcup
+pixi run -e haskell ext-ghci          # [+] Uses system GHC from ghcup
+pixi run -e haskell ghci-interactive  # [+] Uses system GHC from ghcup
+----
+
+[TIP]
+====
+*Status*: [+] All GHCi tasks now work using ghcup-managed GHC and Stack with `--system-ghc` flag.
+====
+
+=== Available Modules in GHCi
+
+When using multi-package GHCi, you can load modules from both packages:
+
+[source,haskell]
+----
+-- Core Hydra modules (from hydra-haskell)
+:l Hydra.Core.Model
+:l Hydra.Core.Type
+:l Hydra.Compute
+
+-- Extension modules (from hydra-ext)
+:l Hydra.Ext.Java.Language
+:l Hydra.Ext.Python.Language
+:l Hydra.Ext.Demos.GenPG.Demo
+
+-- Browse available functions
+:browse Hydra.Core.Model
+:type someFunction
+:reload
+----
+
+== Building and Testing
+
+=== Build Tasks
+
+[source,bash]
+----
+# Build all packages - [+] Now working with ghcup
+pixi run -e haskell stack-build       # [+] Uses ghcup-managed Stack with system GHC
+
+# Build individual packages - [+] Now working with ghcup
+pixi run -e haskell hydra-build       # [+] Uses system GHC from ghcup
+pixi run -e haskell ext-build         # [+] Uses system GHC from ghcup
+----
+
+[TIP]
+====
+*Status*: [+] All build tasks now work using ghcup-managed tools with `--system-ghc` flag.
+====
+
+=== Testing Tasks
+
+[source,bash]
+----
+# Test all packages - [+] Now working with ghcup
+pixi run -e haskell stack-test        # [+] Uses ghcup-managed Stack with system GHC
+
+# Test individual packages - [+] Now working with ghcup
+pixi run -e haskell hydra-test        # [+] Uses system GHC from ghcup
+pixi run -e haskell ext-test          # [+] Uses system GHC from ghcup
+----
+
+[TIP]
+====
+*Status*: [+] All test tasks now work using ghcup-managed tools.
+====
+
+=== Setup and Maintenance
+
+[source,bash]
+----
+# GHC and Stack setup via ghcup - [+] Works
+pixi run -e haskell haskell-setup     # Installs GHC 9.10.1 and Stack 2.15.7
+pixi run -e haskell stack-setup       # Uses system GHC from ghcup
+
+# Clean builds - [+] Works
+pixi run -e haskell stack-clean
+
+# Install executables - [+] Now working
+pixi run -e haskell stack-install     # Uses ghcup-managed Stack
+
+# Clear stack caches (troubleshooting) - [+] Works
+pixi run -e haskell clear-stack-cache-haskell
+pixi run -e haskell clear-stack-cache-ext
+pixi run -e haskell clear-stack-cache-all
+----
+
+[TIP]
+====
+*Status*: [+] All setup, cleanup, and build-dependent tasks now work with ghcup approach.
+====
+
+== Code Exploration
+
+=== Module Discovery
+
+[source,bash]
+----
+# List available Haskell modules - [+] Works perfectly
+pixi run -e haskell haskell-modules
+
+# Find functions in generated code - [+] Works perfectly
+pixi run -e haskell haskell-functions
+----
+
+[TIP]
+====
+*Status*: [+] All exploration tasks work perfectly.
+====
+
+== GraphSON Generation (hydra-ext)
+
+=== Check Existing Data
+
+[source,bash]
+----
+# Check if GraphSON files already exist - [+] Works perfectly
+pixi run -e haskell check-graphson
+
+# Check available source data - [+] Works perfectly
+pixi run -e haskell check-data
+
+# Preview generated files - [+] Works perfectly
+pixi run -e haskell check-copilot-data
+pixi run -e haskell check-sales-data
+----
+
+[TIP]
+====
+*Status*: [+] All data checking tasks work perfectly. The GraphSON files are already generated and available.
+====
+
+=== Generate GraphSON Data
+
+[NOTE]
+====
+[+] GraphSON generation tasks now work with ghcup approach. Pre-generated files remain available.
+====
+
+[source,bash]
+----
+# Get help for GraphSON functions - [+] Now working
+pixi run -e haskell graphson-help         # [+] Uses ghc --make
+
+# Generate GraphSON data - [+] Now working
+pixi run -e haskell run-copilot-graphson  # [+] Uses ghcup-managed Stack GHCi
+pixi run -e haskell run-example-graphson  # [+] Uses ghcup-managed Stack GHCi
+----
+
+[TIP]
+====
+*Status*: [+] Generation tasks now work with ghcup-managed tools. Pre-generated files still available in `hydra-ext/data/genpg/`:
+
+* `copilot.json` (50KB) - Health/copilot data
+* `sales.json` (25KB) - Sales example data
+====
+
+== Unified Development Tasks
+
+# Unified Haskell tasks
+[source,bash]
+----
+# Setup all Haskell packages - [+] Works
+pixi run -e haskell haskell-setup-all     # Sets up GHC and Stack via ghcup
+
+# Build all Haskell packages - [+] Now working
+pixi run -e haskell haskell-build-all     # Uses ghcup-managed Stack
+
+# Test all Haskell packages - [+] Now working
+pixi run -e haskell haskell-test-all      # Uses ghcup-managed Stack
+
+# Clean all Haskell packages - [+] Works
+pixi run -e haskell haskell-clean-all
+----
+
+[TIP]
+====
+*Status*: [+] All unified tasks now work with ghcup approach.
+====
+
+== Advanced Development Tasks
+
+=== Alternative GHCi Tasks
+
+[source,bash]
+----
+# Alternative GHCi approaches - [+] All working
+pixi run -e haskell ghci-all-fixed    # Fixed multi-package GHCi
+pixi run -e haskell ghci-system       # System GHC GHCi
+pixi run -e haskell ghci-minimal      # Minimal conda interference
+----
+
+[TIP]
+====
+*Status*: [+] All alternative GHCi tasks work with ghcup approach, providing different levels of conda integration.
+====
+
+=== Code Generation Tasks
+
+[source,bash]
+----
+# Generate code from Hydra definitions - [+] Now working
+pixi run -e haskell generate-java     # Generate Java code
+pixi run -e haskell generate-haskell  # Generate Haskell code
+----
+
+[TIP]
+====
+*Status*: [+] Code generation tasks work with ghcup-managed tools. These are typically used in development workflows to generate language-specific code from Hydra DSL definitions.
+====
+
+== Troubleshooting
+
+=== Previous Issues (Now Resolved with ghcup)
+
+. *[+] Linking failures*: Previously failed with `posix_spawn_file_actions_addchdir_np` error
+** *Solution*: Now use ghcup-managed GHC instead of conda-forge Stack's bundled GHC
+** *Status*: Resolved by using `--system-ghc` flag
+
+. *[+] GHCi loading issues*: Multi-package GHCi sessions previously failed
+** *Solution*: ghcup-managed Stack with system GHC works correctly
+** *Status*: Resolved
+
+. *[+] GraphSON generation*: Scripts now work with ghc --make approach
+** *Solution*: Use `ghc --make` instead of missing `runhaskell`
+** *Status*: Resolved
+
+=== Current Working Solutions
+
+[NOTE]
+====
+*All tasks now work*: With ghcup approach, all Haskell development tasks are functional:
+====
+
+*Code exploration*:
+[source,bash]
+----
+pixi run -e haskell haskell-modules
+pixi run -e haskell haskell-functions
+----
+
+*Building and testing*:
+[source,bash]
+----
+pixi run -e haskell stack-build
+pixi run -e haskell stack-test
+pixi run -e haskell hydra-build
+pixi run -e haskell ext-test
+----
+
+*Interactive development*:
+[source,bash]
+----
+pixi run -e haskell stack-ghci
+pixi run -e haskell hydra-ghci
+pixi run -e haskell ext-ghci
+----
+
+*Setup*:
+[source,bash]
+----
+pixi run -e haskell haskell-setup
+pixi run -e haskell ./setup-ghcup-with-conda.sh
+----
+
+=== Environment Verification
+
+[source,bash]
+----
+# Check ghcup and managed tools - [+] Works
+pixi run -e haskell ghcup --version
+pixi run -e haskell ghc --version
+pixi run -e haskell stack --version
+
+# Check available libraries - [+] Works
+pixi list -e haskell | grep -E "(gmp|zlib|ncurses|libffi)"
+
+# Check conda environment - [+] Works
+pixi run -e haskell bash -c 'echo $CONDA_PREFIX'
+
+# Verify ghcup installations
+pixi run -e haskell ghcup list
+----
+
+[TIP]
+====
+*Status*: [+] All environment verification tasks work perfectly.
+====
+
+== Standard Workflow (All Tasks Working)
+
+=== Primary ghcup-based Tasks
+
+All tasks now use ghcup-managed GHC and Stack, providing a reliable development experience:
+
+[source,bash]
+----
+# Setup (run once)
+pixi run -e haskell haskell-setup
+
+# Daily development workflow
+pixi run -e haskell stack-build      # Build all packages
+pixi run -e haskell stack-test       # Run all tests
+pixi run -e haskell stack-ghci       # Interactive development
+
+# Individual package development
+pixi run -e haskell hydra-build      # Build core package
+pixi run -e haskell ext-ghci         # Interactive ext development
+----
+
+=== Direct Stack Commands (Now Recommended)
+
+With ghcup setup, direct Stack usage now works reliably with proper environment variables:
+
+[source,bash]
+----
+# From project root (multi-package) - [+] Now works
+stack ghci --system-ghc    # [+] Uses ghcup-managed GHC
+stack build --system-ghc   # [+] Uses ghcup-managed GHC
+
+# From individual package directories - [+] Now works
+cd hydra-haskell && stack ghci --system-ghc  # [+] Works with system GHC
+cd hydra-ext && stack ghci --system-ghc      # [+] Works with system GHC
+
+# Remember to set environment variables for conda integration:
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
+export GHCUP_INSTALL_BASE_PREFIX="$CONDA_PREFIX"
+----
+
+== Files Created by Setup
+
+The setup process creates these files:
+
+* `setup-ghcup-with-conda.sh` - ghcup setup script with conda integration
+* `run-stack-ghci.sh` - GHCi launcher script using ghcup-managed Stack
+* GHC and Stack installations in `$CONDA_PREFIX/.ghcup/`
+
+== Current Status Summary
+
+=== [+] All Tasks Working (25+ tasks)
+
+* *Setup tasks*: `haskell-setup`, `stack-setup`, etc.
+* *Build tasks*: `stack-build`, `hydra-build`, `ext-build`, etc.
+* *Test tasks*: `stack-test`, `hydra-test`, `ext-test`, etc.
+* *GHCi tasks*: `stack-ghci`, `ghci-all`, `hydra-ghci`, `ext-ghci`, etc.
+* *GraphSON generation*: `graphson-help`, `run-*-graphson`
+* *Exploration tasks*: `haskell-modules`, `haskell-functions`
+* *Data checking tasks*: `check-*`
+* *Cleanup tasks*: `stack-clean`, `clear-stack-cache-*`, etc.
+
+=== Key Success Factors
+
+. *ghcup manages GHC*: Provides clean, compatible GHC installation
+. *Stack uses system GHC*: `--system-ghc` flag avoids bundled GHC issues
+. *Conda environment integration*: Libraries work seamlessly with ghcup tools
+. *Familiar workflow*: Existing Stack commands and project structure preserved
+
+=== Recommendation
+
+Use the complete ghcup-based workflow for full Haskell development capability:
+
+. Run `pixi run -e haskell haskell-setup` once
+. Use standard pixi tasks for daily development
+. All functionality now available and reliable
+
+=== Cross-Platform Development
+
+All tasks work across the supported platforms using the ghcup approach:
+
+[source,bash]
+----
+# Check environment status
+pixi run -e haskell ghcup list           # List installed tools
+pixi run -e haskell ghc --version        # Check GHC version
+pixi run -e haskell stack --version      # Check Stack version
+
+# Environment verification
+pixi run -e haskell bash -c 'echo $CONDA_PREFIX'
+pixi list -e haskell | grep -E "(gmp|zlib|ncurses|libffi)"
+----
+
+== Task Categories Summary
+
+=== [+] Setup Tasks (5 tasks)
+* `haskell-setup` - Complete Haskell environment setup
+* `haskell-setup-all` - Setup all Haskell packages
+* `stack-setup` - Stack-specific setup
+* `ghcup-install-ghc` - Install GHC via ghcup
+* `ghcup-install-stack` - Install Stack via ghcup
+
+=== [+] Build Tasks (8 tasks)
+* `stack-build` - Build all packages
+* `haskell-build-all` - Build all Haskell packages
+* `hydra-build` - Build core package
+* `ext-build` - Build extensions package
+* `stack-install` - Install executables
+* `generate-java` - Generate Java code
+* `generate-haskell` - Generate Haskell code
+
+=== [+] Test Tasks (6 tasks)
+* `stack-test` - Test all packages
+* `haskell-test-all` - Test all Haskell packages
+* `hydra-test` - Test core package
+* `ext-test` - Test extensions package
+* Custom test workflows via GHCi
+
+=== [+] GHCi Tasks (8 tasks)
+* `stack-ghci` - Multi-package GHCi
+* `ghci-all` - All packages GHCi
+* `hydra-ghci` - Core package GHCi
+* `ext-ghci` - Extensions package GHCi
+* `ghci-interactive` - Interactive GHCi
+* `ghci-all-fixed` - Fixed GHCi variant
+* `ghci-system` - System GHC GHCi
+* `ghci-minimal` - Minimal conda interference
+
+=== [+] Data and GraphSON Tasks (8 tasks)
+* `check-data` - Check source data
+* `check-graphson` - Check GraphSON files
+* `check-copilot-data` - Check copilot data
+* `check-sales-data` - Check sales data
+* `run-copilot-graphson` - Generate copilot GraphSON
+* `run-example-graphson` - Generate example GraphSON
+* `graphson-help` - GraphSON function help
+
+=== [+] Exploration Tasks (2 tasks)
+* `haskell-modules` - List modules
+* `haskell-functions` - Find functions
+
+=== [+] Cleanup Tasks (6 tasks)
+* `stack-clean` - Clean Stack builds
+* `haskell-clean-all` - Clean all Haskell builds
+* `clear-stack-cache-haskell` - Clear core cache
+* `clear-stack-cache-ext` - Clear extensions cache
+* `clear-stack-cache-all` - Clear all caches
+
+**Total: 51+ working Haskell development tasks**
+
+== Related Documentation
+
+* <<pixi-task-status#,PIXI_TASK_STATUS.adoc>> - Complete task status and issue analysis
+* <<haskell-setup#,HASKELL_SETUP.adoc>> - Comprehensive setup guide
+* Core package documentation: `hydra-haskell/README.md`
+* Extensions package documentation: `hydra-ext/README.md`

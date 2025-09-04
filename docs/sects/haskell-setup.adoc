@@ -1,0 +1,243 @@
+= Haskell Development Setup Guide
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+
+This guide helps you set up Haskell development for the Hydra project using *ghcup* for toolchain management, which consists of two main Haskell packages:
+
+* `hydra-haskell`: Core Hydra library
+* `hydra-ext`: Extensions and additional functionality (depends on hydra-haskell)
+
+== Prerequisites
+
+=== System Dependencies
+
+Install required system libraries for Haskell development:
+
+[source,bash]
+----
+# Run the provided script
+./install-haskell-deps.sh
+
+# Or manually install (Fedora/RHEL):
+sudo dnf install -y gmp-devel zlib-devel ncurses-devel libffi-devel make gcc gcc-c++ pkgconf-pkg-config libnuma-devel tinfo
+
+# Ubuntu/Debian equivalent:
+sudo apt-get install -y libgmp-dev libz-dev libncurses-dev libffi-dev build-essential pkg-config libnuma-dev
+----
+
+=== GHC and Stack Installation via ghcup
+
+This project uses *ghcup* to manage GHC and Stack versions. The conda-forge ghcup package is used to ensure compatibility with the conda environment:
+
+[source,bash]
+----
+# Check if ghcup is available (should be installed via pixi)
+pixi run -e haskell ghcup --version
+
+# Install GHC 9.10.1 and Stack 2.15.7 via ghcup
+pixi run -e haskell ./setup-ghcup-with-conda.sh
+
+# Or run the setup tasks individually:
+pixi run -e haskell haskell-setup
+----
+
+== Project Structure
+
+This is a multi-package Stack project with the following structure:
+
+....
+hydra/
+├── stack.yaml              # Root stack configuration (manages both packages)
+├── hydra-haskell/
+│   ├── package.yaml        # Core Hydra package definition
+│   ├── stack.yaml          # Individual stack config
+│   └── src/
+└── hydra-ext/
+    ├── package.yaml        # Extensions package (depends on hydra)
+    ├── stack.yaml          # Individual stack config
+    └── src/
+....
+
+== Getting Started
+
+=== Using Pixi Tasks
+
+If you prefer using pixi for task management:
+
+[source,bash]
+----
+# Setup GHC and Stack via ghcup
+pixi run -e haskell haskell-setup
+pixi run -e haskell stack-setup
+
+# Build everything
+pixi run -e haskell stack-build
+
+# Start interactive sessions
+pixi run -e haskell ghci-all          # Both packages
+pixi run -e haskell hydra-ghci        # Core package only
+pixi run -e haskell ext-ghci          # Extensions package only
+----
+
+== Common Workflows
+
+=== Development with GHCi
+
+[source,bash]
+----
+# Start GHCi with both packages (using ghcup-managed tools)
+pixi run -e haskell stack-ghci
+
+# Or if environment is properly set:
+stack ghci --system-ghc
+
+# In GHCi, you can:
+*Main> :l Hydra.Core.Model           # Load core modules
+*Main> :l Hydra.Ext.Java.Language    # Load extension modules
+*Main> :browse Hydra.Core.Model      # Browse available functions
+*Main> :type someFunction            # Check function types
+*Main> :reload                       # Reload after code changes
+----
+
+=== Running Tests
+
+[source,bash]
+----
+# Run tests for all packages (using ghcup-managed Stack)
+pixi run -e haskell stack-test
+
+# Or directly if environment is set:
+stack test --system-ghc
+
+# Run tests for specific packages
+pixi run -e haskell hydra-test
+pixi run -e haskell ext-test
+----
+
+=== Building and Installing
+
+[source,bash]
+----
+# Build all packages
+pixi run -e haskell stack-build
+
+# Install executables to conda environment bin
+pixi run -e haskell stack-install
+
+# Clean build artifacts
+pixi run -e haskell stack-clean
+----
+
+== Troubleshooting
+
+=== Common Issues
+
+. *Missing libgmp*: Install `gmp-devel` (Fedora) or `libgmp-dev` (Ubuntu)
+. *Missing libffi*: Install `libffi-devel` (Fedora) or `libffi-dev` (Ubuntu)
+. *GHC version conflicts*: Run `pixi run -e haskell stack-clean` and re-run setup
+. *ghcup not found*: Ensure you're running in the haskell environment: `pixi run -e haskell <command>`
+
+=== GHCi Package Loading Issues
+
+If you see errors like "cannot satisfy -package HsYAML", try:
+
+[source,bash]
+----
+# Clean everything and rebuild
+pixi run -e haskell stack-clean
+pixi run -e haskell clear-stack-cache-all
+pixi run -e haskell stack-build
+pixi run -e haskell stack-ghci
+----
+
+=== Build Failures
+
+[source,bash]
+----
+# Check for system dependencies
+./install-haskell-deps.sh
+
+# Clean and rebuild from scratch using ghcup-managed tools
+pixi run -e haskell clear-stack-cache-all
+pixi run -e haskell ./setup-ghcup-with-conda.sh
+pixi run -e haskell stack-build
+----
+
+== IDE Integration
+
+=== VS Code with Haskell Language Server
+
+. Install the Haskell extension
+. Install HLS via ghcup:
++
+[source,bash]
+----
+pixi run -e haskell ghcup install hls
+pixi run -e haskell ghcup set hls
+----
+. Open the project root directory in VS Code
+
+=== Vim/Neovim
+
+Use plugins like `haskell-vim` and `coc-haskell` or `nvim-lspconfig` with HLS installed via ghcup.
+
+== GraphSON Generation Tasks
+
+Special tasks for generating GraphSON data:
+
+[source,bash]
+----
+# Generate Copilot GraphSON data
+pixi run -e haskell run-copilot-graphson
+
+# Generate example GraphSON data
+pixi run -e haskell run-example-graphson
+
+# Check generated data
+pixi run -e haskell check-copilot-data
+----
+
+== Package Dependencies
+
+* `hydra-haskell` is the core package with no internal dependencies
+* `hydra-ext` depends on `hydra-haskell` and provides additional functionality
+* Both packages use the same external dependencies (HsYAML, aeson, etc.)
+
+== Useful Commands
+
+[source,bash]
+----
+# Check what packages are available
+pixi run -e haskell stack exec -- ghc-pkg list
+
+# Get information about a package
+pixi run -e haskell stack exec -- ghc-pkg describe hydra
+
+# Start GHCi with specific packages only
+pixi run -e haskell stack ghci --system-ghc --package hydra --package hydra-ext
+
+# Build with profiling enabled
+pixi run -e haskell stack build --system-ghc --profile
+
+# Generate documentation
+pixi run -e haskell stack haddock --system-ghc
+----
+
+For more information:
+
+* *Stack commands*: https://docs.haskellstack.org/[Stack User Guide]
+* *ghcup usage*: https://www.haskell.org/ghcup/[ghcup Documentation]
+
+== Key Benefits of This Setup
+
+* *ghcup manages GHC versions*: Clean, predictable GHC installations
+* *Stack uses system GHC*: Avoids glibc compatibility issues seen with Stack's bundled GHC
+* *Conda environment integration*: Libraries and toolchain work together seamlessly
+* *Familiar Stack workflow*: Existing Stack commands and project structure remain unchanged
+
+== Quick Reference
+
+For a complete list of available pixi tasks and commands, see <<pixi-haskell-tasks#,PIXI_HASKELL_TASKS.adoc>>.

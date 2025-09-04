@@ -1,0 +1,45 @@
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+
+folder "recipes/" {
+  file "recipe.yaml" as main_recipe
+  file "hydra-wrapper.sh" as main_wrapper
+  file "jvm-wrapper.sh" as jvm_wrapper
+
+  folder "hydra-java/" {
+    file "recipe.yaml" as java_recipe
+    file "wrapper.sh" as java_wrapper
+  }
+
+  folder "hydra-python/" {
+    file "recipe.yaml" as python_recipe
+  }
+
+  folder "hydra-haskell/" {
+    file "recipe.yaml" as haskell_recipe
+  }
+
+  folder "hydra-scala/" {
+    file "recipe.yaml" as scala_recipe
+    file "wrapper.sh" as scala_wrapper
+  }
+
+  folder "hydra-ext/" {
+    file "recipe.yaml" as ext_recipe
+  }
+}
+
+note top of main_recipe : Main meta-package\n(with embedded nushell script)
+note top of main_wrapper : Main hydra command wrapper script
+note top of jvm_wrapper : Unified JVM wrapper for\nmain package (Java & Scala)
+note right of java_recipe : Java package recipe\n(with embedded nushell script)
+note right of java_wrapper : Java package wrapper script
+note right of python_recipe : Python package recipe\n(with embedded nushell script)
+note right of haskell_recipe : Haskell package recipe\n(with embedded nushell script)
+note right of scala_recipe : Scala package recipe\n(with embedded nushell script)
+note right of scala_wrapper : Scala package wrapper script
+note right of ext_recipe : Extensions package recipe\n(with embedded nushell script)
+
+@enduml

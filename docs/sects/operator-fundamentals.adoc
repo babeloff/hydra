@@ -1,0 +1,499 @@
+= Operator Fundamentals
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+
+This document covers the fundamental concepts and core principles for operators using Hydra to create data transformation pipelines and message translators.
+
+== What is a Hydra Operator?
+
+A Hydra operator is someone who uses existing Hydra implementations to solve practical data transformation problems. Unlike core developers (who work on Hydra itself) or implementors (who create new language bindings), operators focus on applying Hydra's capabilities to real-world data integration challenges.
+
+=== Operator Responsibilities
+
+* **Schema Design**: Define input and output data structures
+* **Mapping Creation**: Specify how data flows between different formats
+* **Pipeline Implementation**: Build complete data transformation workflows
+* **Quality Assurance**: Ensure data integrity and transformation correctness
+* **Performance Optimization**: Optimize transformations for production workloads
+* **Monitoring & Maintenance**: Monitor running systems and handle issues
+
+=== Typical Use Cases
+
+==== Data Integration
+* Converting between different data formats (CSV ↔ JSON ↔ XML)
+* Migrating data between systems with different schemas
+* Aggregating data from multiple sources
+* Real-time data transformation in streaming pipelines
+
+==== Message Translation
+* API format conversion (REST ↔ GraphQL ↔ Protocol Buffers)
+* Legacy system integration
+* Microservice communication adaptation
+* Event format standardization
+
+==== Schema Evolution
+* Database migration scripts
+* API versioning and compatibility
+* Backward/forward compatibility handling
+* Schema validation and enforcement
+
+== Core Concepts for Operators
+
+=== The Hydra Data Model
+
+Hydra uses a unified core data model that serves as an intermediate representation for all data transformations. Understanding this model is crucial for effective operations.
+
+[plantuml,hydra-data-transformation-model,png]
+....
+include::../diagrams/data-transformation-model.puml[]
+....
+
+==== Type System
+* **Primitive Types**: String, Integer, Float, Boolean, Binary
+* **Composite Types**: Records (structs), Unions (sum types), Lists, Maps, Sets
+* **Optional Types**: Nullable values with explicit handling
+* **Function Types**: First-class functions for transformations
+
+==== Term System
+* **Literals**: Concrete values (strings, numbers, booleans)
+* **Records**: Structured data with named fields
+* **Lists and Collections**: Ordered and unordered data collections
+* **Functions**: Transformation logic and computations
+
+=== Schemas and Constraints
+
+==== Input Schemas
+Define the structure and constraints of your source data:
+
+[source,haskell]
+----
+-- Example: CSV file structure
+customerSchema = record "Customer" [
+  field "customerId" (required int32Type),
+  field "name" (required stringType),
+  field "email" (optional stringType),
+  field "registrationDate" (required stringType)
+]
+----
+
+==== Output Schemas
+Specify the target structure for transformed data:
+
+[source,haskell]
+----
+-- Example: JSON API structure
+customerApiSchema = record "CustomerAPI" [
+  field "id" (required stringType),
+  field "fullName" (required stringType),
+  field "contactInfo" (optional contactInfoType),
+  field "metadata" (required metadataType)
+]
+----
+
+==== Validation Rules
+Define business rules and constraints:
+
+[source,haskell]
+----
+-- Example: Business validation rules
+customerValidation = validationRules [
+  rule "email_format" validateEmailFormat,
+  rule "id_unique" validateUniqueId,
+  rule "name_length" (validateLength 1 100)
+]
+----
+
+=== Mappings and Transformations
+
+==== Simple Field Mapping
+Basic one-to-one field transformations:
+
+[source,haskell]
+----
+customerMapping = mapping [
+  mapField "customerId" "id" (transform toString),
+  mapField "name" "fullName" identity,
+  mapField "email" "contactInfo.email" identity
+]
+----
+
+==== Complex Transformations
+Advanced mapping logic with computations:
+
+[source,haskell]
+----
+complexMapping = mapping [
+  computeField "fullName" $ \record ->
+    concatenate [
+      getField "firstName" record,
+      " ",
+      getField "lastName" record
+    ],
+  computeField "ageCategory" $ \record ->
+    let age = getField "age" record
+    in if age < 18 then "minor" else "adult"
+]
+----
+
+==== Conditional Logic
+Handle different data scenarios:
+
+[source,haskell]
+----
+conditionalMapping = mapping [
+  conditionalField "status" $ \record ->
+    case getField "isActive" record of
+      True -> "active"
+      False -> if hasField "suspensionReason" record
+               then "suspended"
+               else "inactive"
+]
+----
+
+=== Data Quality and Validation
+
+==== Input Validation
+Ensure source data meets expectations:
+
+[source,haskell]
+----
+inputValidation = validateInput [
+  requireField "customerId",
+  validateType "email" emailType,
+  validateRange "age" 0 150,
+  validatePattern "phone" phoneRegex
+]
+----
+
+==== Output Validation
+Verify transformed data correctness:
+
+[source,haskell]
+----
+outputValidation = validateOutput [
+  checkCompleteness requiredFields,
+  checkConsistency relatedFields,
+  checkBusinessRules businessConstraints
+]
+----
+
+==== Error Handling
+Define how to handle validation failures:
+
+[source,haskell]
+----
+errorHandling = errorStrategy [
+  onMissingField logWarning,
+  onTypeError rejectRecord,
+  onBusinessRuleViolation flagForReview
+]
+----
+
+== Development Environment and Tools
+
+=== Setting Up Your Environment
+
+==== Prerequisites
+* Git for version control
+* Pixi package manager (primary build system)
+* Your chosen Hydra implementation (Haskell, Java, or Python)
+* Text editor or IDE with appropriate language support
+
+==== Initial Setup
+[source,bash]
+----
+# Clone the Hydra repository
+git clone https://github.com/CategoricalData/hydra
+cd hydra
+
+# Install all build dependencies
+pixi install
+
+# Validate the setup
+pixi run validate
+
+# Build all components
+pixi run build-all
+----
+
+==== Environment Selection
+Choose your primary development environment:
+
+[source,bash]
+----
+# For complete functionality (Haskell)
+pixi install -e haskell
+pixi run -e haskell haskell-setup
+
+# For Java development
+pixi install -e java
+
+# For Python development
+pixi install -e python
+
+# For Scala development
+pixi install -e scala
+----
+
+=== Development Workflow
+
+==== Typical Development Cycle
+1. **Analysis**: Understand source and target data formats
+2. **Schema Design**: Define input and output schemas
+3. **Mapping Creation**: Implement transformation logic
+4. **Testing**: Validate with sample data
+5. **Optimization**: Improve performance and reliability
+6. **Deployment**: Package for production use
+
+==== Interactive Development
+[source,bash]
+----
+# Start interactive session for rapid prototyping
+pixi run -e haskell stack-ghci
+
+# In GHCi:
+:l YourTransformation
+testMapping sampleData
+:reload  -- after making changes
+----
+
+==== Testing and Validation
+[source,bash]
+----
+# Run transformation tests
+pixi run -e haskell stack-test
+
+# Test with sample data
+pixi run -e haskell run-example-graphson
+
+# Verify output quality
+pixi run -e haskell check-copilot-data
+----
+
+=== Available Tools and Resources
+
+==== Code Generation
+[source,bash]
+----
+# Generate language-specific code from schemas
+pixi run -e haskell generate-java
+pixi run -e haskell generate-haskell
+
+# Generate documentation
+pixi run -e haskell generate-docs
+----
+
+==== Data Processing
+[source,bash]
+----
+# Process sample datasets
+pixi run -e haskell run-copilot-graphson
+pixi run -e haskell run-example-graphson
+
+# Validate existing data
+pixi run -e haskell check-data
+pixi run -e haskell check-graphson
+----
+
+==== Debugging and Exploration
+[source,bash]
+----
+# Explore available modules and functions
+pixi run -e haskell haskell-modules
+pixi run -e haskell haskell-functions
+
+# Interactive debugging
+pixi run -e haskell stack-ghci
+-- :trace functionName
+-- :browse ModuleName
+----
+
+== Project Organization
+
+=== Recommended Directory Structure
+
+[source,text]
+----
+your-hydra-project/
+├── data/
+│   ├── input/          # Source data files
+│   ├── samples/        # Sample datasets for testing
+│   └── output/         # Generated output files
+├── schemas/
+│   ├── input/          # Input schema definitions
+│   ├── output/         # Output schema definitions
+│   └── validation/     # Validation rule definitions
+├── transformations/
+│   ├── mappings/       # Data mapping definitions
+│   ├── functions/      # Custom transformation functions
+│   └── pipelines/      # Complete transformation pipelines
+├── tests/
+│   ├── unit/           # Unit tests for individual components
+│   ├── integration/    # End-to-end pipeline tests
+│   └── data/           # Test data files
+├── docs/
+│   ├── schemas.md      # Schema documentation
+│   ├── mappings.md     # Mapping documentation
+│   └── deployment.md   # Deployment instructions
+├── scripts/
+│   ├── build.sh        # Build scripts
+│   ├── test.sh         # Testing scripts
+│   └── deploy.sh       # Deployment scripts
+└── config/
+    ├── development/    # Development configuration
+    ├── staging/        # Staging configuration
+    └── production/     # Production configuration
+----
+
+=== Configuration Management
+
+==== Environment-Specific Configuration
+[source,yaml]
+----
+# config/development/hydra.yaml
+environment: development
+input:
+  source: "data/input/"
+  format: "csv"
+  validation: strict
+output:
+  destination: "data/output/"
+  format: "json"
+  compression: none
+logging:
+  level: debug
+  output: console
+performance:
+  batch_size: 1000
+  parallel_workers: 2
+----
+
+==== Production Configuration
+[source,yaml]
+----
+# config/production/hydra.yaml
+environment: production
+input:
+  source: "s3://data-bucket/input/"
+  format: "avro"
+  validation: strict
+output:
+  destination: "s3://data-bucket/output/"
+  format: "parquet"
+  compression: snappy
+logging:
+  level: info
+  output: "logs/hydra.log"
+performance:
+  batch_size: 10000
+  parallel_workers: 8
+monitoring:
+  metrics_endpoint: "http://metrics:9090"
+  health_check_interval: 30
+----
+
+== Best Practices
+
+=== Schema Design
+
+==== Keep Schemas Simple and Focused
+* Use clear, descriptive field names
+* Avoid deeply nested structures when possible
+* Separate concerns into different schema modules
+* Document business rules and constraints
+
+==== Version Your Schemas
+* Use semantic versioning for schema changes
+* Maintain backward compatibility when possible
+* Provide migration paths for breaking changes
+* Test schema evolution scenarios
+
+==== Validate Early and Often
+* Validate input data before processing
+* Check intermediate results during transformation
+* Verify output data meets requirements
+* Log validation failures with context
+
+=== Transformation Design
+
+==== Make Mappings Explicit
+* Document the business logic behind each mapping
+* Use descriptive names for transformation functions
+* Avoid implicit conversions when possible
+* Test edge cases and error conditions
+
+==== Handle Errors Gracefully
+* Define clear error handling strategies
+* Provide meaningful error messages
+* Implement fallback behaviors where appropriate
+* Monitor and alert on error rates
+
+==== Optimize for Maintainability
+* Break complex transformations into smaller functions
+* Use type signatures to document interfaces
+* Write comprehensive tests for transformation logic
+* Keep business logic separate from technical concerns
+
+=== Performance Considerations
+
+==== Design for Scale
+* Consider memory usage for large datasets
+* Implement streaming processing when possible
+* Use appropriate data structures for your use case
+* Profile and benchmark critical paths
+
+==== Monitor and Measure
+* Track processing times and throughput
+* Monitor memory usage patterns
+* Set up alerts for performance degradation
+* Collect metrics on data quality issues
+
+== Common Patterns and Anti-Patterns
+
+=== Effective Patterns
+
+==== Schema-First Development
+Start with clear schema definitions before implementing transformations.
+
+==== Incremental Processing
+Process data in manageable chunks to control memory usage.
+
+==== Separation of Concerns
+Keep parsing, transformation, and output generation as separate phases.
+
+==== Comprehensive Testing
+Test with realistic data volumes and edge cases.
+
+=== Anti-Patterns to Avoid
+
+==== Hardcoded Assumptions
+Don't assume data will always match expected formats or ranges.
+
+==== Monolithic Transformations
+Avoid creating single, complex transformation functions.
+
+==== Ignoring Data Quality
+Don't skip validation and error handling.
+
+==== Premature Optimization
+Focus on correctness first, then optimize based on actual performance needs.
+
+== Next Steps
+
+Once you understand these fundamentals:
+
+1. **Practice with Examples**: Work through the provided transformation examples
+2. **Start Small**: Begin with simple data format conversions
+3. **Build Incrementally**: Add complexity gradually as you gain experience
+4. **Engage with Community**: Join Discord discussions and ask questions
+5. **Contribute Back**: Share your transformations and improvements
+
+== Related Documentation
+
+* <<operator-examples#,Operator Examples>> - Practical transformation examples
+* <<data-transformation-patterns#,Data Transformation Patterns>> - Common patterns and solutions
+* <<performance-optimization#,Performance Optimization>> - Scaling and optimization strategies
+* <<operator-guide#,Complete Operator Guide>> - Comprehensive usage guide

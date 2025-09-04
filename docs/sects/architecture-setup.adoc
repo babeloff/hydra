@@ -1,0 +1,179 @@
+= Architecture and Development Setup
+
+This section covers the overall architecture of the Hydra project and how to set up your development environment.
+
+== Overview
+
+The Hydra project is a multi-language functional programming toolkit that has been successfully converted from a traditional build setup to a modern pixi project. This conversion enables unified conda package generation for all language variants using rattler-build.
+
+=== Supported Language Variants
+
+* *Java* - Core implementation with complete functionality
+* *Python* - Python bindings and implementation (in progress)
+* *Haskell* - Pure functional implementation
+* *Scala* - JVM-based functional implementation
+* *Extensions* - Additional functionality supporting both Java and Haskell
+
+=== Key Benefits of the Pixi Setup
+
+. *Unified Build System* - Single command to build all variants
+. *Modern Recipe Format* - Uses rattler-build v1 specification with pure YAML
+. *Cross-Platform Scripts* - Nushell provides consistent behavior across platforms
+. *Dependency Management* - Pixi handles all build tool dependencies
+. *Environment Isolation* - Clean, reproducible build environments
+. *Package Distribution* - Easy conda package creation and distribution
+. *Developer Experience* - Simple setup with `pixi install`
+. *CI/CD Ready* - Suitable for automated build pipelines
+
+== Project Architecture
+
+=== Core Configuration Files
+
+* *`pixi.toml`* - Main pixi project configuration
+** Defines project metadata and version (0.12.0)
+** Specifies conda-forge as the primary channel
+** Configures multi-platform support (linux-64, osx-64, osx-arm64, win-64)
+** Sets up feature-based environments for different language toolchains
+** Defines build tasks for all variants
+
+* *`recipes/`* directory containing rattler-build v1 recipes with embedded nushell scripts
+
+=== Package Hierarchy
+
+The project generates several conda packages:
+
+==== Individual Language Packages
+
+. *hydra-java* (v0.12.0)
+** Built with Gradle via nushell script
+** Requires OpenJDK 11+ and nushell
+** Generates JAR files and wrapper scripts
+** Installs to `$PREFIX/lib/hydra-java/`
+
+. *hydra-python* (v0.10.0)
+** Built with pip + hatchling via nushell script
+** Requires Python 3.12+ and nushell
+** Standard Python package installation
+** Uses existing `pyproject.toml`
+
+. *hydra-haskell* (v0.12.0)
+** Built with Stack via nushell script
+** Requires GHC 9.4+, Stack, and nushell
+** Generates libraries and executables
+** Installs to `$PREFIX/lib/hydra-haskell/`
+
+. *hydra-scala* (v0.1.0)
+** Built with SBT via nushell script
+** Requires OpenJDK 11+, SBT, and nushell
+** Generates JAR files and wrapper scripts
+** Installs to `$PREFIX/lib/hydra-scala/`
+
+. *hydra-ext* (v0.12.0)
+** Hybrid Java/Haskell build via nushell script
+** Supports both Gradle and Stack builds
+** Contains additional functionality
+** Includes data files and extensions
+
+==== Meta-Package
+
+The main *hydra* package (v0.12.0) is a meta-package that:
+
+* Depends on all individual variant packages
+* Provides unified command-line interface
+* Includes comprehensive wrapper script (`hydra` command)
+* Supports multi-variant usage patterns
+
+=== Package Structure
+
+==== Recipe Organization
+
+[plantuml,recipes-directory-structure,png]
+....
+include::../diagrams/recipes-structure.puml[]
+....
+
+==== Modern Recipe Format
+
+Uses rattler-build v1 specification with these improvements:
+
+* *Pure YAML format* - No external bash/batch files
+* *Embedded nushell scripts* - Cross-platform build logic
+* *Proper Jinja syntax* - `${{ variable }}` instead of `{{ variable }}`
+* *Updated metadata fields* - `homepage` instead of `home`
+* *Enhanced validation* - JSON schema support
+* *V1 test format* - `tests:` instead of `test:`
+
+==== Build Process Details
+
+All recipes use *nushell scripts* embedded directly in the `recipe.yaml` files. This provides:
+
+* Pure YAML format (no separate bash/batch files)
+* Cross-platform compatibility through nushell
+* Better integration with rattler-build
+* Improved error handling and logging
+* Separate wrapper script files for better maintainability
+* Unified JVM wrapper reduces duplication for main package
+
+==== Cross-Platform Support
+
+Recipes are configured for multiple platforms:
+
+* Linux x86_64 (`linux-64`)
+* macOS Intel (`osx-64`)
+* macOS Apple Silicon (`osx-arm64`)
+* Windows x86_64 (`win-64`)
+
+=== Integration with Existing Build Systems
+
+The pixi setup works alongside existing build configurations:
+
+* Preserves existing `build.gradle` files
+* Uses existing `pyproject.toml` for Python
+* Leverages existing `stack.yaml` for Haskell
+* Utilizes existing `build.sbt` for Scala
+
+No changes were made to the core language implementations - the pixi layer provides conda packaging on top of existing build systems via nushell scripts that call the appropriate build tools.
+
+=== Command-Line Interface
+
+After installation, users can access Hydra through multiple interfaces:
+
+==== Multi-Variant Wrapper
+
+[source,bash]
+----
+# Main hydra command (multi-variant wrapper)
+hydra --help
+hydra java --help
+hydra python -c "import hydra; print('Hydra Python loaded')"
+hydra haskell --version
+hydra scala --version
+----
+
+==== Direct Variant Access
+
+[source,bash]
+----
+# Direct variant commands
+hydra-java --help
+hydra-scala --help
+# Plus any generated Haskell executables
+----
+
+==== Language-Specific APIs
+
+===== Python API
+
+[source,python]
+----
+import hydra
+# Use Hydra Python implementation
+----
+
+===== Haskell Library
+
+[source,haskell]
+----
+import Hydra.Core
+-- Use Hydra Haskell implementation
+----

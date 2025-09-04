@@ -1,0 +1,65 @@
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+
+package "Tier-5: Third-Party Code" as T5 {
+  [User-defined Functions]
+  [External Sources]
+  [Third-party Libraries]
+}
+
+package "Tier-4: Non-Kernel Code" as T4 {
+  [Language Coders]
+  [Built-in Utilities]
+  [Java Coder]
+  [Python Coder]
+}
+
+package "Tier-3: Kernel Sources" as T3 {
+  [DSL-based Definitions]
+  [Hydra/Sources/Core.hs]
+  [Code Generation Specs]
+}
+
+package "Tier-2: Kernel Modules" as T2 {
+  [Generated Kernel Code]
+  [Advanced Functions]
+  [Complex Logic]
+}
+
+package "Tier-1" as T1 {
+  package "Kernel Modules" {
+    [Generated Code with Primitives]
+  }
+  package "Primitive Functions" {
+    [Basic Primitives]
+  }
+  package "DSLs" {
+    [Advanced DSLs]
+  }
+}
+
+package "Tier-0" as T0 {
+  package "Kernel Modules" {
+    [Type Definitions]
+    [hydra/core]
+    [hydra/graph]
+  }
+  package "DSLs" {
+    [Types DSL]
+    [Terms DSL]
+  }
+}
+
+' Dependencies (higher tiers can depend on lower tiers)
+T5 --> T4
+T4 --> T3
+T3 --> T2
+T2 --> T1
+T1 --> T0
+
+note right of T0 : Foundation tier\nNo dependencies on\nhigher tiers
+note right of T5 : Highest tier\nCan depend on all\nlower tiers
+
+@enduml

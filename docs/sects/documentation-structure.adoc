@@ -1,0 +1,314 @@
+= Documentation Structure and Organization
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+
+This document describes the modular documentation structure of the Hydra project and how it's organized for maintainability and clarity.
+
+== Overview
+
+The Hydra documentation has been restructured from monolithic guides into a modular, section-based system. This approach provides better organization, easier maintenance, and improved reusability of content across different guides.
+
+== Documentation Architecture
+
+=== Main Guides
+
+The documentation consists of three primary guides, each targeting a specific user type:
+
+==== Developer Guide (`developer-guide.adoc`)
+*Target Audience*: Core Hydra developers and contributors
+
+*Structure*:
+* Part I: Architecture and Development Setup
+* Part II: Haskell Development (includes existing sections)
+* Part III: Dependency Tiers and Code Organization
+* Part IV: Code Generation
+* Part V: Release Management
+* Appendices: Complete pixi tasks reference and resources
+
+==== Implementor Guide (`implementor-guide.adoc`)
+*Target Audience*: Developers creating new Hydra language implementations
+
+*Structure*:
+* Part I: Overview and Prerequisites
+* Part II: Implementation Steps
+* Part III: Implementation Guidelines
+* Appendices: Checklists, resources, and language-specific considerations
+
+==== Operator Guide (`operator-guide.adoc`)
+*Target Audience*: Users applying Hydra to data transformation tasks
+
+*Structure*:
+* Part I: Understanding Hydra for Data Operations
+* Part II: Getting Started with Data Transformation
+* Part III: Development Workflow with Pixi Tasks
+* Part IV: Production Deployment
+* Appendices: Resources, patterns, and troubleshooting
+
+=== Section Files (`docs/sects/`)
+
+The modular sections are organized by guide and topic area:
+
+==== Developer Guide Sections
+
+===== `dependency-tiers.adoc`
+*Content*: Complete explanation of Hydra's dependency tier system
+*Covers*:
+- Tier-0 through Tier-5 definitions and rules
+- Dependency rules and enforcement
+- Working with tiered code
+- Debugging dependency issues
+- Advanced tier concepts and patterns
+
+===== `code-generation.adoc`
+*Content*: Comprehensive code generation documentation
+*Covers*:
+- Code generation architecture and pipeline
+- Interactive and automated generation workflows
+- Language-specific generation (Haskell, Java, Python, Scala)
+- Customizing and extending code generation
+- Development workflows and best practices
+- Troubleshooting generation issues
+
+===== `release-management.adoc`
+*Content*: Complete release management procedures
+*Covers*:
+- Multi-component release coordination
+- Haskell and Java specific release processes
+- Version synchronization across implementations
+- Pre-release validation and testing
+- Hotfix procedures and emergency protocols
+- Post-release tasks and monitoring
+
+==== Implementor Guide Sections
+
+===== `implementor-fundamentals.adoc`
+*Content*: Core concepts and prerequisites for implementors
+*Covers*:
+- Implementation completeness criteria and spectrum
+- Current implementation status across languages
+- Target language considerations and evaluation criteria
+- Development prerequisites and environment setup
+- Implementation planning and milestone strategies
+- Success metrics and common pitfalls
+
+===== `implementor-steps.adoc`
+*Content*: Detailed step-by-step implementation process
+*Covers*:
+- Step 1-11: Complete implementation workflow
+- Syntax modeling guidelines and examples
+- Language constraints definition
+- Coder and serializer creation
+- Primitive function implementation
+- Testing and validation procedures
+- Native DSL development
+
+===== `implementor-guidelines.adoc`
+*Content*: Best practices and implementation patterns
+*Covers*:
+- Code organization and naming conventions
+- API consistency and version compatibility
+- Testing strategies and quality assurance
+- Error handling and performance optimization
+- Deployment and distribution guidance
+- Community engagement and maintenance
+
+==== Operator Guide Sections
+
+===== `operator-fundamentals.adoc`
+*Content*: Core concepts for data transformation operators
+*Covers*:
+- Operator roles and responsibilities
+- Hydra data model and type system understanding
+- Schema design and mapping concepts
+- Development environment and workflow setup
+- Project organization and configuration management
+- Best practices and common patterns
+
+===== `transformation-examples.adoc`
+*Content*: Practical transformation examples and patterns
+*Covers*:
+- Step-by-step relational to graph transformation
+- Advanced transformation patterns
+- Multi-step pipeline examples
+- Schema evolution and migration strategies
+- Format-specific transformations (CSV, JSON, XML)
+- Message translation and event processing
+- Performance optimization techniques
+
+==== Existing Haskell Sections
+
+These sections were already present and have been enhanced:
+
+===== `haskell-setup.adoc`
+*Content*: Comprehensive Haskell development environment setup
+
+===== `pixi-haskell-tasks.adoc`
+*Content*: Complete reference for 50+ Haskell pixi tasks
+
+===== `pixi-task-status.adoc`
+*Content*: Task status tracking and troubleshooting
+
+===== `developer-guide.adoc` (section file)
+*Content*: Build system and pixi environment documentation
+
+== Benefits of Modular Structure
+
+=== For Documentation Maintainers
+
+==== Focused Content Management
+* Each section covers a specific topic area in depth
+* Changes to one topic don't require editing multiple large files
+* Easier to identify and update outdated content
+* Clear ownership of content areas
+
+==== Reduced Duplication
+* Common concepts are defined once and referenced
+* Consistent terminology across all documentation
+* Shared examples and patterns
+* Unified formatting and style
+
+==== Improved Collaboration
+* Multiple contributors can work on different sections simultaneously
+* Smaller files are easier to review and merge
+* Changes have clearer scope and impact
+* Better version control granularity
+
+=== For Documentation Users
+
+==== Better Navigation
+* Users can jump directly to relevant sections
+* Clear hierarchical organization
+* Consistent structure across guides
+* Improved cross-referencing
+
+==== Focused Learning
+* Read only the sections relevant to your role
+* Progressive complexity within each section
+* Clear prerequisites and dependencies
+* Self-contained examples and explanations
+
+==== Comprehensive Coverage
+* All pixi tasks are documented in appropriate context
+* Complete workflows from setup to production
+* Real-world examples and use cases
+* Troubleshooting and best practices
+
+== Content Distribution
+
+=== Pixi Task Coverage
+
+All pixi tasks from `pixi.toml` are now documented across the guides:
+
+==== General Tasks
+- `build-all`, `build-java`, `build-python`, `build-scala`, `build-haskell`, `build-ext`
+- `clean`, `validate`
+
+*Coverage*: Referenced in all three guides with appropriate context
+
+==== Java Tasks
+- `gradle`, `gradle-tasks`, `gradle-build`, `gradle-clean`
+
+*Coverage*: Developer guide (Java development section) and operator guide (setup)
+
+==== Haskell Tasks (50+ tasks)
+- Setup, build, test, interactive development, code generation, data processing, cleanup
+
+*Coverage*: Comprehensive documentation in `pixi-haskell-tasks.adoc` with references throughout all guides
+
+=== Cross-Guide Integration
+
+==== Shared Concepts
+* Pixi task workflows appear in appropriate context across all guides
+* Common setup procedures are referenced consistently
+* Best practices are reinforced across different user scenarios
+
+==== Progressive Complexity
+* Operator guide: Basic pixi task usage for data transformation
+* Developer guide: Complete pixi task reference and advanced workflows
+* Implementor guide: Pixi tasks for implementation development and testing
+
+== Maintenance Guidelines
+
+=== Section File Management
+
+==== File Naming Convention
+* Use descriptive names that clearly indicate content scope
+* Follow pattern: `[guide-prefix]-[topic-area].adoc`
+* Examples: `implementor-fundamentals.adoc`, `transformation-examples.adoc`
+
+==== Content Organization
+* Each section should be self-contained where possible
+* Include appropriate level of detail for the target audience
+* Use consistent formatting and style across all sections
+* Include cross-references to related sections
+
+==== Update Procedures
+* Update section files when adding new features or tasks
+* Ensure pixi task references are current across all guides
+* Maintain version consistency across all documentation
+* Test section includes work correctly in parent guides
+
+=== Quality Assurance
+
+==== Content Review Process
+1. Verify technical accuracy of all procedures
+2. Test all pixi task examples and code snippets
+3. Ensure cross-references work correctly
+4. Validate that examples use current syntax and versions
+5. Check that all new features and tasks are documented
+
+==== Consistency Checks
+* Terminology usage across all sections
+* Code formatting and example structure
+* Cross-reference accuracy and completeness
+* Pixi task coverage and context appropriateness
+
+== Future Extensions
+
+=== Planned Sections
+
+==== Developer Guide Extensions
+* `performance-optimization.adoc` - Performance tuning and profiling
+* `testing-strategies.adoc` - Comprehensive testing approaches
+* `contribution-guidelines.adoc` - Detailed contributor workflows
+
+==== Operator Guide Extensions
+* `data-transformation-patterns.adoc` - Common transformation patterns catalog
+* `production-deployment.adoc` - Production deployment and monitoring
+* `troubleshooting-guide.adoc` - Comprehensive problem-solving guide
+
+==== Implementor Guide Extensions
+* `language-specific-guides.adoc` - Detailed guides for specific target languages
+* `advanced-optimization.adoc` - Performance and memory optimization techniques
+* `community-integration.adoc` - Guidelines for community contribution and support
+
+=== Scalability Considerations
+
+==== Growing Documentation
+* Section-based structure can accommodate new content easily
+* New guides can reuse existing sections
+* Specialized guides for specific use cases or languages
+* Version-specific documentation branches
+
+==== Internationalization Support
+* Section files can be translated independently
+* Shared sections reduce translation workload
+* Consistent structure across language versions
+* Easier maintenance of multilingual documentation
+
+== Related Documentation
+
+* <<developer-guide#,Developer Guide>> - Complete development workflow documentation
+* <<implementor-guide#,Implementor Guide>> - Language implementation guidance
+* <<operator-guide#,Operator Guide>> - Data transformation operator documentation
+* Individual section files in `docs/sects/` - Focused topic documentation
+
+[colophon]
+== Colophon
+
+This documentation structure was designed to improve maintainability, reduce duplication, and provide better user experience across all Hydra documentation. The modular approach allows for focused content management while maintaining comprehensive coverage of all Hydra capabilities and workflows.
+
+The structure supports the diverse needs of Hydra's user base while ensuring consistent quality and up-to-date information across all documentation.

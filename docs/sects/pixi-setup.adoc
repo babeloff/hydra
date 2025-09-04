@@ -1,0 +1,318 @@
+= Pixi Setup and Installation
+
+This section covers getting started with the Hydra pixi-based development environment, including prerequisites, installation, and troubleshooting common issues.
+
+== Prerequisites
+
+=== System Requirements
+
+. *Install pixi*: Follow the installation instructions at https://pixi.sh
+. *System Requirements*: Ensure you have sufficient disk space (building all variants requires several GB)
+. *Network Access*: Required for downloading dependencies from conda-forge and other package repositories
+
+=== Platform Support
+
+The Hydra project supports the following platforms through pixi:
+
+* Linux x86_64 (`linux-64`)
+* macOS Intel (`osx-64`)
+* macOS Apple Silicon (`osx-arm64`)
+* Windows x86_64 (`win-64`)
+
+== Quick Start
+
+=== Basic Setup
+
+[source,bash]
+----
+# Clone the repository
+git clone https://github.com/CategoricalData/hydra
+cd hydra
+
+# Install all build dependencies
+pixi install
+
+# Validate the setup
+pixi run validate
+
+# Build all packages
+pixi run build-all
+----
+
+=== Environment-Specific Setup
+
+[source,bash]
+----
+# Install dependencies for specific environments
+pixi install -e java      # Java development environment
+pixi install -e python    # Python development environment
+pixi install -e haskell   # Haskell development environment
+pixi install -e scala     # Scala development environment
+pixi install -e all       # Complete multi-language environment
+----
+
+=== Verification
+
+After installation, verify your setup:
+
+[source,bash]
+----
+# Check pixi installation
+pixi --version
+
+# List available environments
+pixi info
+
+# Check specific environment
+pixi list -e java
+pixi list -e python
+pixi list -e haskell
+pixi list -e scala
+
+# Test basic functionality
+pixi run validate
+----
+
+== Troubleshooting
+
+=== Common Installation Issues
+
+==== Pixi Installation Problems
+
+* *Issue*: `pixi` command not found
+* *Solution*: Ensure pixi is properly installed and in your PATH. Follow installation instructions at https://pixi.sh
+
+* *Issue*: Permission denied errors
+* *Solution*: Check file permissions and ensure you have write access to the installation directory
+
+==== Dependency Resolution Issues
+
+* *Issue*: Failed to solve dependencies
+* *Solution*: Check network connectivity and try clearing pixi cache:
+
+[source,bash]
+----
+# Clear pixi cache
+pixi clean cache
+
+# Retry installation
+pixi install
+----
+
+=== Common Build Issues
+
+==== Nushell Script Issues
+
+* *Issue*: Nushell commands fail or are not recognized
+* *Symptoms*: Build scripts fail with nushell-related errors
+* *Solutions*:
+  - Ensure nushell is available: `pixi list | grep nushell`
+  - Check nushell syntax in recipe files
+  - Verify environment variables are properly referenced (`$env.PREFIX`, `$env.SRC_DIR`)
+
+==== Java Build Failures
+
+* *Issue*: Java build fails or Gradle errors
+* *Symptoms*: `pixi run build-java` or `pixi run -e java gradle-build` fails
+* *Solutions*:
+  - Ensure OpenJDK 11+ is available in the java environment
+  - Check that Gradle can resolve dependencies
+  - Verify network connectivity for dependency downloads
+  - Check nushell file operations (glob patterns, path operations)
+
+[source,bash]
+----
+# Debug Java environment
+pixi run -e java java -version
+pixi run -e java gradle --version
+
+# Clean and rebuild
+pixi run -e java gradle-clean
+pixi run -e java gradle-build
+----
+
+==== Python Build Failures
+
+* *Issue*: Python build fails or pip errors
+* *Symptoms*: `pixi run build-python` fails
+* *Solutions*:
+  - Ensure Python 3.12+ is available in the python environment
+  - Check that pip can install dependencies
+  - Verify `pyproject.toml` is correctly configured
+
+[source,bash]
+----
+# Debug Python environment
+pixi run -e python python --version
+pixi run -e python pip --version
+pixi run -e python pip list
+----
+
+==== Haskell Build Failures
+
+* *Issue*: Haskell build fails or Stack errors
+* *Symptoms*: `pixi run build-haskell` or Stack commands fail
+* *Solutions*:
+  - Ensure GHC 9.4+ is available in the haskell environment
+  - Check Stack configuration and resolver version
+  - Verify system GHC can be used by Stack
+  - Check nushell path operations for Stack artifacts
+
+[source,bash]
+----
+# Debug Haskell environment
+pixi run -e haskell ghc --version
+pixi run -e haskell stack --version
+
+# Clear Stack cache if needed
+pixi run -e haskell stack clean
+----
+
+==== Scala Build Failures
+
+* *Issue*: Scala build fails or SBT errors
+* *Symptoms*: `pixi run build-scala` or SBT commands fail
+* *Solutions*:
+  - Ensure OpenJDK 11+ is available in the scala environment
+  - Check SBT configuration and dependencies
+  - Verify Ivy/Maven repository access
+  - Check nushell regex parsing for dependency classpath
+
+[source,bash]
+----
+# Debug Scala environment
+pixi run -e scala java -version
+pixi run -e scala sbt version
+
+# Clean and rebuild
+pixi run -e scala sbt clean
+pixi run -e scala sbt compile
+----
+
+=== Environment Issues
+
+==== Missing Dependencies
+
+* *Issue*: Commands fail with "command not found" errors
+* *Solutions*:
+
+[source,bash]
+----
+# Install all dependencies
+pixi install -e all
+
+# Install specific environment dependencies
+pixi install -e java
+pixi install -e python
+pixi install -e haskell
+pixi install -e scala
+----
+
+==== Version Conflicts
+
+* *Issue*: Package version conflicts during installation
+* *Solutions*:
+  - Check `pixi.toml` for version constraints
+  - Update channel priorities if needed
+  - Try installing specific environments separately
+
+==== Build Space Issues
+
+* *Issue*: "No space left on device" or similar disk space errors
+* *Solutions*:
+  - Ensure sufficient disk space (5+ GB recommended)
+  - Clean previous builds: `pixi run clean`
+  - Clean pixi cache: `pixi clean cache`
+
+==== Recipe Format Issues
+
+* *Issue*: Recipe parsing or format errors
+* *Solutions*:
+  - Verify recipes use rattler-build v1 format (not conda-build meta.yaml)
+  - Check Jinja variable syntax: `${{ variable }}` not `{{ variable }}`
+  - Ensure `about.homepage` is used instead of `about.home`
+  - Use `tests:` section instead of `test:`
+  - Use `repository:` and `documentation:` instead of `dev_url:` and `doc_url:`
+  - Validate embedded nushell scripts for syntax errors
+  - Check that wrapper script files exist and are executable
+
+=== Performance Issues
+
+==== Slow Build Times
+
+* *Issue*: Builds take excessive time
+* *Solutions*:
+  - Use parallel builds where possible
+  - Increase available memory for build tools:
+
+[source,bash]
+----
+# Set custom build options
+export GRADLE_OPTS="-Xmx4g"
+pixi run build-java
+----
+
+* Consider building only specific components instead of `build-all`
+
+==== Memory Issues
+
+* *Issue*: Out of memory errors during builds
+* *Solutions*:
+  - Close other applications to free memory
+  - Increase JVM heap size for Java/Scala builds
+  - Build components individually instead of all at once
+
+=== Getting Help
+
+If you encounter issues not covered here:
+
+* Check the main https://github.com/CategoricalData/hydra[Hydra repository] for known issues
+* Join the https://bit.ly/lg-discord[LambdaGraph Discord] server for community support
+* Review individual variant documentation in their respective subdirectories
+* Check pixi documentation at https://pixi.sh for pixi-specific issues
+
+=== Diagnostic Commands
+
+Use these commands to gather information for troubleshooting:
+
+[source,bash]
+----
+# System information
+pixi --version
+pixi info
+
+# Environment information
+pixi list
+pixi list -e java
+pixi list -e python
+pixi list -e haskell
+pixi list -e scala
+
+# Build validation
+pixi run validate
+
+# Check specific tools in environments
+pixi run -e java java -version
+pixi run -e python python --version
+pixi run -e haskell ghc --version
+pixi run -e scala sbt version
+----
+
+=== Clean Installation
+
+If you encounter persistent issues, try a clean installation:
+
+[source,bash]
+----
+# Remove pixi cache
+pixi clean cache
+
+# Remove local pixi environment
+rm -rf .pixi/
+
+# Reinstall dependencies
+pixi install
+
+# Validate setup
+pixi run validate
+----

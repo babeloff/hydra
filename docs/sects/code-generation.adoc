@@ -1,0 +1,502 @@
+= Code Generation and Generated Code
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+
+This document covers Hydra's code generation system, which transforms DSL definitions into native language implementations across multiple target languages.
+
+== Overview
+
+Hydra's code generation is one of its most powerful features, allowing the kernel to be defined once in Haskell DSL and then automatically translated to multiple target languages. This ensures consistency across implementations while enabling native performance and idioms in each language.
+
+=== Code Generation Pipeline
+
+[plantuml,code-generation-pipeline,png]
+....
+include::../diagrams/code-generation-pipeline.puml[]
+....
+
+=== Generated vs. Hand-Written Code
+
+* **Generated Code**: Type definitions, basic functions, standard library primitives
+* **Hand-Written Code**: Language-specific optimizations, native integrations, platform-specific code
+
+== Working with Generated Code
+
+=== Interactive Code Generation
+
+The most flexible approach uses GHCi for interactive code generation:
+
+[source,bash]
+----
+# Start interactive session
+pixi run -e haskell stack-ghci
+
+# In GHCi, load the code generator
+:l Hydra.Codegen
+
+# Generate Haskell code
+writeHaskell "src/gen-main/haskell" mainModules
+writeHaskell "src/gen-test/haskell" testModules
+
+# Generate Java code
+writeJava "../hydra-java/src/gen-main/java" mainModules
+writeJava "../hydra-java/src/gen-test/java" testModules
+----
+
+=== Automated Code Generation
+
+Use pixi tasks for automated generation:
+
+[source,bash]
+----
+# Generate all Haskell code from DSL definitions
+pixi run -e haskell generate-haskell
+
+# Generate all Java code from DSL definitions
+pixi run -e haskell generate-java
+
+# Build after generation to verify correctness
+pixi run -e haskell stack-build
+pixi run -e java gradle-build
+----
+
+=== Verification After Generation
+
+Always verify that generated code compiles and passes tests:
+
+[source,bash]
+----
+# Test generated Haskell code
+pixi run -e haskell stack-test
+
+# Test generated Java code
+pixi run -e java gradle test
+
+# Run integration tests
+pixi run build-all
+----
+
+== Code Generation Architecture
+
+=== Source Definition Structure
+
+DSL sources are organized in the `hydra-haskell/src/main/haskell/Hydra/Sources/` directory:
+
+[plantuml,dsl-sources-structure,png]
+....
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+
+folder "Hydra/Sources/" {
+  folder "Tier0/" as T0
+  folder "Tier1/" as T1
+  folder "Tier2/" as T2
+  folder "Tier3/" as T3 {
+    folder "Ext/" as Ext {
+      folder "Haskell/" as ExtHaskell
+      folder "Java/" as ExtJava
+      folder "Python/" as ExtPython
+      folder "Scala/" as ExtScala
+    }
+  }
+}
+
+note right of T0 : Basic type definitions
+note right of T1 : Primitive function definitions
+note right of T2 : Advanced kernel modules
+note right of T3 : Complete kernel sources
+note right of Ext : Language-specific extensions
+
+@enduml
+....
+
+=== Module Registration
+
+Generated modules must be registered in the appropriate tier registry:
+
+[source,haskell]
+----
+-- In Hydra/Sources/Tier3/All.hs
+module Hydra.Sources.Tier3.All where
+
+-- Import your new modules
+import qualified Hydra.Sources.Tier3.YourNewModule as YourNewModule
+
+-- Add to the module list
+allModules :: [Module]
+allModules = [
+  -- ... existing modules
+  YourNewModule.module_,
+  -- ... more modules
+  ]
+----
+
+== Language-Specific Generation
+
+=== Haskell Code Generation
+
+Generates native Haskell modules with proper imports and exports:
+
+[source,bash]
+----
+# Generate main Haskell modules
+pixi run -e haskell stack-ghci
+:l Hydra.Codegen
+writeHaskell "src/gen-main/haskell" mainModules
+
+# Generated structure
+src/gen-main/haskell/
+├── Hydra/
+│   ├── Core.hs
+│   ├── Graph.hs
+│   └── Compute.hs
+----
+
+Generated Haskell features:
+* Type-safe data constructors
+* Pattern matching functions
+* Proper module hierarchies
+* Haddock documentation comments
+
+=== Java Code Generation
+
+Produces standard Java classes with proper packaging:
+
+[source,bash]
+----
+# Generate Java implementation
+pixi run -e haskell generate-java
+
+# Generated structure
+hydra-java/src/gen-main/java/
+└── hydra/
+    ├── core/
+    ├── graph/
+    └── compute/
+```
+
+Generated Java features:
+* Immutable data classes
+* Builder patterns for complex types
+* Proper package hierarchies
+* JavaDoc comments
+* Null-safety annotations
+
+=== Python Code Generation (Future)
+
+Planned Python generation will produce:
+* Type hints and annotations
+* Dataclasses for immutable types
+* Proper module structure
+* Sphinx documentation
+
+=== Scala Code Generation (Future)
+
+Planned Scala generation will produce:
+* Case classes for algebraic data types
+* Proper companion objects
+* Type-safe pattern matching
+* Scaladoc documentation
+
+== Customizing Code Generation
+
+=== Adding New Language Support
+
+To add support for a new target language:
+
+1. **Define Language Constraints**:
+[source,haskell]
+----
+-- In Hydra/Sources/Tier3/Ext/YourLanguage/Language.hs
+yourLanguageConstraints :: LanguageConstraints
+yourLanguageConstraints = LanguageConstraints {
+  -- Define supported constructs
+  }
+----
+
+2. **Create Language Coder**:
+[source,haskell]
+----
+-- In Hydra/Ext/YourLanguage/Coder.hs
+codeType :: Type -> Flow (Context) YourLanguageSyntax
+codeTerm :: Term -> Flow (Context) YourLanguageSyntax
+----
+
+3. **Implement Serializer**:
+[source,haskell]
+----
+-- In Hydra/Ext/YourLanguage/Serializer.hs
+serializeExpression :: YourLanguageSyntax -> String
+----
+
+4. **Register Generation Function**:
+[source,haskell]
+----
+writeYourLanguage :: FilePath -> [Module] -> IO ()
+writeYourLanguage = generateSources yourLanguageConstraints codeType codeTerm serializeExpression
+----
+
+=== Customizing Existing Generators
+
+Modify generation behavior by updating:
+
+* **Language constraints**: Change supported language features
+* **Coders**: Modify how Hydra constructs map to target language
+* **Serializers**: Change output formatting and style
+* **Templates**: Modify file headers, imports, and boilerplate
+
+== Generated Code Organization
+
+=== Directory Structure
+
+Generated code follows consistent organization across languages:
+
+[plantuml,generated-code-structure,png]
+....
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+
+folder "Target Language Directory/" {
+  folder "src/gen-main/" {
+    folder "[language]/" {
+      folder "core/" as CoreDir
+      folder "graph/" as GraphDir
+      folder "compute/" as ComputeDir
+    }
+  }
+  folder "src/gen-test/" {
+    folder "[language]/" {
+      folder "test/" as TestDir
+    }
+  }
+  folder "docs/" as DocsDir
+}
+
+note right of CoreDir : Core type definitions
+note right of GraphDir : Graph data structures
+note right of ComputeDir : Computational functions
+note right of TestDir : Generated test code
+note right of DocsDir : Generated documentation
+
+@enduml
+....
+
+=== Module Naming Conventions
+
+* **Haskell**: `Hydra.Core`, `Hydra.Graph.Model`
+* **Java**: `hydra.core`, `hydra.graph.model`
+* **Python**: `hydra.core`, `hydra.graph.model`
+* **Scala**: `hydra.core`, `hydra.graph.model`
+
+=== Version Synchronization
+
+Generated code includes version information:
+
+[source,haskell]
+----
+-- Generated header includes version
+-- This file was generated by Hydra 0.12.0
+-- DO NOT EDIT: Changes will be overwritten
+----
+
+== Development Workflow
+
+=== Iterative Development
+
+1. **Modify DSL sources** in `Hydra/Sources/`
+2. **Regenerate code** with pixi tasks
+3. **Build and test** in target languages
+4. **Debug issues** by examining generated code
+5. **Refine DSL sources** and repeat
+
+[source,bash]
+----
+# Development cycle
+pixi run -e haskell generate-haskell
+pixi run -e haskell stack-build
+pixi run -e haskell stack-test
+
+# If tests fail, examine generated code
+pixi run -e haskell haskell-modules
+pixi run -e haskell stack-ghci
+-- :browse Hydra.YourModule
+----
+
+=== Debugging Generated Code
+
+Common debugging approaches:
+
+[source,bash]
+----
+# Compare generated code before/after changes
+git diff src/gen-main/
+
+# Interactive exploration
+pixi run -e haskell stack-ghci
+:l Hydra.YourGeneratedModule
+:browse Hydra.YourGeneratedModule
+:type someGeneratedFunction
+
+# Find specific functions
+pixi run -e haskell haskell-functions | grep "yourFunction"
+----
+
+=== Testing Generated Code
+
+[source,bash]
+----
+# Test generated Haskell code
+pixi run -e haskell stack-test
+
+# Test specific modules
+pixi run -e haskell stack-ghci
+:l Test.Hydra.YourModuleTest
+runTests
+
+# Test generated Java code
+pixi run -e java gradle test --tests "*YourModule*"
+----
+
+== Code Generation Best Practices
+
+=== DSL Design Guidelines
+
+1. **Keep types simple**: Complex nested types are harder to generate cleanly
+2. **Use consistent naming**: Names should translate well across languages
+3. **Document thoroughly**: Comments in DSL become documentation in generated code
+4. **Consider target languages**: Some constructs don't translate to all languages
+
+=== Generation Quality
+
+1. **Always regenerate after changes**: Don't edit generated code directly
+2. **Test all target languages**: Ensure generation works for all supported languages
+3. **Verify compilation**: Generated code must compile without warnings
+4. **Check performance**: Generated code should be reasonably efficient
+
+=== Version Control
+
+1. **Commit generated code**: Include generated code in version control
+2. **Review generated changes**: Always review diffs in generated code
+3. **Coordinate updates**: Update all language implementations together
+4. **Tag releases**: Ensure generated code matches tagged versions
+
+== Advanced Topics
+
+=== Custom Code Templates
+
+For specialized generation needs, create custom templates:
+
+[source,haskell]
+----
+-- Custom template for specific language features
+customTemplate :: TemplateConfig -> String
+customTemplate config = [str|
+  // Generated by Hydra #{version}
+  // Custom template for #{languageName}
+
+  #{generatedContent}
+|]
+----
+
+=== Conditional Generation
+
+Generate different code based on target language capabilities:
+
+[source,haskell]
+----
+generateConditionally :: LanguageConstraints -> Type -> Flow s Expression
+generateConditionally constraints typ
+  | supportsGenerics constraints = generateGenericVersion typ
+  | otherwise = generateNonGenericVersion typ
+----
+
+=== Cross-Language Testing
+
+Ensure behavioral parity across generated implementations:
+
+[source,bash]
+----
+# Generate test data in one language
+pixi run -e haskell run-example-graphson
+
+# Verify same results in other languages
+pixi run -e java gradle run --args="verify-graphson"
+```
+
+== Troubleshooting
+
+=== Common Issues
+
+==== Generation Fails
+
+**Symptoms**: Code generation throws errors or produces invalid code.
+
+**Solutions**:
+1. Check DSL syntax in source definitions
+2. Verify all imports are available
+3. Ensure proper tier dependencies
+4. Review language constraints compatibility
+
+[source,bash]
+----
+# Debug generation issues
+pixi run -e haskell stack-ghci
+:set -XOverloadedStrings
+:l Hydra.Codegen
+-- Try individual generation functions
+----
+
+==== Generated Code Won't Compile
+
+**Symptoms**: Generated code has syntax errors or missing imports.
+
+**Solutions**:
+1. Check coder implementation for target language
+2. Verify serializer produces valid syntax
+3. Update language constraints if needed
+4. Review import generation logic
+
+==== Performance Issues
+
+**Symptoms**: Generated code is slower than expected.
+
+**Solutions**:
+1. Profile generated code execution
+2. Optimize coder algorithms
+3. Use language-specific optimizations
+4. Consider hand-written alternatives for hot paths
+
+=== Diagnostic Commands
+
+[source,bash]
+----
+# Check what modules are available for generation
+pixi run -e haskell haskell-modules
+
+# Find specific functions in generated code
+pixi run -e haskell haskell-functions | grep -i "search-term"
+
+# Interactive debugging
+pixi run -e haskell stack-ghci
+:l Hydra.Codegen
+:t writeHaskell
+:t writeJava
+
+# Verify generation output
+ls -la src/gen-main/haskell/Hydra/
+ls -la ../hydra-java/src/gen-main/java/hydra/
+----
+
+== Related Documentation
+
+* <<developer-guide#,Developer Guide>> - Overall development process
+* <<dependency-tiers#,Dependency Tiers>> - Understanding code organization
+* <<pixi-haskell-tasks#,Pixi Haskell Tasks>> - Generation commands and workflows
+* <<implementor-guide#,Implementor Guide>> - Creating new language implementations

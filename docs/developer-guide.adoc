@@ -1,0 +1,255 @@
+= Hydra Developer Guide
+:doctype: book
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+:icons: font
+:numbered:
+
+[preface]
+== Preface
+
+This guide is for developers of Hydra itself - those working on the core Hydra kernel, build system, and language implementations. If you're looking to create new Hydra implementations, see the <<implementor-guide#,Implementor Guide>>. If you're using Hydra to create message translators, see the <<operator-guide#,Operator Guide>>.
+
+For general contribution guidelines, see the https://github.com/CategoricalData/hydra/wiki/Contributors[Contributors] page.
+
+== Part I: Architecture and Development Setup
+
+include::sects/architecture-setup.adoc[leveloffset=+1]
+
+include::sects/pixi-setup.adoc[leveloffset=+1]
+
+include::sects/build-system.adoc[leveloffset=+1]
+
+== Part II: Haskell Development
+
+include::sects/haskell-setup.adoc[leveloffset=+1]
+
+include::sects/pixi-haskell-tasks.adoc[leveloffset=+1]
+
+include::sects/pixi-task-status.adoc[leveloffset=+1]
+
+== Part III: Dependency Tiers and Code Organization
+
+include::sects/dependency-tiers.adoc[leveloffset=+1]
+
+== Part IV: Code Generation
+
+include::sects/code-generation.adoc[leveloffset=+1]
+
+== Part V: Documentation System
+
+include::sects/documentation-system.adoc[leveloffset=+1]
+
+== Part VI: Release Management
+
+include::sects/release-management.adoc[leveloffset=+1]
+
+== Appendices
+
+[appendix]
+=== Development Resources
+
+* Main Repository: https://github.com/CategoricalData/hydra
+* LambdaGraph Discord: https://bit.ly/lg-discord
+* Hackage Package: https://hackage.haskell.org/package/hydra-haskell
+* Maven Central: https://search.maven.org/search?q=net.fortytwo.hydra
+* JavaDocs: Available via GitHub pages
+
+[appendix]
+=== Common Development Tasks
+
+==== Setting Up Development Environment
+
+[source,bash]
+----
+# Clone the repository
+git clone https://github.com/CategoricalData/hydra
+cd hydra
+
+# Install all build dependencies
+pixi install
+
+# Validate the setup
+pixi run validate
+
+# Setup specific environments
+pixi run -e haskell haskell-setup  # Complete Haskell development
+pixi install -e java              # Java development environment
+pixi install -e python            # Python development environment
+pixi install -e scala             # Scala development environment
+
+# Build all components
+pixi run build-all
+----
+
+[appendix]
+=== Complete Pixi Tasks Reference
+
+This appendix provides a comprehensive reference to all available pixi tasks for Hydra development.
+
+==== General Build and Setup Tasks
+
+[source,bash]
+----
+# Core build tasks
+pixi run build-all          # Build all components
+pixi run build-java         # Build Java components
+pixi run build-python       # Build Python components
+pixi run build-scala        # Build Scala components
+pixi run build-haskell      # Build Haskell components
+pixi run build-ext          # Build extensions
+pixi run clean              # Clean build artifacts
+pixi run validate           # Validate setup
+----
+
+==== Java Development Tasks
+
+[source,bash]
+----
+# Java environment tasks
+pixi run -e java gradle           # Run Gradle wrapper
+pixi run -e java gradle-tasks     # List available Gradle tasks
+pixi run -e java gradle-build     # Build Java components
+pixi run -e java gradle-clean     # Clean Java build artifacts
+----
+
+==== Python Development Tasks
+
+[source,bash]
+----
+# Python environment tasks
+pixi run build-python             # Build Python components
+pixi run -e python python --version
+pixi run -e python pip list
+----
+
+==== Scala Development Tasks
+
+[source,bash]
+----
+# Scala environment tasks
+pixi run build-scala              # Build Scala components
+pixi run -e scala sbt version
+pixi run -e scala sbt compile
+pixi run -e scala sbt test
+----
+
+==== Haskell Development Tasks
+
+===== Setup and Build
+[source,bash]
+----
+pixi run -e haskell haskell-setup      # Complete setup
+pixi run -e haskell haskell-setup-all  # Setup all packages
+pixi run -e haskell stack-setup        # Stack setup
+pixi run -e haskell stack-build        # Build all packages
+pixi run -e haskell haskell-build-all  # Build all Haskell packages
+pixi run -e haskell hydra-build        # Build core package
+----
+
+===== Testing
+[source,bash]
+----
+pixi run -e haskell stack-test         # Test all packages
+pixi run -e haskell haskell-test-all   # Test all Haskell packages
+pixi run -e haskell hydra-test         # Test core package
+pixi run -e haskell ext-test           # Test extensions
+----
+
+===== Interactive Development
+[source,bash]
+----
+pixi run -e haskell stack-ghci         # Multi-package GHCi
+pixi run -e haskell ghci-all           # All packages GHCi
+pixi run -e haskell hydra-ghci         # Core package GHCi
+pixi run -e haskell ext-ghci           # Extensions GHCi
+pixi run -e haskell ghci-interactive   # Interactive GHCi
+pixi run -e haskell ghci-all-fixed     # Fixed GHCi variant
+pixi run -e haskell ghci-system        # System GHC GHCi
+pixi run -e haskell ghci-minimal       # Minimal conda interference
+----
+
+===== Code Generation
+[source,bash]
+----
+pixi run -e haskell generate-java      # Generate Java code
+pixi run -e haskell generate-haskell   # Generate Haskell code
+----
+
+===== Data and Testing
+[source,bash]
+----
+pixi run -e haskell check-data         # Check source data
+pixi run -e haskell check-graphson     # Check GraphSON files
+pixi run -e haskell check-copilot-data # Check copilot data
+pixi run -e haskell check-sales-data   # Check sales data
+pixi run -e haskell run-copilot-graphson    # Generate copilot GraphSON
+pixi run -e haskell run-example-graphson    # Generate example GraphSON
+pixi run -e haskell graphson-help           # GraphSON function help
+----
+
+===== Exploration and Debugging
+[source,bash]
+----
+pixi run -e haskell haskell-modules    # List modules
+pixi run -e haskell haskell-functions  # Find functions
+----
+
+===== Cleanup
+[source,bash]
+----
+pixi run -e haskell stack-clean                # Clean Stack builds
+pixi run -e haskell haskell-clean-all          # Clean all Haskell builds
+pixi run -e haskell clear-stack-cache-haskell  # Clear core cache
+pixi run -e haskell clear-stack-cache-ext      # Clear extensions cache
+pixi run -e haskell clear-stack-cache-all      # Clear all caches
+----
+
+==== Development Workflow Recommendations
+
+1. **Initial Setup**: `pixi run validate` → `pixi run -e haskell haskell-setup` → `pixi run build-all`
+2. **Daily Development**: `pixi run -e haskell stack-ghci` for interactive development
+3. **Testing Changes**: `pixi run -e haskell stack-test` → `pixi run build-all`
+4. **Code Generation**: `pixi run -e haskell generate-haskell` → `pixi run -e haskell generate-java`
+5. **Troubleshooting**: `pixi run clean` → `pixi run -e haskell clear-stack-cache-all` → rebuild
+
+==== Debugging Build Issues
+
+. Check dependency tiers - ensure no circular dependencies
+. Verify all primitive functions are implemented
+. Check that generated code is up to date
+. Review error logs for missing imports or type mismatches
+
+[source,bash]
+----
+# Clean and rebuild when issues arise
+pixi run clean
+pixi run build-all
+
+# For Haskell-specific issues
+pixi run -e haskell stack-clean
+pixi run -e haskell clear-stack-cache-all
+pixi run -e haskell stack-build
+
+# For Java-specific issues
+pixi run -e java gradle-clean
+pixi run -e java gradle-build
+----
+
+==== Contributing Guidelines
+
+. Follow the established dependency tier structure
+. Write comprehensive tests for new features
+. Update documentation for any API changes
+. Ensure all language implementations maintain parity
+. Follow the release process for version bumps
+
+[colophon]
+== Colophon
+
+This developer guide covers the internal architecture and development processes for Hydra core development. It is maintained alongside the codebase and should be updated whenever significant architectural changes are made.
+
+For the latest version of this guide and related documentation, see the `docs/` directory in the Hydra repository.

@@ -1,0 +1,43 @@
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+
+rectangle "Source Files" {
+  file "*.adoc" as adoc
+  file "*.puml" as puml
+  folder "sects/" as sections
+  folder "diagrams/" as diagrams
+}
+
+rectangle "Build Process" {
+  process "AsciiDoctor" as ad
+  process "PlantUML" as plant
+  process "PDF Generator" as pdf
+}
+
+rectangle "Output Formats" {
+  file "HTML Files" as html
+  file "PDF Files" as pdfs
+  file "Generated Images" as images
+}
+
+rectangle "Deployment" {
+  cloud "GitHub Pages" as gh
+  folder "gh-pages/" as ghdir
+}
+
+adoc -> ad
+puml -> plant
+sections -> ad
+diagrams -> plant
+
+ad -> html
+ad -> pdfs
+plant -> images
+
+html -> ghdir
+images -> ghdir
+ghdir -> gh
+
+@enduml

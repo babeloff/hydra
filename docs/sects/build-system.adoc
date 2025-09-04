@@ -1,0 +1,209 @@
+= Build System
+
+This section covers the pixi-based build system, available environments, and language-specific build tasks.
+
+== Available Environments
+
+The pixi project defines several environments for different use cases:
+
+* *default* - Minimal environment with rattler-build and nushell
+* *java* - Java development environment (OpenJDK 11+, Gradle, nushell)
+* *python* - Python development environment (Python 3.12+, nushell)
+* *haskell* - Haskell development environment (GHC 9.4+, Stack, nushell)
+* *scala* - Scala development environment (OpenJDK 11+, SBT, nushell)
+* *all* - Complete environment with all language toolchains
+
+== Build Tasks
+
+=== General Build Tasks
+
+[source,bash]
+----
+# Build all packages
+pixi run build-all
+
+# Build individual packages
+pixi run build-java      # Build Java components
+pixi run build-python    # Build Python components
+pixi run build-haskell   # Build Haskell components
+pixi run build-scala     # Build Scala components
+pixi run build-ext       # Build extensions
+
+# Utility tasks
+pixi run clean           # Clean build artifacts
+pixi run validate        # Validate setup
+----
+
+=== Using Environments
+
+[source,bash]
+----
+# Activate an environment
+pixi shell -e java
+pixi shell -e python
+pixi shell -e haskell
+pixi shell -e scala
+pixi shell -e all
+
+# Run commands in specific environments
+pixi run -e java build-java
+pixi run -e python build-python
+pixi run -e haskell build-haskell
+pixi run -e scala build-scala
+----
+
+== Language-Specific Development Tasks
+
+=== Java Development Tasks
+
+For Java-specific development, use the java environment:
+
+[source,bash]
+----
+# Java build tasks
+pixi run -e java gradle           # Run Gradle wrapper
+pixi run -e java gradle-tasks     # List available Gradle tasks
+pixi run -e java gradle-build     # Build Java components
+pixi run -e java gradle-clean     # Clean Java build artifacts
+
+# Combined build tasks
+pixi run build-java              # Build Java components (uses rattler-build)
+pixi run -e java gradle-build    # Direct Gradle build
+----
+
+=== Python Development Tasks
+
+For Python-specific development, use the python environment:
+
+[source,bash]
+----
+# Python build tasks
+pixi run build-python            # Build Python components (uses rattler-build)
+
+# Python development environment
+pixi run -e python python --version
+pixi run -e python pip list
+pixi run -e python python -c "import hydra; print('Hydra Python loaded')"
+----
+
+=== Scala Development Tasks
+
+For Scala-specific development, use the scala environment:
+
+[source,bash]
+----
+# Scala build tasks
+pixi run build-scala             # Build Scala components (uses rattler-build)
+
+# Scala development environment
+pixi run -e scala sbt version
+pixi run -e scala sbt compile
+pixi run -e scala sbt test
+----
+
+== Development Workflow
+
+=== Making Changes
+
+. *Modify source code* in the appropriate variant directory
+. *Update version numbers* in both `pixi.toml` and recipe files if needed
+. *Test the build* with the specific variant
+. *Build and test* the complete package
+
+=== Testing Changes
+
+[source,bash]
+----
+# Test individual components
+pixi run -e java build-java
+pixi run -e python build-python
+pixi run -e haskell build-haskell
+pixi run -e scala build-scala
+
+# Test complete build
+pixi run build-all
+
+# Install and test locally
+conda install -c ./conda-bld hydra
+----
+
+== Advanced Usage
+
+=== Custom Build Options
+
+You can customize builds by modifying the nushell scripts in recipe files or passing environment variables:
+
+[source,bash]
+----
+# Set custom build options
+export GRADLE_OPTS="-Xmx4g"
+pixi run build-java
+
+# Use different Stack resolver
+export STACK_YAML="stack-custom.yaml"
+pixi run build-haskell
+----
+
+=== Recipe Format Details
+
+The project uses rattler-build v1 recipe format with these key features:
+
+* *Pure YAML*: No Jinja comments or external script files
+* *Embedded nushell scripts*: Build logic is directly in `recipe.yaml` files
+* *Separate wrapper scripts*: Bash wrapper scripts in dedicated files for maintainability
+* *Modern syntax*: `${{ variable }}` for Jinja interpolation
+* *Updated metadata*: `homepage` instead of `home`, `repository`/`documentation` for URLs
+* *V1 test format*: `tests:` section with proper script/python/imports structure
+* *Cross-platform*: Nushell provides consistent behavior across platforms
+
+=== Publishing Packages
+
+After building, packages can be uploaded to conda channels:
+
+[source,bash]
+----
+# Upload to conda-forge (requires maintainer access)
+anaconda upload conda-bld/linux-64/hydra-*.tar.bz2
+
+# Upload to personal channel
+anaconda upload -u yourusername conda-bld/linux-64/hydra-*.tar.bz2
+----
+
+== Contributing
+
+When contributing to the Hydra project:
+
+=== Code Changes
+
+. *Maintain consistency* across recipe files
+. *Update version numbers* in sync across all recipes
+. *Test all variants* before submitting changes
+. *Document any new dependencies* or requirements
+. *Update documentation* if adding new features or changing workflows
+
+=== Testing Contributions
+
+[source,bash]
+----
+# Validate setup
+pixi run validate
+
+# Test individual components
+pixi run -e java build-java
+pixi run -e python build-python
+pixi run -e haskell build-haskell
+pixi run -e scala build-scala
+
+# Test complete build
+pixi run build-all
+----
+
+=== Pixi Configuration Guidelines
+
+When modifying the pixi configuration:
+
+. *Maintain environment separation* - Each language should have its own environment
+. *Use consistent versioning* - Keep versions synchronized across recipes
+. *Test cross-platform* - Verify changes work on different operating systems
+. *Document dependencies* - Update this guide when adding new requirements
+. *Validate recipes* - Ensure rattler-build v1 format compliance

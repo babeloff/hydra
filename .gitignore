@@ -2,6 +2,8 @@
 .stack-work
 stack.yaml.lock
 *.cabal
+*.hi
+*.o
 
 # Java / Gradle
 .gradle
@@ -49,3 +51,9 @@ conda-bld/
 *.swp
 output/
 *.log
+gen-main
+gen main
+
+# Documentation output
+docs-output/
+docs/diagrams/*.png

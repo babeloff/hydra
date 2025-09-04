@@ -1,0 +1,61 @@
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+
+rectangle "Input Data" {
+  file "CSV Files" as csv
+  file "JSON Documents" as json
+  file "XML Documents" as xml
+  file "Database Tables" as db
+  file "API Responses" as api
+}
+
+rectangle "Hydra Core Model" {
+  component "Type Definitions" as types
+  component "Term Expressions" as terms
+  component "Schema Mappings" as mappings
+  component "Transformations" as transforms
+}
+
+rectangle "Processing Engine" {
+  process "Parser" as parser
+  process "Validator" as validator
+  process "Transformer" as transformer
+  process "Serializer" as serializer
+}
+
+rectangle "Output Data" {
+  file "Graph Data" as graph
+  file "Property Graphs" as pg
+  file "RDF Triples" as rdf
+  file "Target APIs" as target_api
+  file "New Formats" as new_formats
+}
+
+csv --> parser
+json --> parser
+xml --> parser
+db --> parser
+api --> parser
+
+parser --> types
+parser --> terms
+types --> mappings
+terms --> mappings
+mappings --> transforms
+
+transforms --> validator
+validator --> transformer
+transformer --> serializer
+
+serializer --> graph
+serializer --> pg
+serializer --> rdf
+serializer --> target_api
+serializer --> new_formats
+
+note right of "Hydra Core Model" : Unified intermediate\nrepresentation for all data
+note bottom of "Processing Engine" : Language-agnostic\ntransformation pipeline
+
+@enduml

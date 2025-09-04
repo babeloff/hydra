@@ -1,0 +1,200 @@
+= Dependency Tiers and Code Organization
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+
+Since Hydra generates much of its own source code, it is challenging to prevent circular dependencies. To make things easier, we categorize Hydra source code into several *dependency tiers*, and enforce the simple rule that _code in a lower tier may not depend on code in a higher tier_:
+
+[plantuml,dependency-tiers-diagram,png]
+....
+include::../diagrams/dependency-tiers.puml[]
+....
+
+== Tier-0: Kernel Modules
+* Generated sources consisting mainly of type definitions, including `hydra/core`, `hydra/graph`, etc.
+* These are not allowed to depend on primitive functions.
+
+== Tier-0: DSLs
+* Language-specific DSLs, such as Hydra-Haskell's Types and Terms DSLs
+* Depend only on each other and on tier-0 kernel modules
+* The kernel modules are not allowed to depend on the DSLs
+
+== Tier-1: Kernel Modules
+* Generated code which is allowed to depend on (tier-1) primitive functions
+* Also depends on tier-0 kernel modules and DSLs (but not on tier-1 primitive functions)
+
+== Tier-1: Primitive Functions
+* Primitive functions whose implementations are allowed to depend on tier-0 kernel modules and tier-0 DSLs
+
+== Tier-1: DSLs
+* Language-specific DSLs which are allowed to depend on tier-1 kernel modules and primitive functions
+
+== Tier-2: Kernel Modules
+* The rest of Hydra's generated kernel code
+
+== Tier-2: Primitive Functions
+* The rest of Hydra's built-in functions
+
+== Tier-3: Kernel Sources
+* These are the DSL-based definitions of tier-0, tier-1, tier-2, and tier-3 kernel code
+* For example, `Hydra/Sources/Core.hs` in Hydra-Haskell is the DSL-based definition of `hydra/core`
+* Generated to produce the tier-0 `Hydra/Core.hs` module in Haskell, the corresponding `hydra/core` package in Java, etc.
+
+== Tier-4: Non-Kernel Code
+* Built-in language coders and utilities which are provided with an implementation of Hydra
+* Not part of the Hydra kernel
+* For example, Hydra-Haskell provides a Java coder among many others, but this not part of the kernel
+* Other Hydra implementations might not provide a Java coder
+
+== Tier-5: Third-Party Code
+* Sources, generated code, and user-defined functions which are external to Hydra proper
+* Developers of third-party code may create their own dependency tiers within this one
+* These are not specified by Hydra
+
+== Dependency Rules and Guidelines
+
+=== Enforcement Rules
+
+The fundamental rule is simple but critical: _code in a lower tier may not depend on code in a higher tier_.
+
+This means:
+
+* Tier-0 code cannot depend on Tier-1, Tier-2, Tier-3, Tier-4, or Tier-5 code
+* Tier-1 code cannot depend on Tier-2, Tier-3, Tier-4, or Tier-5 code
+* And so on...
+
+=== Design Guidelines
+
+==== When Adding New Code
+
+1. **Identify the correct tier**: Determine which tier your new code belongs to based on its dependencies
+2. **Check dependencies**: Ensure your code only depends on lower-tier code
+3. **Consider refactoring**: If you need higher-tier dependencies, consider whether the code should be moved to a higher tier or refactored
+
+==== When Modifying Existing Code
+
+1. **Preserve tier relationships**: Don't introduce dependencies that violate tier rules
+2. **Document tier changes**: If you need to move code between tiers, document the reason
+3. **Update tests**: Ensure tests still work after tier modifications
+
+=== Common Patterns
+
+==== Tier-0 Patterns
+* Pure data type definitions
+* Basic type constructors and destructors
+* Simple utility functions that don't depend on primitives
+
+==== Tier-1 Patterns
+* Functions that use basic primitive operations
+* DSL combinators that build on tier-0 types
+* Simple computational functions
+
+==== Tier-2 Patterns
+* Complex computational logic
+* Advanced DSL operations
+* Integration between different subsystems
+
+==== Tier-3 Patterns
+* Source definitions using DSL syntax
+* Meta-programming constructs
+* Code generation specifications
+
+== Working with Dependency Tiers
+
+=== Development Workflow
+
+When working with tiered code:
+
+[source,bash]
+----
+# Generate lower-tier code first
+pixi run -e haskell generate-haskell
+
+# Build in tier order
+pixi run -e haskell stack-build
+
+# Test tier dependencies
+pixi run -e haskell stack-test
+----
+
+=== Debugging Dependency Issues
+
+Common dependency violations and solutions:
+
+==== Circular Dependencies
+**Problem**: Tier-1 code trying to import Tier-2 code that depends on the original Tier-1 code.
+
+**Solution**:
+1. Identify the circular path
+2. Move common dependencies to a lower tier
+3. Refactor to break the cycle
+
+==== Higher-Tier Dependencies
+**Problem**: Lower-tier code accidentally importing higher-tier modules.
+
+**Solution**:
+1. Review import statements
+2. Move code to appropriate tier
+3. Use dependency injection patterns
+
+==== Missing Primitives
+**Problem**: Generated code references primitives that don't exist.
+
+**Solution**:
+1. Implement missing primitives in the correct tier
+2. Update primitive function registry
+3. Regenerate dependent code
+
+=== Tier Verification
+
+Use these techniques to verify tier compliance:
+
+[source,bash]
+----
+# Check module dependencies
+pixi run -e haskell haskell-modules
+
+# Find function dependencies
+pixi run -e haskell haskell-functions
+
+# Interactive dependency analysis
+pixi run -e haskell stack-ghci
+-- :browse Module.Name to see exports
+-- :info functionName to see type signatures
+----
+
+== Advanced Tier Concepts
+
+=== Cross-Language Tiers
+
+Dependency tiers apply across all Hydra language implementations:
+
+* **Haskell tiers**: Defined in `hydra-haskell/src/`
+* **Java tiers**: Generated in `hydra-java/src/gen-main/java/`
+* **Future language tiers**: Will follow the same pattern
+
+=== Tier Migration
+
+When code needs to move between tiers:
+
+1. **Assess impact**: Determine what other code depends on the module
+2. **Plan migration**: Create a migration plan that maintains tier rules
+3. **Execute gradually**: Move code incrementally to avoid breaking builds
+4. **Update documentation**: Document the tier change and rationale
+
+=== Custom Tier Extensions
+
+For third-party extensions (Tier-5):
+
+1. **Define sub-tiers**: Create your own tier system within Tier-5
+2. **Document dependencies**: Clearly document dependencies on Hydra tiers
+3. **Follow patterns**: Use similar patterns to Hydra's built-in tiers
+4. **Maintain compatibility**: Ensure your tiers don't violate Hydra's tier rules
+
+== Related Documentation
+
+* <<developer-guide#,Developer Guide>> - Overall development process
+* <<haskell-setup#,Haskell Setup Guide>> - Setting up the development environment
+* Implementation-specific documentation in each language directory

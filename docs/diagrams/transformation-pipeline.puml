@@ -1,0 +1,48 @@
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+
+rectangle "Raw Data" {
+  file "raw_events.csv" as events_csv
+  file "raw_users.csv" as users_csv
+}
+
+rectangle "Step 1: Normalization" as step1 {
+  process "normalizeEvent" as norm_event
+  process "normalizeUser" as norm_user
+}
+
+rectangle "Intermediate Format" {
+  file "normalizedEvents" as norm_events
+  file "normalizedUsers" as norm_users
+}
+
+rectangle "Step 2: Graph Creation" as step2 {
+  process "createEventVertices" as create_events
+  process "createUserVertices" as create_users
+  process "linkUsersToEvents" as create_edges
+}
+
+rectangle "Final Graph" {
+  file "final_graph.json" as output
+}
+
+events_csv --> norm_event
+users_csv --> norm_user
+norm_event --> norm_events
+norm_user --> norm_users
+
+norm_events --> create_events
+norm_users --> create_users
+norm_events --> create_edges
+norm_users --> create_edges
+
+create_events --> output
+create_users --> output
+create_edges --> output
+
+note right of step1 : step1Mapping
+note right of step2 : step2Mapping
+
+@enduml

@@ -29,3 +29,4 @@ dependencies: # copied from ../hydra-haskell
 library:
   source-dirs:
     - src/gen-main/haskell
+    - src/main/haskell

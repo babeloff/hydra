@@ -1,0 +1,500 @@
+= Release Management
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+
+This document covers the complete release management process for all Hydra components, including version coordination, testing procedures, and deployment workflows.
+
+== Release Overview
+
+Hydra follows a coordinated multi-component release strategy where all language implementations maintain version parity. The primary release process is driven by Hydra-Haskell, with other implementations following in a coordinated fashion.
+
+=== Release Components
+
+* **hydra-haskell**: Complete Hydra implementation and source of truth
+* **hydra-java**: Production-ready Java implementation
+* **hydra-python**: Python implementation (in development)
+* **hydra-scala**: Scala implementation (planned)
+* **hydra-ext**: Extensions and demonstration code
+
+=== Version Strategy
+
+All components use semantic versioning (MAJOR.MINOR.PATCH) and maintain version parity:
+
+* **Major versions**: Breaking changes to the Hydra kernel or API
+* **Minor versions**: New features, kernel extensions, language additions
+* **Patch versions**: Bug fixes, documentation updates, minor improvements
+
+== Pre-Release Process
+
+=== Version Planning
+
+[source,bash]
+----
+# Check current versions across components
+grep -r "version.*=" pixi.toml
+grep -r "version" hydra-*/package.yaml
+grep -r "version" hydra-*/build.gradle
+----
+
+=== Pre-Release Readiness Checks
+
+==== 1. Project Updates
+
+* Review and close relevant GitHub issues
+* Update documentation for new features
+* Ensure all planned features are complete
+* Review security considerations
+
+==== 2. Dependency Management
+
+[source,bash]
+----
+# Update Haskell dependencies
+cd hydra-haskell
+stack list-dependencies
+
+# Check for outdated dependencies
+stack outdated
+
+# Update Java dependencies
+cd ../hydra-java
+./gradlew dependencyUpdates
+----
+
+==== 3. Stack LTS Upgrade (Haskell)
+
+Update Stack resolver in `hydra-haskell/stack.yaml`:
+
+[source,yaml]
+----
+resolver: lts-22.0  # Update to latest LTS
+----
+
+Then rebuild and test:
+
+[source,bash]
+----
+pixi run -e haskell stack-clean
+pixi run -e haskell stack-build
+pixi run -e haskell stack-test
+----
+
+==== 4. Cross-Implementation Testing
+
+[source,bash]
+----
+# Test all implementations
+pixi run build-all
+pixi run -e haskell stack-test
+pixi run -e java gradle test
+
+# Verify generated code parity
+pixi run -e haskell generate-haskell
+pixi run -e haskell generate-java
+
+# Test code generation examples
+pixi run -e haskell run-example-graphson
+pixi run -e haskell check-copilot-data
+----
+
+== Hydra-Haskell Release Process
+
+=== Version Preparation
+
+==== 1. Update Version Numbers
+
+Update version in `hydra-haskell/package.yaml`:
+
+[source,yaml]
+----
+version: '0.12.1'
+----
+
+Update corresponding versions:
+* `hydra-java/build.gradle`
+* `hydra-ext/package.yaml`
+* `pixi.toml`
+
+==== 2. Update Changelog
+
+Add release notes to `CHANGELOG.md`:
+
+[source,markdown]
+----
+## [0.12.1] - 2024-01-15
+
+### Added
+- New primitive functions for graph traversal
+- Enhanced JSON schema support
+
+### Changed
+- Improved error messages in type checker
+- Updated dependency versions
+
+### Fixed
+- Memory leak in large graph processing
+- Edge case in code generation
+
+### Breaking Changes
+- Renamed `oldFunction` to `newFunction`
+----
+
+==== 3. Commit Version Changes
+
+[source,bash]
+----
+git add .
+git commit -m "Bump Hydra version to 0.12.1"
+git push origin main
+----
+
+=== Release to Hackage
+
+==== 1. Create Release Package
+
+[source,bash]
+----
+cd hydra-haskell
+pixi run -e haskell stack sdist
+----
+
+This creates the package in `.stack-work/dist/x86_64-linux/Cabal-*/hydra-haskell-*.tar.gz`
+
+==== 2. Upload to Hackage
+
+1. Log in to https://hackage.haskell.org
+2. Navigate to "Upload package"
+3. Upload the generated `.tar.gz` file
+4. Review the package contents and metadata
+5. Publish the package
+
+==== 3. Monitor Release Status
+
+* Check build logs on Hackage
+* Monitor for any reported issues
+* Verify package appears in search results
+* Test installation: `cabal install hydra-haskell`
+
+=== Tag the Release
+
+Once Hackage release is confirmed successful:
+
+[source,bash]
+----
+# Create and push the release tag
+git tag 0.12.1 -m "0.12.1 release" [commit-hash]
+git push --tags
+
+# Verify tag was created
+git tag -l "0.12.*"
+----
+
+== Hydra-Java Release Process
+
+Java releases are typically coordinated with Haskell releases but can be independent for Java-specific fixes.
+
+=== Pre-Release Steps
+
+==== 1. Sync with Haskell Version
+
+Ensure Java implementation includes latest generated code:
+
+[source,bash]
+----
+# Generate latest Java code
+pixi run -e haskell generate-java
+
+# Commit any generated code updates
+git add hydra-java/src/gen-main/java/
+git commit -m "Update generated Java code for 0.12.1"
+----
+
+==== 2. Update Java Version
+
+Update version in `hydra-java/build.gradle`:
+
+[source,gradle]
+----
+version = '0.12.1'
+----
+
+==== 3. Update JavaDocs
+
+[source,bash]
+----
+# Regenerate JavaDocs
+rm -rf hydra-java/javadoc
+cd hydra-java
+./bin/update-javadoc.sh
+
+# Commit updated documentation
+git add javadoc/
+git commit -m "Update JavaDocs for 0.12.1 release"
+git push origin main
+----
+
+==== 4. Update Documentation Branch
+
+[source,bash]
+----
+# Switch to docs branch and sync
+git checkout docs
+git pull origin main
+git push origin docs
+----
+
+This triggers GitHub Pages generation of online JavaDocs.
+
+=== Release to Maven Central
+
+==== 1. Build and Stage
+
+[source,bash]
+----
+cd hydra-java
+pixi run -e java gradle build
+./gradlew publishToSonatype
+----
+
+==== 2. Release via Sonatype
+
+1. Log in to https://oss.sonatype.org
+2. Navigate to "Staging Repositories"
+3. Find your staging repository (com.fortytwo.hydra-*)
+4. Click "Close" and provide message: "Hydra-Java 0.12.1 release"
+5. Wait for validation (several minutes)
+6. Click "Release" when available
+7. Provide release message: "Hydra 0.12.1 release"
+
+==== 3. Verify Release
+
+[source,bash]
+----
+# Check Maven Central (may take up to 2 hours)
+# https://search.maven.org/search?q=g:net.fortytwo.hydra
+
+# Test installation
+gradle init
+# Add dependency and test
+----
+
+== Multi-Component Release Coordination
+
+=== Version Synchronization
+
+[source,bash]
+----
+# Script to update all versions consistently
+#!/bin/bash
+NEW_VERSION="0.12.1"
+
+# Update Haskell
+sed -i "s/version: '.*'/version: '$NEW_VERSION'/" hydra-haskell/package.yaml
+
+# Update Java
+sed -i "s/version = '.*'/version = '$NEW_VERSION'/" hydra-java/build.gradle
+
+# Update Extensions
+sed -i "s/version: '.*'/version: '$NEW_VERSION'/" hydra-ext/package.yaml
+
+# Update pixi.toml
+sed -i "s/version = \".*\"/version = \"$NEW_VERSION\"/" pixi.toml
+----
+
+=== Testing Cross-Implementation Compatibility
+
+[source,bash]
+----
+# Comprehensive compatibility test
+pixi run validate
+pixi run build-all
+pixi run -e haskell stack-test
+pixi run -e java gradle test
+
+# Test generated code consistency
+pixi run -e haskell generate-haskell
+pixi run -e haskell generate-java
+
+# Verify no unexpected changes
+git diff --name-only
+----
+
+== Hotfix Release Process
+
+For urgent bug fixes that can't wait for the next regular release:
+
+=== 1. Create Hotfix Branch
+
+[source,bash]
+----
+git checkout main
+git pull origin main
+git checkout -b hotfix/0.12.2
+----
+
+=== 2. Implement and Test Fix
+
+[source,bash]
+----
+# Make necessary changes
+# ...
+
+# Test thoroughly
+pixi run -e haskell stack-test
+pixi run -e java gradle test
+pixi run build-all
+----
+
+=== 3. Update Version (Patch Only)
+
+[source,bash]
+----
+# Update to patch version (0.12.1 -> 0.12.2)
+# Update all version files
+git commit -m "Bump version to 0.12.2 for hotfix"
+----
+
+=== 4. Merge and Release
+
+[source,bash]
+----
+git checkout main
+git merge hotfix/0.12.2
+git push origin main
+
+# Follow normal release process for this patch version
+# Tag and release to Hackage/Maven Central
+----
+
+== Post-Release Tasks
+
+=== 1. Update GitHub Release
+
+1. Go to https://github.com/CategoricalData/hydra/releases
+2. Click "Draft a new release"
+3. Select the version tag (e.g., `0.12.1`)
+4. Fill in release notes from CHANGELOG.md
+5. Upload any release artifacts
+6. Publish the release
+
+=== 2. Update Documentation
+
+[source,bash]
+----
+# Update version references in documentation
+grep -r "0\.12\.0" docs/
+# Update to new version as needed
+----
+
+=== 3. Notify Community
+
+* Post release announcement on Discord (#releases channel)
+* Update any external documentation
+* Notify downstream users of breaking changes
+
+=== 4. Monitor for Issues
+
+* Watch for bug reports in GitHub issues
+* Monitor Discord for user questions
+* Check build status on various platforms
+
+== Release Quality Checklist
+
+Before any release, verify:
+
+- [ ] All tests pass on CI/CD
+- [ ] Documentation is up to date
+- [ ] Version numbers are consistent across all components
+- [ ] Generated code is current and committed
+- [ ] CHANGELOG.md includes all changes
+- [ ] No known critical bugs
+- [ ] Performance regressions addressed
+- [ ] Breaking changes are documented
+- [ ] Migration guides provided (if needed)
+- [ ] Cross-platform compatibility verified
+
+== Emergency Procedures
+
+=== Reverting a Release
+
+If a critical issue is found immediately after release:
+
+[source,bash]
+----
+# For Hackage (contact maintainers)
+# Email: admin@hackage.haskell.org
+
+# For Maven Central (within 24 hours)
+# Contact Sonatype support
+
+# For GitHub
+git tag -d 0.12.1
+git push origin :refs/tags/0.12.1
+----
+
+=== Hotfix Communication
+
+Template for urgent hotfix announcements:
+
+```
+🚨 Hydra Hotfix Release 0.12.2
+
+Critical bug fix for issue #XXX affecting [component].
+
+**Affected versions**: 0.12.0 - 0.12.1
+**Fixed in**: 0.12.2
+**Severity**: High/Medium/Low
+
+**Action required**: Update to 0.12.2 immediately
+**Update command**:
+- Haskell: `stack update && stack install hydra-haskell`
+- Java: Update version in build.gradle to 0.12.2
+
+Details: [link to issue/PR]
+
+== Automation and Tools
+
+=== Release Scripts
+
+Consider creating release automation scripts:
+
+[source,bash]
+----
+# scripts/prepare-release.sh
+#!/bin/bash
+set -e
+
+VERSION=$1
+if [ -z "$VERSION" ]; then
+    echo "Usage: $0 <version>"
+    exit 1
+fi
+
+echo "Preparing release $VERSION..."
+
+# Update versions
+# Run tests
+# Generate code
+# Commit changes
+# Create PR
+----
+
+=== CI/CD Integration
+
+Ensure your CI/CD pipeline includes:
+
+* Automated version validation
+* Cross-platform testing
+* Generated code verification
+* Documentation building
+* Release artifact creation
+
+== Related Documentation
+
+* <<developer-guide#,Developer Guide>> - Overall development process
+* <<pixi-haskell-tasks#,Pixi Haskell Tasks>> - Build and test commands
+* Main repository README for contributor guidelines
+* Individual component documentation for implementation-specific details

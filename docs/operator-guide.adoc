@@ -1,0 +1,282 @@
+= Hydra Operator Guide
+:doctype: book
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+:icons: font
+:numbered:
+
+[preface]
+== Preface
+
+This guide is for developers who are using Hydra to create message translators using coders and mappers. If you're working on the core Hydra kernel, see the <<developer-guide#,Developer Guide>>. If you're creating new Hydra language implementations, see the <<implementor-guide#,Implementor Guide>>.
+
+Hydra empowers users with a toolkit of functions and DSLs (Domain Specific Languages) to transform and validate graph data and schemas with maximum versatility across types and standards. In Josh Shinavier's words: "In Hydra, programs are graphs, and graphs are programs."
+
+This guide will walk you through practical examples of using Hydra for data transformation tasks, from simple relational-to-graph conversions to complex schema mappings and message translation scenarios.
+
+== Part I: Understanding Hydra for Data Operations
+
+include::sects/operator-fundamentals.adoc[leveloffset=+1]
+
+== Part II: Getting Started with Data Transformation
+
+include::sects/transformation-examples.adoc[leveloffset=+1]
+
+== Part III: Development Workflow with Pixi Tasks
+
+=== Working with Generated Code
+
+For complex transformations, you'll often need to generate code from Hydra definitions:
+
+[source,bash]
+----
+# Generate Java code from Hydra definitions
+pixi run -e haskell generate-java
+
+# Generate Haskell code from Hydra definitions
+pixi run -e haskell generate-haskell
+
+# Start interactive Haskell session for development
+pixi run -e haskell stack-ghci
+----
+
+=== Data Processing Tasks
+
+[source,bash]
+----
+# Check available demo data
+pixi run -e haskell check-data
+
+# Generate GraphSON sample data
+pixi run -e haskell run-example-graphson
+pixi run -e haskell run-copilot-graphson
+
+# Verify generated output
+pixi run -e haskell check-graphson
+pixi run -e haskell check-copilot-data
+pixi run -e haskell check-sales-data
+----
+
+=== Testing Your Transformations
+
+[source,bash]
+----
+# Run Haskell tests to validate transformations
+pixi run -e haskell stack-test
+pixi run -e haskell hydra-test
+pixi run -e haskell ext-test
+
+# Test individual transformation modules
+pixi run -e haskell stack-ghci
+-- In GHCi: :l YourTransformation && runTests
+----
+
+=== Exploring Hydra Modules and Functions
+
+[source,bash]
+----
+# List available Haskell modules
+pixi run -e haskell haskell-modules
+
+# Find functions in generated code
+pixi run -e haskell haskell-functions
+
+# Browse modules interactively
+pixi run -e haskell stack-ghci
+-- In GHCi: :browse Hydra.Core.Model
+----
+
+=== Building and Packaging
+
+[source,bash]
+----
+# Build all components for your target platform
+pixi run build-all
+
+# Build specific components
+pixi run build-java      # For Java-based deployments
+pixi run build-python    # For Python-based deployments
+pixi run build-haskell   # For Haskell-based deployments
+
+# Clean build artifacts
+pixi run clean
+----
+
+=== Advanced Workflow Patterns
+
+==== Iterative Development and Testing
+
+[source,bash]
+----
+# Clean and rebuild cycle for development
+pixi run clean
+pixi run build-all
+
+# Interactive development with immediate feedback
+pixi run -e haskell stack-ghci
+-- In GHCi: :reload after making changes
+
+# Test specific transformations
+pixi run -e haskell hydra-test
+pixi run -e haskell ext-test
+----
+
+==== Working with Large Datasets
+
+[source,bash]
+----
+# Check available sample data
+pixi run -e haskell check-data
+pixi run -e haskell check-copilot-data
+pixi run -e haskell check-sales-data
+
+# Generate test datasets
+pixi run -e haskell run-copilot-graphson
+pixi run -e haskell run-example-graphson
+
+# Verify output quality
+pixi run -e haskell check-graphson
+----
+
+==== Debugging Transformations
+
+[source,bash]
+----
+# Start interactive session for debugging
+pixi run -e haskell stack-ghci
+
+# In GHCi - load your transformation module
+:l YourTransformationModule
+:browse YourTransformationModule
+:type yourTransformationFunction
+
+# Clear caches if encountering issues
+pixi run -e haskell clear-stack-cache-all
+pixi run -e haskell stack-clean
+----
+
+==== Performance Optimization
+
+[source,bash]
+----
+# Build with optimizations
+pixi run -e haskell stack-build
+
+# Profile memory usage (in GHCi)
+pixi run -e haskell stack-ghci
+-- :set +s  -- Show timing/memory stats
+-- :set +t  -- Show types
+
+# Clean previous builds for fresh benchmarks
+pixi run -e haskell stack-clean
+pixi run build-all
+----
+
+== Part IV: Production Deployment
+
+=== Packaging for Production
+
+==== Creating Distributable Packages
+
+[source,bash]
+----
+# Build production-ready packages
+pixi run build-all
+
+# Create platform-specific distributions
+pixi run -e java gradle build
+pixi run -e haskell stack install
+
+# Verify package integrity
+pixi run validate
+----
+
+==== Configuration Management
+
+* **Environment-specific configurations**: Development, staging, production
+* **Schema versioning**: Handle evolving data schemas
+* **Error handling strategies**: Define how to handle validation failures and data quality issues
+* **Performance tuning**: Optimize for your specific workloads and data volumes
+
+=== Monitoring and Maintenance
+
+==== Health Monitoring
+
+* **Data quality metrics**: Track validation failures, schema violations
+* **Performance monitoring**: Processing times, throughput, memory usage
+* **Error tracking**: Log and alert on transformation failures
+* **Schema drift detection**: Monitor for unexpected changes in input data
+
+==== Maintenance Tasks
+
+[source,bash]
+----
+# Regular maintenance tasks
+pixi run clean                    # Clean build artifacts
+pixi run validate                 # Validate system health
+pixi run -e haskell stack-test    # Run regression tests
+
+# Update dependencies
+pixi install                      # Update pixi dependencies
+pixi run -e haskell stack update  # Update Haskell dependencies
+----
+
+== Appendices
+
+[appendix]
+=== Operator Resources
+
+* **Main Repository**: https://github.com/CategoricalData/hydra
+* **LambdaGraph Discord**: https://bit.ly/lg-discord
+* **Community Examples**: Available in the hydra-ext subproject
+* **G.V() Visualization**: https://gdotv.com for graph visualization
+* **Pixi Documentation**: https://pixi.sh for build system reference
+
+[appendix]
+=== Common Transformation Patterns
+
+==== Data Format Conversions
+* CSV to JSON transformation patterns
+* XML to Protocol Buffer mappings
+* Relational to graph data migrations
+* API format translations
+
+==== Schema Evolution Patterns
+* Forward compatibility strategies
+* Backward compatibility maintenance
+* Version migration workflows
+* Data validation and quality assurance
+
+==== Performance Optimization Patterns
+* Streaming data processing
+* Batch optimization techniques
+* Memory management strategies
+* Parallel processing approaches
+
+[appendix]
+=== Troubleshooting Guide
+
+==== Common Issues
+
+* **Build failures**: Check dependencies and environment setup
+* **Memory issues**: Use streaming processing for large datasets
+* **Performance problems**: Profile and optimize critical paths
+* **Schema mismatches**: Validate input data against expected schemas
+* **Type errors**: Ensure proper type definitions and mappings
+
+==== Getting Help
+
+* Join the Discord community for real-time assistance
+* Check existing issues in the GitHub repository
+* Review the comprehensive developer documentation
+* Examine working examples in the hydra-ext project
+
+[colophon]
+== Colophon
+
+This operator guide covers the practical application of Hydra for data transformation tasks. It focuses on real-world scenarios and provides step-by-step guidance for operators using existing Hydra implementations.
+
+For the latest version of this guide and related documentation, see the `docs/` directory in the Hydra repository.

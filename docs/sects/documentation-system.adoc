@@ -1,0 +1,463 @@
+= Documentation System
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+
+This section describes Hydra's documentation system, including the build process, authoring guidelines, and maintenance workflows.
+
+== Overview
+
+Hydra uses a modern documentation system built on AsciiDoc with PlantUML diagram integration. The system is designed to generate both HTML and PDF outputs, with automated deployment to GitHub Pages for online access.
+
+=== Key Features
+
+* **AsciiDoc Format**: Semantic markup for technical documentation
+* **PlantUML Diagrams**: Professional diagrams generated from source code
+* **Multi-format Output**: HTML for web, PDF for distribution
+* **Pixi Integration**: Automated builds using pixi task system
+* **GitHub Pages**: Automated deployment and hosting
+* **Modular Structure**: Reusable sections and includes
+
+=== Documentation Architecture
+
+[plantuml,documentation-architecture,png]
+....
+include::../diagrams/documentation-architecture.puml[]
+....
+
+== Build System
+
+=== Pixi Tasks for Documentation
+
+The documentation system integrates with Hydra's pixi-based build system through dedicated tasks:
+
+==== Quick Build Tasks
+
+[source,bash]
+----
+# Build all HTML documentation
+pixi run docs-html
+
+# Build all PDF documentation
+pixi run docs-pdf
+
+# Build both HTML and PDF
+pixi run docs-all
+
+# Serve documentation locally
+pixi run docs-serve
+----
+
+==== Individual Guide Tasks
+
+[source,bash]
+----
+# Build specific guides (HTML)
+pixi run -e docs docs-build-developer-guide
+pixi run -e docs docs-build-implementor-guide
+pixi run -e docs docs-build-operator-guide
+
+# Build specific guides (PDF)
+pixi run -e docs docs-build-pdf-developer
+pixi run -e docs docs-build-pdf-implementor
+pixi run -e docs docs-build-pdf-operator
+----
+
+==== Maintenance Tasks
+
+[source,bash]
+----
+# Clean output directory
+pixi run -e docs docs-clean
+
+# Regenerate all diagrams
+pixi run -e docs docs-generate-diagrams
+
+# Prepare build environment
+pixi run -e docs docs-prepare
+----
+
+=== Build Dependencies
+
+The documentation environment includes:
+
+* **Ruby**: Runtime for AsciiDoctor tools
+* **asciidoctor**: Main AsciiDoc processor
+* **rb-asciidoctor-pdf**: PDF generation support
+* **rb-asciidoctor-diagram**: PlantUML integration
+* **plantuml**: Diagram generation engine
+* **graphviz**: Graph layout support
+
+=== Build Process Flow
+
+1. **Preparation Phase**
+   - Clean output directory (`docs-output/`)
+   - Generate PlantUML diagrams from source files
+   - Copy static assets (images, CSS)
+
+2. **Processing Phase**
+   - Process AsciiDoc files with diagram extension
+   - Resolve includes and cross-references
+   - Apply syntax highlighting and formatting
+
+3. **Output Phase**
+   - Generate HTML files with embedded diagrams
+   - Create PDF versions using asciidoctor-pdf
+   - Copy all assets to output directory
+
+4. **Deployment Phase** (optional)
+   - Prepare files for GitHub Pages
+   - Create deployment-ready directory structure
+   - Generate navigation and index files
+
+== Authoring Documentation
+
+=== File Organization
+
+The documentation follows a structured organization:
+
+[source]
+----
+docs/
+├── index.adoc                    # Main index
+├── developer-guide.adoc          # Complete developer guide
+├── implementor-guide.adoc        # Implementor guide
+├── operator-guide.adoc          # Operator guide
+└── sects/                       # Individual sections
+    ├── architecture-setup.adoc
+    ├── build-system.adoc
+    ├── pixi-setup.adoc
+    ├── documentation-system.adoc  # This file
+    └── ... (other sections)
+----
+
+=== AsciiDoc Conventions
+
+==== Document Headers
+
+All documentation files should include consistent headers:
+
+[source,asciidoc]
+----
+= Document Title
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+
+Introduction paragraph explaining the document's purpose.
+----
+
+==== Section Hierarchy
+
+Use consistent section hierarchy:
+
+[source,asciidoc]
+----
+= Document Title        (Level 0 - Document title)
+== Main Section        (Level 1 - Main sections)
+=== Subsection        (Level 2 - Subsections)
+==== Sub-subsection   (Level 3 - Detailed topics)
+===== Details         (Level 4 - Specific details)
+----
+
+==== Code Examples
+
+Format code examples with proper syntax highlighting:
+
+[source,asciidoc]
+----
+[source,bash]
+----
+pixi run docs-html
+----
+
+[source,haskell]
+----
+module Main where
+main = putStrLn "Hello, Hydra!"
+----
+----
+
+==== Cross-References
+
+Use semantic cross-references between documents:
+
+[source,asciidoc]
+----
+See the <<build-system#,Build System Guide>> for details.
+Refer to <<pixi-setup#troubleshooting,Troubleshooting Section>>.
+----
+
+==== Notes and Admonitions
+
+Use admonitions to highlight important information:
+
+[source,asciidoc]
+----
+NOTE: This provides additional context.
+
+TIP: This offers helpful advice.
+
+WARNING: This warns about potential issues.
+
+IMPORTANT: This highlights critical information.
+----
+
+=== PlantUML Diagrams
+
+==== Creating Diagrams
+
+1. **Create source file** in `docs/diagrams/` directory
+2. **Follow naming convention**: `descriptive-name.puml`
+3. **Use consistent styling**:
+
+[source,plantuml]
+----
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+
+' Your diagram content here
+
+@enduml
+----
+
+==== Embedding Diagrams
+
+Include diagrams in documentation using:
+
+[source,asciidoc]
+----
+[plantuml,diagram-name,png]
+....
+include::../diagrams/documentation-architecture.puml[]
+....
+----
+
+==== Diagram Types
+
+Common diagram types used in Hydra documentation:
+
+* **Sequence Diagrams**: For process flows and interactions
+* **Component Diagrams**: For system architecture
+* **Activity Diagrams**: For workflows and procedures
+* **Class Diagrams**: For type hierarchies
+* **Deployment Diagrams**: For system deployment
+
+== GitHub Pages Integration
+
+=== Automated Deployment
+
+The documentation system supports automated GitHub Pages deployment:
+
+[source,bash]
+----
+# Build and prepare for GitHub Pages
+pixi run gh-pages-build
+----
+
+This creates a `gh-pages/` directory with:
+
+* All HTML documentation files
+* Generated diagram images
+* Navigation and index files
+* Required GitHub Pages configuration
+
+=== Deployment Process
+
+1. **Build documentation** using pixi tasks
+2. **Run GitHub Pages build** to prepare files
+3. **Commit and push** to gh-pages branch:
+
+[source,bash]
+----
+cd gh-pages
+git add .
+git commit -m "Update documentation"
+git push origin gh-pages
+----
+
+4. **Verify deployment** at GitHub Pages URL
+
+=== Custom Domain Support
+
+To use a custom domain:
+
+1. **Add CNAME file** in gh-pages directory
+2. **Configure DNS** for your domain
+3. **Update repository settings** in GitHub
+
+== Development Workflow
+
+=== Daily Documentation Work
+
+1. **Edit content** in `.adoc` files
+2. **Create/modify diagrams** in `diagrams/` directory
+3. **Build and preview locally**:
+   [source,bash]
+   ----
+   pixi run docs-html
+   pixi run docs-serve
+   # Visit http://localhost:8080
+   ----
+4. **Iterate** until satisfied with results
+
+=== Before Committing Changes
+
+1. **Build all formats** to check for errors:
+   [source,bash]
+   ----
+   pixi run docs-all
+   ----
+
+2. **Validate output** in `docs-output/` directory
+
+3. **Test GitHub Pages build**:
+   [source,bash]
+   ----
+   pixi run gh-pages-build
+   ----
+
+4. **Review generated files** for correctness
+
+=== Release Documentation
+
+1. **Update version references** throughout documentation
+2. **Build complete documentation set**
+3. **Deploy to GitHub Pages**
+4. **Update any external references**
+
+== Maintenance and Best Practices
+
+=== Content Guidelines
+
+* **Keep content current** with software changes
+* **Use clear, concise language**
+* **Include practical examples** for all concepts
+* **Maintain consistent terminology** across documents
+* **Test all code examples** before including them
+
+=== Diagram Guidelines
+
+* **Keep diagrams simple** and focused
+* **Use consistent styling** across all diagrams
+* **Include descriptive labels** and notes
+* **Version control source files** (`.puml` files)
+* **Optimize for readability** at normal viewing sizes
+
+=== Quality Assurance
+
+* **Regular content review** for accuracy
+* **Link validation** to prevent broken references
+* **Build testing** across all output formats
+* **User feedback integration** from community
+* **Version synchronization** with codebase changes
+
+=== Performance Considerations
+
+* **Diagram caching** to speed up builds
+* **Incremental builds** when possible
+* **Output optimization** for web delivery
+* **Image compression** for faster loading
+* **Build parallelization** for complex documents
+
+== Troubleshooting
+
+=== Common Issues
+
+==== PlantUML Rendering Problems
+
+* **Java requirement**: Ensure Java runtime is available
+* **Syntax validation**: Check `.puml` file syntax
+* **Path resolution**: Verify include paths are correct
+* **Memory limits**: Increase Java heap for complex diagrams
+
+==== AsciiDoc Processing Errors
+
+* **Include failures**: Check file paths and permissions
+* **Cross-reference errors**: Validate anchor names and targets
+* **Attribute problems**: Ensure document attributes are set
+* **Encoding issues**: Use UTF-8 encoding consistently
+
+==== Build Environment Issues
+
+* **Dependency problems**: Verify all gems are installed
+* **Version conflicts**: Check Ruby and gem versions
+* **Path configuration**: Ensure tools are in system PATH
+* **Permission errors**: Check file and directory permissions
+
+=== Debugging Techniques
+
+[source,bash]
+----
+# Test individual components
+plantuml docs/diagrams/test-diagram.puml
+asciidoctor docs/test-document.adoc
+
+# Verbose build output
+asciidoctor -v -r asciidoctor-diagram docs/developer-guide.adoc
+
+# Check environment
+pixi list -e docs
+which asciidoctor
+which plantuml
+----
+
+== Future Enhancements
+
+=== Planned Improvements
+
+* **Interactive diagrams** using modern web technologies
+* **Multi-language support** for international documentation
+* **API documentation integration** from source code
+* **Advanced search capabilities** for large documentation sets
+* **Collaborative editing** workflows for distributed teams
+
+=== Extension Opportunities
+
+* **Custom AsciiDoc extensions** for Hydra-specific markup
+* **Automated diagram generation** from code structures
+* **Integration testing** for documentation examples
+* **Metrics and analytics** for documentation usage
+* **Mobile-optimized rendering** for improved accessibility
+
+== Contributing to Documentation
+
+=== Getting Started
+
+1. **Set up environment**:
+   [source,bash]
+   ----
+   pixi install -e docs
+   ----
+
+2. **Learn AsciiDoc syntax** from official documentation
+
+3. **Study existing documentation** for style and patterns
+
+4. **Start with small contributions** like typo fixes
+
+5. **Progress to larger sections** as you gain familiarity
+
+=== Contribution Process
+
+1. **Create feature branch** for your changes
+2. **Follow style guidelines** established in this document
+3. **Test your changes** thoroughly
+4. **Submit pull request** with clear description
+5. **Address review feedback** promptly
+
+=== Review Criteria
+
+* **Technical accuracy**: All content must be correct
+* **Style consistency**: Follow established patterns
+* **Completeness**: Include all necessary information
+* **Clarity**: Write for the intended audience
+* **Testing**: Verify all examples work correctly
+
+For questions about the documentation system, consult the `docs/README.md` file or reach out via the project's Discord community.

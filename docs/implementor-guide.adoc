@@ -1,0 +1,111 @@
+= Hydra Implementor Guide
+:doctype: book
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+:icons: font
+:numbered:
+
+[preface]
+== Preface
+
+This guide is for developers creating new implementations of Hydra in different programming languages. If you're working on the core Hydra kernel itself, see the <<developer-guide#,Developer Guide>>. If you're using existing Hydra implementations to create message translators, see the <<operator-guide#,Operator Guide>>.
+
+Hydra currently has implementations in Haskell (Hydra-Haskell) and Java (Hydra-Java). Hydra-Haskell is more _complete_ than Hydra-Java, in that it implements the entire Hydra Kernel, although Hydra-Java has a number of utilities which Hydra-Haskell does not. Both implementations support the entire Hydra standard library.
+
+Prior to the 1.0 release, Hydra will have at least two _complete_ implementations, but possibly more. This guide provides a step-by-step approach to creating a new Hydra implementation in your target language.
+
+== Part I: Overview and Prerequisites
+
+include::sects/implementor-fundamentals.adoc[leveloffset=+1]
+
+== Part II: Implementation Steps
+
+include::sects/implementor-steps.adoc[leveloffset=+1]
+
+== Part III: Implementation Guidelines
+
+include::sects/implementor-guidelines.adoc[leveloffset=+1]
+
+== Appendices
+
+[appendix]
+=== Implementation Checklist
+
+Before considering your implementation complete:
+
+- [ ] Core type system implemented and tested
+- [ ] All primitive functions implemented
+- [ ] Language constraints properly defined
+- [ ] Coder and serializer working correctly
+- [ ] Generated code compiles and runs
+- [ ] Standard test suite passes
+- [ ] Native DSLs implemented
+- [ ] Documentation complete and accurate
+- [ ] Performance meets requirements
+- [ ] Cross-platform compatibility verified
+- [ ] Package/distribution ready
+- [ ] Community feedback incorporated
+
+[appendix]
+=== Resources for Implementors
+
+* **Main Repository**: https://github.com/CategoricalData/hydra
+* **LambdaGraph Discord**: https://bit.ly/lg-discord
+* **Reference Implementation**: Hydra-Haskell source code
+* **Production Example**: Hydra-Java implementation
+* **Community Wiki**: https://github.com/CategoricalData/hydra/wiki
+* **Issue Tracker**: For questions and bug reports
+* **Pixi Task Reference**: Complete build system documentation
+
+[appendix]
+=== Language-Specific Considerations
+
+==== Python Implementation
+
+Key considerations for Python implementations:
+
+* **Type Hints**: Use type hints extensively for better IDE support
+* **Dataclasses**: Use dataclasses for immutable record types
+* **Pattern Matching**: Use structural pattern matching (Python 3.10+) where possible
+* **Async Support**: Consider asyncio for I/O-heavy operations
+* **NumPy Integration**: Consider NumPy integration for numerical computing
+
+==== Scala Implementation
+
+Key considerations for Scala implementations:
+
+* **Case Classes**: Use case classes for algebraic data types
+* **Pattern Matching**: Leverage Scala's powerful pattern matching
+* **Type System**: Take advantage of Scala's sophisticated type system
+* **Functional Collections**: Use Scala's immutable collections library
+* **Actor Model**: Consider Akka integration for distributed computing
+
+==== Rust Implementation
+
+Key considerations for Rust implementations:
+
+* **Memory Safety**: Leverage Rust's ownership system for safety
+* **Pattern Matching**: Use Rust's enum and match expressions
+* **Zero-Cost Abstractions**: Design for compile-time optimization
+* **Error Handling**: Use Result types for error propagation
+* **Concurrency**: Take advantage of Rust's fearless concurrency
+
+==== Go Implementation
+
+Key considerations for Go implementations:
+
+* **Interfaces**: Use interfaces for polymorphism
+* **Goroutines**: Leverage goroutines for concurrent processing
+* **Error Handling**: Use explicit error returns
+* **Reflection**: Use reflection judiciously for type operations
+* **Simplicity**: Follow Go's philosophy of simplicity
+
+[colophon]
+== Colophon
+
+This implementor guide is based on the original wiki documentation and real-world experience creating Hydra implementations. It should be updated as new implementations are created and lessons learned.
+
+For the latest version of this guide and related documentation, see the `docs/` directory in the Hydra repository.

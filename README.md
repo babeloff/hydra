@@ -15,20 +15,20 @@ The language is now being developed for its own sake, with the intention of beco
 integrating more directly with [Apache TinkerPop](https://tinkerpop.apache.org),
 and branching out into additional concrete programming languages.
 Typical use cases include:
-* **Graph construction**. Hydra supports TinkerPop-style property graphs 
+* **Graph construction**. Hydra supports TinkerPop-style property graphs
   as well as [RDF](https://en.wikipedia.org/wiki/Resource_Description_Framework) and [SHACL](https://en.wikipedia.org/wiki/SHACL),
   and has been used in combination with the ISO/IEC [GQL](https://en.wikipedia.org/wiki/Graph_Query_Language) standard.
   Hydra provides [DSLs](https://en.wikipedia.org/wiki/Domain-specific_language) for defining schemas and mappings,
   as well as tools for validating schemas and data, and moving them seamlessly into and out of the graph formats.
 * **Data integration**. Hydra includes "coders" (encoders+decoders) for many data and schema languages which you can easily compose together
-  to build data transform pipelines. Some of the currently supported languages and formats include 
+  to build data transform pipelines. Some of the currently supported languages and formats include
   [Protobuf](https://en.wikipedia.org/wiki/Protocol_Buffers),
   [Avro](https://avro.apache.org),
   [JSON](https://json.org) and [YAML](https://en.wikipedia.org/wiki/YAML),
   [RDF](https://www.w3.org/RDF) formats including N-Triples,
   [GraphQL](https://graphql.org/),
   LinkedIn's [PDL Schema](https://linkedin.github.io/rest.li/pdl_schema) language, as well as simple tabular data (CSV/TSV).
-  Hydra has been used extensively with (Delta) [Parquet](https://en.wikipedia.org/wiki/Apache_Parquet), although this support is not currently open source. 
+  Hydra has been used extensively with (Delta) [Parquet](https://en.wikipedia.org/wiki/Apache_Parquet), although this support is not currently open source.
  There is also limited support for [C Sharp](https://en.wikipedia.org/wiki/C_Sharp_(programming_language)) and [Scala](https://en.wikipedia.org/wiki/Scala_(programming_language)) ([Hydra-Scala](https://github.com/CategoricalData/hydra/tree/main/hydra-scala)).
 
 * **Computational graphs**. Unusually among graph data models and query languages, Hydra has deep support for [polymorphism](https://en.wikipedia.org/wiki/Parametric_polymorphism),
@@ -63,13 +63,13 @@ pixi install
 pixi run validate
 
 # Build working packages
-pixi run build-python          # ✅ Works perfectly
-pixi run -e java gradle-build   # ✅ Direct Java build works
+pixi run build-python          # [+] Works perfectly
+pixi run -e java gradle-build   # [+] Direct Java build works
 
 # Note: Some conda builds have known issues (see PIXI_TASK_STATUS.md)
-# pixi run build-java    # ❌ Has missing generated classes
-# pixi run build-scala   # ❌ SBT compatibility issues  
-# pixi run build-all     # ❌ Depends on failing builds
+# pixi run build-java    # [-] Has missing generated classes
+# pixi run build-scala   # [-] SBT compatibility issues
+# pixi run build-all     # [-] Depends on failing builds
 ```
 
 ## Haskell Development
@@ -110,7 +110,7 @@ pixi run -e haskell ext-ghci          # Extensions package only
 In GHCi, you can access modules from both packages:
 ```haskell
 :l Hydra.Core.Model              -- Core Hydra modules
-:l Hydra.Ext.Java.Language       -- Extension modules  
+:l Hydra.Ext.Java.Language       -- Extension modules
 :browse Hydra.Core.Model         -- Browse available functions
 :reload                          -- Reload after changes
 ```
@@ -129,8 +129,8 @@ pixi run -e haskell haskell-modules
 pixi run -e haskell check-graphson
 
 # Build attempts (currently failing due to glibc compatibility)
-# pixi run -e haskell stack-build  # ❌ Linking issues
-# pixi run -e haskell stack-test   # ❌ Requires build
+# pixi run -e haskell stack-build  # [-] Linking issues
+# pixi run -e haskell stack-test   # [-] Requires build
 
 # Clean builds (works)
 pixi run -e haskell stack-clean
@@ -140,10 +140,10 @@ For detailed Haskell development instructions, see [HASKELL_SETUP.md](HASKELL_SE
 
 ### Available Packages
 
-- **hydra-java** - Java implementation 
+- **hydra-java** - Java implementation
 - **hydra-python** - Python implementation (in progress)
 - **hydra-haskell** - Haskell implementation
-- **hydra-scala** - Scala implementation 
+- **hydra-scala** - Scala implementation
 - **hydra-ext** - Extensions and additional functionality
 - **hydra** - Meta-package including all variants
 

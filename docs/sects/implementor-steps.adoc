@@ -1,0 +1,832 @@
+= Implementation Steps
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+
+This document provides a detailed, step-by-step process for creating a new Hydra language implementation.
+
+[plantuml,implementor-workflow,png]
+....
+include::../diagrams/implementor-workflow.puml[]
+....
+
+== Step-by-Step Implementation Guide
+
+=== Step 1: Create the Syntax Model
+
+The very first thing you should do when undertaking a new implementation is to define the syntax of the host language using Hydra's native data model, Hydra Core. This syntax model will be the foundation of everything which follows.
+
+==== Guidelines for Syntax Modeling
+
+* **Use Existing Sources of Truth**: Always rely on an existing source of truth for the syntax, such as an existing BNF grammar or reference documentation. These existing sources of truth can always be found for mainstream languages.
+
+* **Choose Standard Sources**: There may be different sources of truth for a given language. Choose the one which is the most standard, or the best fit for your application.
+
+* **Document Your Sources**: Note the version (if any) or timestamp at which the source of truth was retrieved, along with a URL, in the documentation for your new syntax model.
+
+* **Version Awareness**: Languages may change over time. Be sure to document which version you're targeting.
+
+==== Examples and Inspiration
+
+Look at other syntax models for inspiration:
+* https://github.com/CategoricalData/hydra/blob/main/hydra-haskell/src/main/haskell/Hydra/Sources/Tier3/Ext/Haskell/Syntax.hs[Haskell syntax model]
+* https://github.com/CategoricalData/hydra/blob/main/hydra-haskell/src/main/haskell/Hydra/Sources/Tier3/Ext/Java/Syntax.hs[Java syntax model]
+
+Note that the Haskell syntax model was written first, and was based on a third-party library (haskell-tools-ast) which has not been updated since 2019. The Java syntax model is newer, and follows the above advice of using a specific version of a standardized grammar as the source of truth.
+
+==== Implementation Tips
+
+* **Copy Source Verbatim**: Copy the entire source of truth verbatim, then enclose it in comments and add the Hydra type definitions inline beneath the corresponding productions
+* **Use LLM Assistance**: Programming language grammars are usually quite large, so creating the Hydra syntax model may be one of the most time-consuming steps. Utilizing an LLM-based tool like ChatGPT or GitHub Copilot can greatly speed things up, although you must carefully check and correct its output
+* **Make Design Decisions**: There are many design decisions which only you can make
+
+==== Example: Python Syntax Model Structure
+
+[source,haskell]
+----
+module Hydra.Sources.Tier3.Ext.Python.Syntax where
+
+import Hydra.Sources.Core
+
+-- Python Module Structure
+-- Based on Python 3.11 Grammar Specification
+-- https://docs.python.org/3/reference/grammar.html
+
+pythonModule :: Type
+pythonModule = record "Module" [
+    field "body" (list pythonStatement),
+    field "type_ignores" (list pythonTypeIgnore)
+  ]
+
+pythonStatement :: Type
+pythonStatement = union "Statement" [
+    variant "FunctionDef" pythonFunctionDef,
+    variant "AsyncFunctionDef" pythonAsyncFunctionDef,
+    variant "ClassDef" pythonClassDef,
+    variant "Return" (optional pythonExpression),
+    variant "Delete" (list pythonExpression),
+    variant "Assign" pythonAssign,
+    variant "AugAssign" pythonAugAssign,
+    -- ... more statement types
+  ]
+
+pythonExpression :: Type
+pythonExpression = union "Expression" [
+    variant "BoolOp" pythonBoolOp,
+    variant "NamedExpr" pythonNamedExpr,
+    variant "BinOp" pythonBinOp,
+    variant "UnaryOp" pythonUnaryOp,
+    variant "Lambda" pythonLambda,
+    variant "IfExp" pythonIfExp,
+    -- ... more expression types
+  ]
+----
+
+=== Step 2: Define Language Constraints
+
+Characterizing a target language in terms of constraints (supported and unsupported type/term expressions) allows Hydra to do much of the work of adapting types and terms so they can be expressed in that language.
+
+==== Language Characterization
+
+A language is given a unique name like "haskell" or "java", and is characterized according to:
+
+* **Supported type variants** (type constructors)
+** E.g. Haskell supports both record types like `LatLon {lat :: Double, lon :: Double}` and product types like `(Double, Double)`
+** Whereas Java only supports the former
+
+* **Supported term variants**
+** Similar to supported type variants
+** While some data languages, like JSON or Protobuf, may be very constrained in their term expressions (e.g. no functions, no variables, etc.)
+** A Hydra host language will need to support all of the lambda calculus constructors, plus term variants (like list, map, etc.) for all supported type variants
+
+* **Supported function variants**
+** A Hydra host language must support all three (eliminations, lambdas, and primitives)
+
+* **Supported elimination variants**
+** E.g. for projections, injections, folds, etc.
+** These will generally mirror the supported term variants
+
+* **Supported literal variants**
+** The options are binary, boolean, integer, float, and string
+** Only string is strictly required, but a typical host language would include all five
+
+* **Supported integer variants**
+** The options are 8- to 64-bit signed and unsigned integers, as well as big integers
+** Include as many as have a natural counterpart in the host language
+** E.g. 16-bit signed integers in Java are called `short`, while big integers are called `BigInteger`
+
+* **Supported floating-point variants**
+** Similar to integer variants
+** Three options: 32-bit and 64-bit floating-point numbers (i.e. float and double), as well as big float
+
+==== Examples
+
+Language constraints are defined for every language coder in Hydra:
+* https://github.com/CategoricalData/hydra/blob/main/hydra-haskell/src/main/haskell/Hydra/Ext/Haskell/Language.hs[Haskell language constraints]
+* https://github.com/CategoricalData/hydra/blob/main/hydra-haskell/src/main/haskell/Hydra/Sources/Tier3/Ext/Java/Language.hs[Java language constraints using DSL]
+
+It is preferable to use the DSL, as that allows the language constraints to be propagated into each Hydra implementation.
+
+==== Reserved Words
+
+It is conventional in Hydra to define a list of reserved words for the target language in the same module as the language constraints. See for example the `reservedWordsDef` element in the Java constraints, or `reservedWords` in the Haskell constraints.
+
+==== Iterative Refinement
+
+It is not necessary to get the constraints 100% correct before creating the coder; you can start by copying an existing set of language constraints, then refining them as you get to know the target language.
+
+==== Example: Python Language Constraints
+
+[source,haskell]
+----
+module Hydra.Sources.Tier3.Ext.Python.Language where
+
+import Hydra.Sources.Core
+
+pythonLanguageConstraints :: LanguageConstraints
+pythonLanguageConstraints = LanguageConstraints {
+  languageConstraintsEliminationVariants = eliminationVariants,
+  languageConstraintsLiteralVariants = literalVariants,
+  languageConstraintsFloatTypes = floatTypes,
+  languageConstraintsIntegerTypes = integerTypes,
+  languageConstraintsFunctionVariants = functionVariants,
+  languageConstraintsTermVariants = termVariants,
+  languageConstraintsTypeVariants = typeVariants
+}
+
+eliminationVariants :: Set EliminationVariant
+eliminationVariants = Set.fromList [
+  EliminationVariantList,
+  EliminationVariantOptional,
+  EliminationVariantRecord,
+  EliminationVariantUnion
+]
+
+termVariants :: Set TermVariant
+termVariants = Set.fromList [
+  TermVariantApplication,
+  TermVariantFunction,
+  TermVariantList,
+  TermVariantLiteral,
+  TermVariantMap,
+  TermVariantOptional,
+  TermVariantRecord,
+  TermVariantSet,
+  TermVariantUnion,
+  TermVariantVariable
+]
+
+typeVariants :: Set TypeVariant
+typeVariants = Set.fromList [
+  TypeVariantAnnotated,
+  TypeVariantApplication,
+  TypeVariantFunction,
+  TypeVariantList,
+  TypeVariantLiteral,
+  TypeVariantMap,
+  TypeVariantOptional,
+  TypeVariantRecord,
+  TypeVariantSet,
+  TypeVariantUnion,
+  TypeVariantVariable
+]
+
+pythonReservedWords :: Set String
+pythonReservedWords = Set.fromList [
+  "False", "None", "True", "__peg_parser__",
+  "and", "as", "assert", "async", "await",
+  "break", "class", "continue", "def", "del",
+  "elif", "else", "except", "finally", "for",
+  "from", "global", "if", "import", "in",
+  "is", "lambda", "nonlocal", "not", "or",
+  "pass", "raise", "return", "try", "while",
+  "with", "yield"
+]
+----
+
+=== Step 3: Generate Haskell Sources
+
+When you create your coder and serializer in steps 4 and 5, you will use Haskell sources (assuming you are using Hydra-Haskell as your jumping-off point) which are generated from the syntax model and language constraints you have just defined.
+
+==== Creating Source Files
+
+Create these sources in a conventional location:
+* `hydra-haskell/src/main/haskell/Hydra/Sources/Tier3/Ext/Python/Syntax.hs` (if your target language is Python)
+* `hydra-haskell/src/main/haskell/Hydra/Sources/Tier3/Ext/Python/Language.hs`
+
+==== Registering Sources
+
+When the sources are ready, add them to a registry like `Tier3/All.hs`, then follow the instructions in the Haskell README to generate the Haskell code:
+
+[source,bash]
+----
+# Start interactive Haskell session
+pixi run -e haskell stack-ghci
+
+# In GHCi, generate Haskell code
+:l Hydra.Codegen
+writeHaskell "src/gen-main/haskell" [pythonSyntaxModule, pythonLanguageModule]
+----
+
+Alternatively, use the automated code generation tasks:
+
+[source,bash]
+----
+# Generate Haskell code from DSL definitions
+pixi run -e haskell generate-haskell
+
+# Generate Java code as well (if needed)
+pixi run -e haskell generate-java
+----
+
+==== Using Generated Code
+
+In steps 4 and 5, you will now be able to import the generated code:
+
+[source,haskell]
+----
+import qualified Hydra.Ext.Python.Syntax as Py
+import Hydra.Ext.Python.Language
+----
+
+=== Step 4: Create a Coder
+
+Now that you have a model for your target language, and have defined the language constraints, you need a way of mapping native Hydra expressions into that language. You can split this task into two parts: a coder (this step), and a serializer (step #5).
+
+==== Purpose of the Coder
+
+A central idea of Hydra is that the kernel should be defined once, in a Hydra DSL, and then mapped into various host languages using language-specific _coders_.
+
+The purpose of creating a language coder is that all of the Hydra kernel code which is written in a Hydra DSL can be automatically ported to the new language, saving work and ensuring parity across implementations.
+
+==== Examples
+
+See existing coders for reference:
+* https://github.com/CategoricalData/hydra/blob/main/hydra-haskell/src/main/haskell/Hydra/Ext/Haskell/Coder.hs[Haskell coder]
+* https://github.com/CategoricalData/hydra/blob/main/hydra-haskell/src/main/haskell/Hydra/Ext/Java/Coder.hs[Java coder]
+
+Many more coders for other languages can be found in Hydra-Ext.
+
+==== Implementation Considerations
+
+* **Complexity vs. Semantic Distance**: The greater the semantic distance between Hydra Core and the target language, the larger and more complex the coder will need to be
+** Haskell is very close to Hydra Core, so the Haskell coder is just over 500 lines of code
+** Java is more remote, and requires more than 1500 lines of code
+
+* **Unidirectional Mapping**: The coder only needs to be unidirectional; for programming language coders, we are usually not interested in mapping native programs in the target language back into Hydra Core
+
+* **Helper Objects**: There will usually be a helper object, e.g. called "namespaces" or "aliases", which is passed into each function that deals with qualified names
+
+* **Standard API**: The top-level structure of these coders conforms to a standard API; see how the coders are called from `Codegen.hs`
+
+==== Coder Components
+
+Your coder must operate both:
+* **At the type level**: Mapping Hydra type expressions into equivalent class or interface definitions in the target language
+* **At the term level**: Mapping Hydra term expressions into equivalent values, data structures, and executable code
+
+Writing such a coder is one of the most challenging development tasks in Hydra. LLMs will be of more limited usefulness here compared to earlier steps.
+
+==== Development and Testing Workflow
+
+When developing your coder, use these pixi tasks for an efficient workflow:
+
+[source,bash]
+----
+# Setup development environment
+pixi run -e haskell haskell-setup
+
+# Start interactive development session
+pixi run -e haskell stack-ghci
+
+# Build and test your changes
+pixi run -e haskell stack-build
+pixi run -e haskell stack-test
+
+# Test specific components
+pixi run -e haskell hydra-test
+pixi run -e haskell ext-test
+----
+
+For exploring existing implementations and functions:
+
+[source,bash]
+----
+# List available modules
+pixi run -e haskell haskell-modules
+
+# Find functions in the codebase
+pixi run -e haskell haskell-functions
+
+# Browse modules interactively in GHCi
+pixi run -e haskell stack-ghci
+-- In GHCi: :browse Hydra.Ext.Java.Coder
+----
+
+==== Example: Python Coder Structure
+
+[source,haskell]
+----
+module Hydra.Ext.Python.Coder where
+
+import qualified Hydra.Ext.Python.Syntax as Py
+import Hydra.Ext.Python.Language
+
+-- Main coder entry point
+pythonCoder :: Coder Py.Module Py.Module
+pythonCoder = Coder {
+  coderEncode = encodeModule,
+  coderDecode = decodeModule  -- Usually not needed for target languages
+}
+
+-- Encode Hydra module to Python module
+encodeModule :: Module -> Flow PythonEnv Py.Module
+encodeModule mod = do
+  statements <- mapM encodeElement (moduleElements mod)
+  return $ Py.Module {
+    Py.moduleBody = statements,
+    Py.moduleTypeIgnores = []
+  }
+
+-- Encode Hydra types to Python type annotations
+encodeType :: Type -> Flow PythonEnv Py.Expression
+encodeType typ = case typ of
+  TypeRecord rt -> encodeRecordType rt
+  TypeUnion ut -> encodeUnionType ut
+  TypeList lt -> do
+    elementType <- encodeType (typeList lt)
+    return $ Py.Name "List" [elementType]
+  -- ... more type encodings
+
+-- Encode Hydra terms to Python expressions
+encodeTerm :: Term -> Flow PythonEnv Py.Expression
+encodeTerm term = case term of
+  TermRecord rt -> encodeRecordTerm rt
+  TermUnion ut -> encodeUnionTerm ut
+  TermList lt -> do
+    elements <- mapM encodeTerm (termList lt)
+    return $ Py.List elements
+  -- ... more term encodings
+----
+
+=== Step 5: Create the Serializer
+
+Now that you have the coder and the language constraints which allow you to map Hydra Core expressions into an abstract syntax tree for your language, you need to also map the abstract syntax tree into a concrete syntax.
+
+==== Purpose
+
+Compared to some of the steps above, this is one of the conceptually simplest tasks. The serializer takes the abstract syntax tree produced by the coder and converts it into actual source code in your target language.
+
+==== Testing Your Serializer
+
+Use these pixi tasks to test your serializer:
+
+[source,bash]
+----
+# Generate sample data for testing
+pixi run -e haskell run-example-graphson
+
+# Check available test data
+pixi run -e haskell check-data
+pixi run -e haskell check-graphson
+
+# Run comprehensive tests
+pixi run -e haskell stack-test
+----
+
+==== Implementation Workflow
+
+During serializer development, maintain a rapid feedback loop:
+
+[source,bash]
+----
+# Clean previous builds when making significant changes
+pixi run -e haskell stack-clean
+pixi run -e haskell clear-stack-cache-all
+
+# Rebuild and test
+pixi run -e haskell stack-build
+pixi run -e haskell hydra-test
+
+# Generate code to test serializer output
+pixi run -e haskell generate-haskell
+pixi run -e haskell generate-java
+----
+
+==== Implementation
+
+The serializer should handle:
+* **Syntax formatting**: Proper indentation, spacing, punctuation
+* **Import management**: Adding necessary import statements
+* **Name resolution**: Handling qualified names and aliases
+* **Comments and documentation**: Preserving or generating documentation
+* **Language-specific idioms**: Following target language conventions
+
+==== Example: Python Serializer
+
+[source,haskell]
+----
+module Hydra.Ext.Python.Serializer where
+
+import qualified Hydra.Ext.Python.Syntax as Py
+
+-- Main serialization function
+serializePython :: Py.Module -> String
+serializePython mod = unlines $
+  map serializeStatement (Py.moduleBody mod)
+
+serializeStatement :: Py.Statement -> String
+serializeStatement stmt = case stmt of
+  Py.FunctionDef fd -> serializeFunctionDef fd
+  Py.ClassDef cd -> serializeClassDef cd
+  Py.Return expr -> "return " ++ maybe "" serializeExpression expr
+  Py.Assign target value ->
+    serializeExpression target ++ " = " ++ serializeExpression value
+  -- ... more statement serializations
+
+serializeExpression :: Py.Expression -> String
+serializeExpression expr = case expr of
+  Py.Name name -> name
+  Py.Constant value -> serializeConstant value
+  Py.List elements -> "[" ++ intercalate ", " (map serializeExpression elements) ++ "]"
+  Py.Dict pairs -> "{" ++ intercalate ", " (map serializeDictPair pairs) ++ "}"
+  -- ... more expression serializations
+
+-- Utility functions for formatting
+indent :: Int -> String -> String
+indent n s = replicate (n * 4) ' ' ++ s
+
+addNewlines :: [String] -> String
+addNewlines = unlines
+----
+
+Note that while "SerDe" stands for "serializer and deserializer", you will only need the former; we have no need to map _from_ expressions in the target language.
+
+=== Step 6: Generate Native Sources
+
+Now the fun part. You have your code generation solution for the new host language, and you have your primitive functions. You are ready to translate Hydra's kernel code and test suite from the Haskell DSL into the compile-time environment of the host language.
+
+==== Setting Up Code Generation
+
+[source,bash]
+----
+# Create your code generation function in Hydra.Codegen
+pixi run -e haskell stack-ghci
+
+# In GHCi
+:l Hydra.Codegen
+writePython "../hydra-python/src/" mainModules
+writePython "../hydra-python/test/" testModules
+----
+
+==== Generated Code Structure
+
+Your generated code should follow consistent patterns:
+* **Module organization**: Mirror Hydra's logical structure
+* **Naming conventions**: Follow target language conventions
+* **Documentation**: Include generated documentation comments
+* **Version information**: Track which Hydra version generated the code
+
+==== Compilation Verification
+
+Once you have generated the sources, make sure they compile. If not, iterate on your coder and/or standard library.
+
+[source,bash]
+----
+# For Python example
+cd hydra-python
+python -m py_compile src/hydra/core.py
+python -m pytest test/ -v
+
+# For compiled languages
+cd hydra-yourlang
+make compile
+make test
+----
+
+=== Step 7: Implement Standard Primitives
+
+Hydra has a standard library of primitive, or built-in functions. There are many calls to these functions in the Hydra kernel code which will be mapped into your new implementation.
+
+==== Primitive Categories
+
+* **Core Primitives**: Basic operations like equality, comparison
+* **Collection Primitives**: List, set, and map operations
+* **String Primitives**: String manipulation functions
+* **Math Primitives**: Arithmetic and mathematical functions
+* **IO Primitives**: File and network operations (optional for many use cases)
+
+==== Implementation Strategy
+
+* **Start with Core**: Implement the most basic primitives first
+* **Use Native Libraries**: Leverage your language's standard library where possible
+* **Maintain Semantics**: Ensure identical behavior to reference implementation
+* **Performance Consideration**: Optimize hot paths and frequently used operations
+
+==== Finding Required Primitives
+
+You will get compile-time or runtime errors if primitives are not present when you attempt to compile or run the generated kernel code. Luckily, most of them are pretty simple and straightforward.
+
+[source,bash]
+----
+# Find primitive references in generated code
+grep -r "primitive" src/generated/
+grep -r "Primitive" src/generated/
+
+# Check existing implementations for reference
+pixi run -e haskell haskell-functions | grep -i primitive
+----
+
+==== Example: Python Primitives
+
+[source,python]
+----
+# hydra-python/src/hydra/primitives.py
+
+from typing import Any, List, Dict, Set, Optional, TypeVar, Callable
+import json
+import re
+
+T = TypeVar('T')
+U = TypeVar('U')
+
+# Core primitives
+def hydra_equality(x: Any, y: Any) -> bool:
+    """Test equality between two values."""
+    return x == y
+
+def hydra_comparison(x: Any, y: Any) -> int:
+    """Compare two values, returning -1, 0, or 1."""
+    if x < y:
+        return -1
+    elif x > y:
+        return 1
+    else:
+        return 0
+
+# Collection primitives
+def hydra_list_head(lst: List[T]) -> Optional[T]:
+    """Get the first element of a list."""
+    return lst[0] if lst else None
+
+def hydra_list_map(f: Callable[[T], U], lst: List[T]) -> List[U]:
+    """Apply function to each element of a list."""
+    return [f(x) for x in lst]
+
+def hydra_set_insert(s: Set[T], item: T) -> Set[T]:
+    """Insert item into set."""
+    result = s.copy()
+    result.add(item)
+    return result
+
+# String primitives
+def hydra_string_length(s: str) -> int:
+    """Get length of string."""
+    return len(s)
+
+def hydra_string_concatenate(s1: str, s2: str) -> str:
+    """Concatenate two strings."""
+    return s1 + s2
+
+# JSON primitives
+def hydra_json_encode(obj: Any) -> str:
+    """Encode object as JSON."""
+    return json.dumps(obj)
+
+def hydra_json_decode(s: str) -> Any:
+    """Decode JSON string."""
+    return json.loads(s)
+----
+
+=== Step 8: Fill in the Gaps
+
+Hydra has not yet "closed the loop", i.e. not all of its kernel code is available in the DSL, and can be generated directly into your new language variant. After Hydra does close the loop, this step will go away completely.
+
+==== Manual Implementation Areas
+
+Currently, some components must be implemented by hand:
+* **Flow Monads**: Error handling and state management
+* **Context Management**: Evaluation contexts and environments
+* **Advanced Optimizations**: Language-specific performance optimizations
+* **Native Integrations**: Platform-specific features
+
+==== Reference Implementations
+
+Look at existing implementations for guidance:
+* https://github.com/CategoricalData/hydra/tree/main/hydra-haskell/src/main/haskell/Hydra/Compute[Haskell]
+* https://github.com/CategoricalData/hydra/tree/main/hydra-java/src/main/java/hydra/compute[Java]
+
+==== Implementation Approach
+
+1. **Identify Missing Components**: Compare your generated code with reference implementations
+2. **Prioritize by Usage**: Implement most commonly used components first
+3. **Maintain API Compatibility**: Ensure your manual implementations match expected interfaces
+4. **Plan for Automation**: Structure manual code so it can be replaced by generated code later
+
+=== Step 9: Create a Test Runner
+
+Hydra includes a suite of test cases which are intended to be evaluating in the same way across language variants, ensuring parity.
+
+==== Test Suite Structure
+
+The standard test suite includes:
+* **Type System Tests**: Verification of type checking and inference
+* **Evaluation Tests**: Testing term evaluation and reduction
+* **Primitive Function Tests**: Validation of all primitive functions
+* **Integration Tests**: End-to-end functionality testing
+* **Performance Tests**: Basic performance benchmarks
+
+==== Implementation Requirements
+
+Your test runner should:
+* **Execute Standard Tests**: Run the same tests as other implementations
+* **Report Results**: Provide detailed pass/fail information
+* **Handle Errors**: Graceful error reporting and recovery
+* **Performance Metrics**: Basic timing and memory usage
+* **Cross-Platform**: Work across different operating systems
+
+==== Example Test Runner Structure
+
+The generated code should already be available (from the previous step), and you can see that the new code you need to write by hand is quite simple -- less than 100 lines of code in each language variant.
+
+[source,python]
+----
+# hydra-python/test/test_runner.py
+
+import unittest
+import time
+import sys
+from typing import List, Dict, Any
+
+from hydra.core import *
+from hydra.compute import *
+from hydra.test_data import *
+
+class HydraTestRunner:
+    def __init__(self):
+        self.passed = 0
+        self.failed = 0
+        self.results: List[Dict[str, Any]] = []
+
+    def run_test(self, test_name: str, test_func: Callable) -> bool:
+        """Run a single test and record results."""
+        try:
+            start_time = time.time()
+            result = test_func()
+            end_time = time.time()
+
+            if result:
+                self.passed += 1
+                self.results.append({
+                    'name': test_name,
+                    'status': 'PASS',
+                    'time': end_time - start_time
+                })
+                return True
+            else:
+                self.failed += 1
+                self.results.append({
+                    'name': test_name,
+                    'status': 'FAIL',
+                    'time': end_time - start_time,
+                    'error': 'Test returned False'
+                })
+                return False
+
+        except Exception as e:
+            self.failed += 1
+            self.results.append({
+                'name': test_name,
+                'status': 'ERROR',
+                'error': str(e)
+            })
+            return False
+
+    def run_all_tests(self) -> bool:
+        """Run all standard Hydra tests."""
+        tests = [
+            ('Type System', test_type_system),
+            ('Primitive Functions', test_primitives),
+            ('Evaluation', test_evaluation),
+            ('Code Generation', test_code_generation)
+        ]
+
+        for test_name, test_func in tests:
+            self.run_test(test_name, test_func)
+
+        self.print_results()
+        return self.failed == 0
+
+    def print_results(self):
+        """Print test results summary."""
+        print(f"\nTest Results: {self.passed} passed, {self.failed} failed")
+        for result in self.results:
+            status = result['status']
+            name = result['name']
+            if status == 'PASS':
+                print(f"✓ {name}")
+            else:
+                print(f"✗ {name}: {result.get('error', 'Failed')}")
+
+if __name__ == "__main__":
+    runner = HydraTestRunner()
+    success = runner.run_all_tests()
+    sys.exit(0 if success else 1)
+----
+
+=== Step 10: Create Native DSLs
+
+This is where you depart from the script and create whatever domain-specific languages and/or additional utilities will be useful in your new language variant.
+
+==== DSL Categories
+
+* **Type Construction DSL**: Fluent API for building type definitions
+* **Term Construction DSL**: Convenient syntax for creating terms
+* **Property Graph DSL**: Graph-specific operations and queries
+* **Schema Definition DSL**: Declarative schema definitions
+* **Mapping DSL**: Data transformation specifications
+
+==== Design Principles
+
+* **Language Idiomatic**: Use your target language's conventions and idioms
+* **Type Safe**: Leverage your language's type system for correctness
+* **Composable**: DSLs should compose well together
+* **Discoverable**: Good IDE support and documentation
+
+==== Example: Python Type DSL
+
+[source,python]
+----
+# hydra-python/src/hydra/dsl/types.py
+
+from typing import Dict, List, Optional, Union, Any
+from hydra.core import Type, Field
+
+class TypeBuilder:
+    """Fluent API for building Hydra types."""
+
+    @staticmethod
+    def record(name: str) -> 'RecordTypeBuilder':
+        """Create a new record type builder."""
+        return RecordTypeBuilder(name)
+
+    @staticmethod
+    def union(name: str) -> 'UnionTypeBuilder':
+        """Create a new union type builder."""
+        return UnionTypeBuilder(name)
+
+    @staticmethod
+    def list(element_type: Type) -> Type:
+        """Create a list type."""
+        return Type.list(element_type)
+
+    @staticmethod
+    def optional(element_type: Type) -> Type:
+        """Create an optional type."""
+        return Type.optional(element_type)
+
+class RecordTypeBuilder:
+    def __init__(self, name: str):
+        self.name = name
+        self.fields: List[Field] = []
+
+    def field(self, field_name: str, field_type: Type) -> 'RecordTypeBuilder':
+        """Add a field to the record."""
+        self.fields.append(Field(field_name, field_type))
+        return self
+
+    def build(self) -> Type:
+        """Build the final record type."""
+        return Type.record(self.name, self.fields)
+
+# Usage example:
+# person_type = (TypeBuilder.record("Person")
+#                .field("name", Type.string())
+#                .field("age", Type.int32())
+#                .field("email", TypeBuilder.optional(Type.string()))
+#                .build())
+----
+
+The DSLs you create are essential to making your Hydra implementation pleasant to use. The Type Construction DSL and Term Construction DSL are usually the most important, followed by any language-specific DSLs which you think will be useful.
+
+The last of these are only necessary if you plan to define new source-of-truth modules in your language variant, rather than just receiving generated code from Hydra-Haskell.
+
+=== Step 11: Build Applications
+
+Time to start using the new Hydra implementation, surfacing any bugs, and filling in gaps.
+
+==== Application Categories
+
+* **Data Transformation**: CSV to JSON, XML to GraphSON, etc.
+* **Schema Migration**: Database schema evolution
+* **Code Generation**: Generating language-specific code from schemas
+* **API Translation**: Converting between API formats
+* **Validation Tools**: Schema and data validation utilities
+
+==== Development Approach
+
+1. **Start Simple**: Begin with basic data transformations
+2. **Real-World Data**: Use actual datasets from your domain
+3. **Performance Testing**: Measure

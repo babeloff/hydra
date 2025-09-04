@@ -1,0 +1,70 @@
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+
+start
+
+:Step 1: Create Syntax Model;
+note right
+  Define target language syntax
+  using Hydra Core data model
+end note
+
+:Step 2: Define Language Constraints;
+note right
+  Specify supported/unsupported
+  type and term expressions
+end note
+
+:Step 3: Generate Haskell Sources;
+note right
+  Generate sources from
+  syntax model and constraints
+end note
+
+:Step 4: Create Coder;
+note right
+  Map Hydra expressions to
+  target language AST
+end note
+
+:Step 5: Create Serializer;
+note right
+  Convert AST to concrete
+  source code syntax
+end note
+
+:Step 6: Generate Code;
+note right
+  Use code generator to produce
+  target language implementation
+end note
+
+:Step 7: Implement Standard Primitives;
+note right
+  Implement Hydra's standard
+  library of built-in functions
+end note
+
+:Step 8: Manual Code Implementation;
+note right
+  Write any additional
+  hand-coded components
+end note
+
+:Step 9: Create Test Runner;
+note right
+  Implement test suite to ensure
+  parity across implementations
+end note
+
+:Step 10: Create Native DSLs;
+note right
+  Build domain-specific languages
+  and additional utilities
+end note
+
+stop
+
+@enduml

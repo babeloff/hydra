@@ -1,0 +1,667 @@
+= Transformation Examples
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+
+This document provides practical, step-by-step examples of data transformations using Hydra, from simple format conversions to complex schema mappings.
+
+== Your First Transformation: Relational to Graph
+
+Let's walk through a practical example of transforming relational data into graph form, inspired by a veterinary office scenario.
+
+=== The Scenario
+
+Imagine you have data stored in CSV files:
+
+* `pets.csv`: Information about pets (id, name, animal_type, owner_id)
+* `owners.csv`: Information about owners (id, name, phone, afraid_of)
+* `appointments.csv`: Scheduled appointments (id, pet_id, date, notes)
+* `pet_friendships.csv`: Friendly relationships (pet_id_1, pet_id_2)
+* `pet_fights.csv`: Conflict relationships (pet_id_1, pet_id_2)
+
+You want to create a graph where:
+
+* Owners, Pets, and Appointments become vertices
+* Friendships and Fights become edges
+* You can easily query relationships for scheduling purposes
+
+=== Step 1: Define Your Input Schema
+
+Create `InputSchema.hs` to describe your CSV structure:
+
+[source,haskell]
+----
+module InputSchema where
+
+import Hydra.Dsl.Types as Types
+import Hydra.Core
+
+-- Define the structure of each CSV file
+petTableType :: Type m
+petTableType = tableType [
+    columnType "pet_id" integerType,
+    columnType "name" stringType,
+    columnType "animal_type" stringType,
+    columnType "owner_id" integerType
+  ]
+
+ownerTableType :: Type m
+ownerTableType = tableType [
+    columnType "owner_id" integerType,
+    columnType "name" stringType,
+    columnType "phone" stringType,
+    columnType "afraid_of" stringType
+  ]
+
+appointmentTableType :: Type m
+appointmentTableType = tableType [
+    columnType "appointment_id" integerType,
+    columnType "pet_id" integerType,
+    columnType "date" stringType,
+    columnType "notes" stringType
+  ]
+
+friendshipTableType :: Type m
+friendshipTableType = tableType [
+    columnType "pet_id_1" integerType,
+    columnType "pet_id_2" integerType
+  ]
+
+fightTableType :: Type m
+fightTableType = tableType [
+    columnType "pet_id_1" integerType,
+    columnType "pet_id_2" integerType
+  ]
+----
+
+=== Step 2: Define Your Output Schema
+
+Create `OutputSchema.hs` to describe your target graph structure:
+
+[source,haskell]
+----
+module OutputSchema where
+
+import Hydra.Dsl.Types as Types
+import Hydra.Ext.Pg.Model as Pg
+
+-- Define the property graph schema
+vetOfficeSchema :: Schema
+vetOfficeSchema = schema "VetOffice" [
+    -- Vertex types
+    vertexType "Owner" [
+      propertyType "name" stringType False,
+      propertyType "phone" stringType False,
+      propertyType "afraid_of" stringType True
+    ],
+
+    vertexType "Pet" [
+      propertyType "name" stringType False,
+      propertyType "animal_type" stringType False
+    ],
+
+    vertexType "Appointment" [
+      propertyType "date" stringType False,
+      propertyType "notes" stringType True
+    ],
+
+    -- Edge types
+    edgeType "owns" "Owner" "Pet" [],
+    edgeType "friendsWith" "Pet" "Pet" [],
+    edgeType "foughtWith" "Pet" "Pet" [],
+    edgeType "hasAppointment" "Pet" "Appointment" []
+  ]
+----
+
+=== Step 3: Define Your Mapping
+
+Create `Mapping.hs` to specify how data flows from input to output:
+
+[source,haskell]
+----
+module Mapping where
+
+import Hydra.Dsl.Terms as Terms
+import qualified InputSchema as Input
+import qualified OutputSchema as Output
+
+-- Create vertices from CSV rows
+createOwnerVertex :: Term -> Term
+createOwnerVertex row = vertex "Owner" (stringLiteral ("owner_" ++ show (project "owner_id" row))) [
+    property "name" (project "name" row),
+    property "phone" (project "phone" row),
+    property "afraid_of" (project "afraid_of" row)
+  ]
+
+createPetVertex :: Term -> Term
+createPetVertex row = vertex "Pet" (stringLiteral ("pet_" ++ show (project "pet_id" row))) [
+    property "name" (project "name" row),
+    property "animal_type" (project "animal_type" row)
+  ]
+
+createAppointmentVertex :: Term -> Term
+createAppointmentVertex row = vertex "Appointment" (stringLiteral ("appointment_" ++ show (project "appointment_id" row))) [
+    property "date" (project "date" row),
+    property "notes" (project "notes" row)
+  ]
+
+-- Create edges from relationship data
+createOwnsEdge :: Term -> Term -> Term
+createOwnsEdge petRow ownerRows =
+  let ownerId = project "owner_id" petRow
+      petId = project "pet_id" petRow
+  in edge "owns"
+       (stringLiteral ("owner_" ++ show ownerId))
+       (stringLiteral ("pet_" ++ show petId))
+       []
+
+createFriendshipEdge :: Term -> Term
+createFriendshipEdge row =
+  let pet1 = project "pet_id_1" row
+      pet2 = project "pet_id_2" row
+  in edge "friendsWith"
+       (stringLiteral ("pet_" ++ show pet1))
+       (stringLiteral ("pet_" ++ show pet2))
+       []
+
+-- Complete mapping specification
+vetOfficeMapping :: Mapping
+vetOfficeMapping = mapping [
+    -- Map table rows to vertices
+    mapTable "pets.csv" Input.petTableType createPetVertex,
+    mapTable "owners.csv" Input.ownerTableType createOwnerVertex,
+    mapTable "appointments.csv" Input.appointmentTableType createAppointmentVertex,
+
+    -- Map relationship tables to edges
+    mapTable "pet_friendships.csv" Input.friendshipTableType createFriendshipEdge,
+    mapTable "pet_fights.csv" Input.fightTableType createFightEdge,
+
+    -- Create ownership edges by joining pet and owner data
+    joinTables "pets.csv" "owners.csv" "owner_id" createOwnsEdge
+  ]
+----
+
+=== Step 4: Generate Your Graph
+
+Use Hydra's built-in transformation capabilities to execute the mapping:
+
+[source,haskell]
+----
+import Hydra.Ext.Demos.GenPG.Demo
+
+main :: IO ()
+main = do
+  generateGraphSON
+    "data/input"           -- Input directory
+    vetOfficeMapping       -- Your mapping
+    Output.vetOfficeSchema -- Your output schema
+    "output/vet_office.json" -- Output file
+----
+
+This generates a GraphSON file that you can import into graph databases or visualization tools.
+
+== Advanced Transformation Patterns
+
+=== Working with Complex Data Types
+
+==== Nested JSON Structures
+
+When working with nested JSON data, you can define recursive type structures:
+
+[source,haskell]
+----
+-- Define a complex JSON structure
+customerOrderSchema :: Type m
+customerOrderSchema = recordType [
+    field "customer_id" integerType,
+    field "customer_info" customerInfoType,
+    field "orders" (listType orderType)
+  ]
+
+customerInfoType :: Type m
+customerInfoType = recordType [
+    field "name" stringType,
+    field "email" stringType,
+    field "address" addressType
+  ]
+
+orderType :: Type m
+orderType = recordType [
+    field "order_id" integerType,
+    field "items" (listType itemType),
+    field "total" floatType
+  ]
+----
+
+==== Handling Optional Fields
+
+Use Hydra's optional type support for fields that may be missing:
+
+[source,haskell]
+----
+userProfileType :: Type m
+userProfileType = recordType [
+    field "user_id" integerType,
+    field "username" stringType,
+    field "email" (optionalType stringType),  -- May be null
+    field "profile_picture" (optionalType stringType),
+    field "preferences" (optionalType preferencesType)
+  ]
+----
+
+=== Multi-Step Transformations
+
+For complex transformations, you can chain multiple mapping steps:
+
+[plantuml,multi-step-transformation-pipeline,png]
+....
+include::../diagrams/transformation-pipeline.puml[]
+....
+
+[source,haskell]
+----
+-- First transformation: Raw data to intermediate format
+step1Mapping :: Mapping
+step1Mapping = mapping [
+    mapTable "raw_events.csv" rawEventType normalizeEvent,
+    mapTable "raw_users.csv" rawUserType normalizeUser
+  ]
+
+-- Second transformation: Intermediate format to final graph
+step2Mapping :: Mapping
+step2Mapping = mapping [
+    mapData normalizedEvents createEventVertices,
+    mapData normalizedUsers createUserVertices,
+    createEdges "interactions" linkUsersToEvents
+  ]
+
+-- Execute the pipeline
+transformationPipeline :: IO ()
+transformationPipeline = do
+  intermediate <- executeMapping step1Mapping "data/raw"
+  final <- executeMapping step2Mapping intermediate
+  exportGraph final "output/final_graph.json"
+----
+
+=== Schema Evolution and Migration
+
+Handle evolving data schemas with version-aware mappings:
+
+[source,haskell]
+----
+-- Version-aware schema mapping
+migrateUserSchema :: SchemaVersion -> Term -> Term
+migrateUserSchema version userData = case version of
+  V1 -> migrationV1toV2 userData
+  V2 -> migrationV2toV3 userData
+  V3 -> userData  -- Current version
+
+migrationV1toV2 :: Term -> Term
+migrationV1toV2 oldData = record [
+    -- Preserve existing fields
+    copyField "id" oldData,
+    copyField "name" oldData,
+    -- Add new required fields with defaults
+    newField "email" (stringLiteral ""),
+    newField "created_at" (stringLiteral "1970-01-01")
+  ]
+
+migrationV2toV3 :: Term -> Term
+migrationV2toV3 oldData = record [
+    -- Restructure data
+    copyField "id" oldData,
+    copyField "name" oldData,
+    -- Combine fields
+    newField "contact_info" $ record [
+      field "email" (getField "email" oldData),
+      field "phone" (getField "phone" oldData)
+    ]
+  ]
+----
+
+== Working with Different Data Formats
+
+=== CSV and Tabular Data
+
+==== Reading CSV with Custom Parsers
+
+[source,haskell]
+----
+-- Custom CSV parsing configuration
+csvConfig :: CSVConfig
+csvConfig = CSVConfig {
+  csvDelimiter = ',',
+  csvQuoteChar = '"',
+  csvEscapeChar = '\\',
+  csvHeaderRow = True,
+  csvSkipRows = 0
+}
+
+-- Parse CSV with type validation
+parseTypedCSV :: FilePath -> Type -> IO [Term]
+parseTypedCSV path schema = do
+  rawData <- parseCSVFile csvConfig path
+  mapM (validateAndConvert schema) rawData
+
+-- Custom field transformations
+customerCSVMapping :: Mapping
+customerCSVMapping = mapping [
+  mapField "customer_id" "id" (transform stringToInt),
+  mapField "full_name" "name" (transform titleCase),
+  mapField "email_address" "email" (transform toLowerCase),
+  computeField "display_name" $ \row ->
+    concatenate [
+      getField "first_name" row,
+      " ",
+      getField "last_name" row
+    ]
+]
+----
+
+=== JSON and Semi-Structured Data
+
+==== Working with Variable JSON Schemas
+
+[source,haskell]
+----
+-- Handle polymorphic JSON structures
+parsePolymorphicJSON :: Value -> Term
+parsePolymorphicJSON jsonValue =
+  case getField "type" jsonValue of
+    Just "user" -> parseUserObject jsonValue
+    Just "organization" -> parseOrgObject jsonValue
+    Just "event" -> parseEventObject jsonValue
+    _ -> parseGenericObject jsonValue
+
+-- Dynamic field extraction
+extractDynamicFields :: Value -> [Term]
+extractDynamicFields jsonValue =
+  let baseFields = extractKnownFields jsonValue
+      customFields = extractCustomFields jsonValue
+  in baseFields ++ customFields
+
+-- Schema inference from examples
+inferJSONSchema :: [Value] -> Type
+inferJSONSchema examples =
+  let fieldTypes = analyzeFieldTypes examples
+      optionalFields = identifyOptionalFields examples
+  in buildRecordType fieldTypes optionalFields
+----
+
+=== XML and Hierarchical Data
+
+==== Mapping XML Elements
+
+[source,haskell]
+----
+-- XML to Hydra term conversion
+parseXMLDocument :: XMLDocument -> Term
+parseXMLDocument doc =
+  let rootElement = xmlDocRoot doc
+  in parseXMLElement rootElement
+
+parseXMLElement :: XMLElement -> Term
+parseXMLElement element = record [
+    field "tag" (stringLiteral (xmlElementName element)),
+    field "attributes" (parseAttributes (xmlElementAttrs element)),
+    field "children" (list (map parseXMLNode (xmlElementChildren element)))
+  ]
+
+-- Handle mixed content
+parseXMLNode :: XMLNode -> Term
+parseXMLNode node = case node of
+  XMLElement elem -> parseXMLElement elem
+  XMLText text -> record [field "type" (stringLiteral "text"), field "content" (stringLiteral text)]
+  XMLComment comment -> record [field "type" (stringLiteral "comment"), field "content" (stringLiteral comment)]
+
+-- XML namespace handling
+resolveXMLNamespace :: NamespaceMap -> QualifiedName -> String
+resolveXMLNamespace nsMap qname =
+  case lookupNamespace (qnameNamespace qname) nsMap of
+    Just uri -> uri ++ "#" ++ qnameLocalName qname
+    Nothing -> qnameLocalName qname
+----
+
+== Message Translation and Integration
+
+=== Building Message Translators
+
+==== Protocol Buffer to JSON Translation
+
+[source,haskell]
+----
+-- Define Protocol Buffer schema in Hydra
+protobufPersonSchema :: Type
+protobufPersonSchema = recordType [
+    field "id" int32Type,
+    field "name" stringType,
+    field "email" stringType,
+    field "phones" (listType phoneNumberType)
+  ]
+
+phoneNumberType :: Type
+phoneNumberType = recordType [
+    field "number" stringType,
+    field "type" phoneTypeEnum
+  ]
+
+-- Define JSON output schema
+jsonPersonSchema :: Type
+jsonPersonSchema = recordType [
+    field "id" stringType,  -- Convert to string
+    field "full_name" stringType,
+    field "contact" contactInfoType
+  ]
+
+contactInfoType :: Type
+contactInfoType = recordType [
+    field "email" stringType,
+    field "phone_numbers" (listType stringType)
+  ]
+
+-- Translation mapping
+protobufToJSONMapping :: Mapping
+protobufToJSONMapping = mapping [
+    -- Basic field mappings with transformations
+    mapField "id" "id" (transform intToString),
+    mapField "name" "full_name" identity,
+
+    -- Complex nested mapping
+    computeField "contact" $ \protobufRecord -> record [
+        field "email" (getField "email" protobufRecord),
+        field "phone_numbers" (transformPhoneList (getField "phones" protobufRecord))
+      ]
+  ]
+
+transformPhoneList :: Term -> Term
+transformPhoneList phoneList =
+  list $ map extractPhoneNumber (getListElements phoneList)
+
+extractPhoneNumber :: Term -> Term
+extractPhoneNumber phoneRecord = getField "number" phoneRecord
+----
+
+=== Event Stream Processing
+
+==== Real-Time Data Transformation
+
+[source,haskell]
+----
+-- Stream processing pipeline
+eventStreamProcessor :: EventStream -> TransformationPipeline -> IO ()
+eventStreamProcessor stream pipeline = do
+  processStream stream $ \event -> do
+    -- Parse incoming event
+    parsedEvent <- parseEvent event
+
+    -- Apply transformations
+    transformedEvent <- applyPipeline pipeline parsedEvent
+
+    -- Validate output
+    validatedEvent <- validateEvent transformedEvent
+
+    -- Send to downstream systems
+    publishEvent validatedEvent
+
+-- Event schema with polymorphic handling
+eventSchema :: Type
+eventSchema = unionType "Event" [
+    variant "UserAction" userActionType,
+    variant "SystemEvent" systemEventType,
+    variant "ErrorEvent" errorEventType
+  ]
+
+-- Conditional processing based on event type
+processEventByType :: Term -> IO Term
+processEventByType event = case getVariant event of
+  ("UserAction", userData) -> processUserAction userData
+  ("SystemEvent", sysData) -> processSystemEvent sysData
+  ("ErrorEvent", errData) -> processErrorEvent errData
+  (unknownType, _) -> throwError $ UnknownEventType unknownType
+
+-- Batch processing for efficiency
+batchProcessor :: Int -> [Event] -> IO [TransformedEvent]
+batchProcessor batchSize events = do
+  let batches = chunksOf batchSize events
+  results <- mapConcurrently processBatch batches
+  return $ concat results
+----
+
+=== Data Validation and Quality
+
+==== Schema Validation
+
+[source,haskell]
+----
+-- Comprehensive validation rules
+validationRules :: [ValidationRule]
+validationRules = [
+    -- Type validation
+    validateType "email" emailType,
+    validateType "phone" phoneType,
+    validateType "date" iso8601DateType,
+
+    -- Range validation
+    validateRange "age" 0 150,
+    validateRange "score" 0.0 100.0,
+
+    -- Pattern validation
+    validatePattern "zipcode" zipCodeRegex,
+    validatePattern "ssn" ssnRegex,
+
+    -- Cross-field validation
+    validateRelationship "start_date" "end_date" datePrecedence,
+    validateRelationship "min_value" "max_value" numericPrecedence,
+
+    -- Business rules
+    validateBusinessRule "customer_age_product" ageProductCompatibility,
+    validateBusinessRule "region_shipping" regionShippingRules
+  ]
+
+-- Custom validation functions
+emailType :: ValidationFunction
+emailType value = case value of
+  StringLiteral email -> validateEmailFormat email
+  _ -> ValidationError "Email must be a string"
+
+validateEmailFormat :: String -> ValidationResult
+validateEmailFormat email =
+  if email =~ emailRegex
+    then ValidationSuccess
+    else ValidationError "Invalid email format"
+
+-- Validation pipeline
+validateDataPipeline :: ValidationRules -> Term -> Either [ValidationError] Term
+validateDataPipeline rules inputData = do
+  -- Apply all validation rules
+  results <- mapM (applyRule inputData) rules
+
+  -- Collect errors
+  let errors = [err | ValidationError err <- results]
+
+  if null errors
+    then Right inputData
+    else Left errors
+----
+
+== Performance and Optimization
+
+=== Streaming and Large Datasets
+
+[source,haskell]
+----
+-- Streaming transformation for large files
+streamingTransformation :: FilePath -> FilePath -> Mapping -> IO ()
+streamingTransformation inputPath outputPath mapping = do
+  withFile inputPath ReadMode $ \inputHandle ->
+    withFile outputPath WriteMode $ \outputHandle -> do
+      sourceHandle inputHandle
+        $$ transformConduit mapping
+        $$ sinkHandle outputHandle
+
+-- Memory-efficient batch processing
+batchTransform :: Int -> [Term] -> Mapping -> [Term]
+batchTransform batchSize items mapping =
+  let batches = chunksOf batchSize items
+  in concatMap (applyMapping mapping) batches
+
+-- Parallel processing
+parallelTransform :: Mapping -> [Term] -> IO [Term]
+parallelTransform mapping items = do
+  let chunks = chunksOf 1000 items
+  results <- mapConcurrently (return . applyMapping mapping) chunks
+  return $ concat results
+
+-- Progress monitoring
+transformWithProgress :: Mapping -> [Term] -> IO [Term]
+transformWithProgress mapping items = do
+  progressRef <- newIORef 0
+  total <- return $ length items
+
+  results <- forM items $ \item -> do
+    result <- return $ applyMappingSingle mapping item
+    modifyIORef progressRef (+1)
+    progress <- readIORef progressRef
+    when (progress `mod` 100 == 0) $
+      putStrLn $ "Processed " ++ show progress ++ "/" ++ show total
+    return result
+
+  return results
+----
+
+=== Caching and Memoization
+
+[source,haskell]
+----
+-- Memoized transformations for expensive operations
+memoizedTransform :: (Term -> Term) -> IO (Term -> IO Term)
+memoizedTransform f = do
+  cache <- newIORef Map.empty
+  return $ \input -> do
+    cacheMap <- readIORef cache
+    case Map.lookup input cacheMap of
+      Just result -> return result
+      Nothing -> do
+        let result = f input
+        modifyIORef cache (Map.insert input result)
+        return result
+
+-- LRU cache for limited memory usage
+createLRUCache :: Int -> IO (LRUCache Term Term)
+createLRUCache maxSize = newLRUCache maxSize
+
+-- Cached schema validation
+cachedValidation :: LRUCache Type ValidationFunction -> Type -> Term -> IO ValidationResult
+cachedValidation cache schema term = do
+  validator <- lookupLRU cache schema $ compileValidator schema
+  return $ validator term
+----
+
+== Related Documentation
+
+* <<operator-fundamentals#,Operator Fundamentals>> - Core concepts and setup
+* <<data-transformation-patterns#,Data Transformation Patterns>> - Common patterns and solutions
+* <<performance-optimization#,Performance Optimization>> - Scaling and optimization strategies
+* <<operator-guide#,Complete Operator Guide>> - Full operator documentation

@@ -1,0 +1,178 @@
+= Hydra Project Documentation Index
+:toc: left
+:toclevels: 2
+:sectlinks:
+:sectanchors:
+:source-highlighter: pygments
+:icons: font
+
+== Welcome to Hydra Documentation
+
+This is the documentation hub for the Hydra project, a multi-language functional programming toolkit with modern pixi-based build system. In Josh Shinavier's words: "In Hydra, programs are graphs, and graphs are programs."
+
+== Quick Start
+
+Get started quickly with these essential pixi tasks:
+
+[source,bash]
+----
+# Clone and setup
+git clone https://github.com/CategoricalData/hydra
+cd hydra
+pixi install
+
+# Validate installation
+pixi run validate
+
+# Build all components
+pixi run build-all
+
+# Setup Haskell development (complete implementation)
+pixi run -e haskell haskell-setup
+----
+
+== Available Guides
+
+Hydra documentation is organized into three specialized guides for different user perspectives:
+
+=== For Hydra Core Developers
+*<<developer-guide#,Developer Guide>>* - Complete guide for developers working on Hydra itself
+
+* Development environment setup and pixi build system
+* Comprehensive Haskell development workflows (50+ pixi tasks)
+* Java, Python, and Scala development tasks
+* Dependency tiers and code organization
+* Code generation workflows and best practices
+* Release management processes and procedures
+
+=== For Implementation Creators
+*<<implementor-guide#,Implementor Guide>>* - Step-by-step guide for creating new Hydra language implementations
+
+* Implementation fundamentals and prerequisites
+* Step-by-step implementation process (11 detailed steps)
+* Implementation guidelines and best practices
+* Language-specific considerations and patterns
+* Testing, validation, and deployment strategies
+
+=== For Data Transformation Operators
+*<<operator-guide#,Operator Guide>>* - Practical guide for using Hydra to create message translators
+
+* Operator fundamentals and core concepts
+* Comprehensive transformation examples and patterns
+* Working with different data formats (CSV, JSON, XML, Protocol Buffers)
+* Advanced data operations and schema evolution
+* Development workflows and pixi task automation
+* Production deployment and monitoring
+
+== Quick Navigation
+
+=== New to Hydra?
+1. **Operators**: Start with the <<operator-guide#,Operator Guide>> to learn practical data transformation
+2. **Implementors**: Read the <<implementor-guide#,Implementor Guide>> to create new language bindings
+3. **Core Developers**: Use the <<developer-guide#,Developer Guide>> for kernel development
+
+=== By Use Case
+
+==== Data Transformation and Integration
+* **Setup and basics**: Pixi tasks (`pixi run validate`, `pixi run build-all`)
+* **Simple transformations**: <<operator-guide#_your_first_transformation_relational_to_graph,Relational to Graph example>>
+* **Complex mappings**: <<operator-guide#_advanced_transformation_patterns,Advanced patterns>>
+* **Interactive development**: Pixi tasks (`pixi run -e haskell stack-ghci`)
+* **Data processing**: Pixi tasks (`pixi run -e haskell run-example-graphson`)
+* **Performance optimization**: Production deployment and scaling strategies
+
+==== Creating New Implementations
+* **Getting started**: <<implementor-guide#_step_1_create_the_syntax_model,Step-by-step process>>
+* **Code generation**: Pixi tasks (`pixi run -e haskell generate-haskell`)
+* **Language support**: <<implementor-guide#_implementation_guidelines,Best practices>>
+* **Testing workflows**: Pixi tasks (`pixi run -e haskell stack-test`)
+* **Validation**: <<implementor-guide#_testing_and_validation,Testing strategies>>
+
+==== Core Development
+* **Architecture**: <<developer-guide#_dependency_tiers_and_code_organization,Dependency tiers>>
+* **Pixi build system**: <<developer-guide#_architecture_and_development_setup,Setup guide>>
+* **Development tasks**: Complete pixi task reference (50+ tasks)
+* **Language-specific workflows**: Java, Python, Scala, and Haskell tasks
+* **Releases**: <<developer-guide#_release_management,Release processes>>
+
+== Reference Documentation
+
+=== Section-Based Documentation Structure
+
+The documentation is now organized into focused sections:
+
+==== Developer Guide Sections
+* **Setup and Architecture**: Build system and environment setup
+* **Dependency Tiers**: Code organization and tier management
+* **Code Generation**: Generated code workflows and best practices
+* **Release Management**: Complete release procedures and coordination
+
+==== Implementor Guide Sections
+* **Fundamentals**: Prerequisites and core concepts for new implementations
+* **Implementation Steps**: Detailed 11-step process for creating language implementations
+* **Guidelines**: Best practices, patterns, and common challenges
+
+==== Operator Guide Sections
+* **Fundamentals**: Core concepts for data transformation operators
+* **Transformation Examples**: Practical step-by-step transformation scenarios
+
+=== API References
+* **Haskell Implementation**: Complete reference implementation with all features
+* **Java Implementation**: Production-ready implementation with JavaDocs
+* **Generated Code**: Multi-language code generation from DSL definitions
+
+=== Language Support
+* **Haskell**: Complete implementation (hydra-haskell) - 100% feature coverage
+* **Java**: Production-ready implementation (hydra-java) - Enterprise-ready
+* **Python**: In development - Data science focused
+* **Scala**: Planned implementation - Functional programming emphasis
+
+== Format Information
+
+All documentation is written in AsciiDoc format and can be:
+
+* Viewed directly in text editors or GitHub
+* Converted to HTML using Asciidoctor: `asciidoctor guide-name.adoc`
+* Converted to PDF for offline reading: `asciidoctor-pdf guide-name.adoc`
+* Converted to other formats as needed
+
+== External Resources
+
+=== Community and Support
+* **Main Repository**: https://github.com/CategoricalData/hydra
+* **LambdaGraph Discord**: https://bit.ly/lg-discord
+* **Wiki Documentation**: https://github.com/CategoricalData/hydra/wiki
+
+=== Learning Resources
+* **Blog Introduction**: https://gdotv.com/blog/introducing-hydra/
+* **Demo Environment**: Available in hydra-ext subproject
+* **G.V() Visualization**: https://gdotv.com for graph visualization
+
+=== Development Tools and Tasks
+* **Pixi Package Manager**: https://pixi.sh (primary build system)
+* **Complete Task Reference**: See <<developer-guide#_complete_pixi_tasks_reference,Developer Guide Appendix>>
+* **Haskell Tasks**: 50+ specialized development tasks documented
+* **Stack Documentation**: https://docs.haskellstack.org/
+* **ghcup Documentation**: https://www.haskell.org/ghcup/
+
+== Documentation Structure
+
+The documentation follows a modular structure:
+
+=== Main Guides
+* `developer-guide.adoc` - Core development guide
+* `implementor-guide.adoc` - Language implementation guide
+* `operator-guide.adoc` - Data transformation operator guide
+* `index.adoc` - This documentation index
+
+=== Section Files (`docs/sects/`)
+* **Developer sections**: `dependency-tiers.adoc`, `code-generation.adoc`, `release-management.adoc`
+* **Implementor sections**: `implementor-fundamentals.adoc`, `implementor-steps.adoc`, `implementor-guidelines.adoc`
+* **Operator sections**: `operator-fundamentals.adoc`, `transformation-examples.adoc`
+* **Haskell sections**: `haskell-setup.adoc`, `pixi-haskell-tasks.adoc`, `pixi-task-status.adoc`
+
+This modular approach allows for:
+* **Focused content**: Each section covers a specific topic area
+* **Easy maintenance**: Sections can be updated independently
+* **Reusability**: Sections can be referenced from multiple guides
+* **Better organization**: Related content is grouped logically

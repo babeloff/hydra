@@ -1,0 +1,200 @@
+name: Documentation Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'docs/**'
+      - 'pixi.toml'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'pixi.toml'
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: 'v0.32.1'
+        cache: true
+
+    - name: Install Java (required for PlantUML)
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Install documentation dependencies
+      run: pixi install -e docs
+
+    - name: Build all documentation
+      run: pixi run docs-all
+
+    - name: Check generated files
+      run: |
+        echo "Generated documentation files:"
+        ls -la docs-output/
+        echo ""
+        echo "Generated diagrams:"
+        ls -la docs-output/images/ || echo "No images directory found"
+
+    - name: Upload documentation artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation
+        path: docs-output/
+        retention-days: 30
+
+  deploy-gh-pages:
+    name: Deploy to GitHub Pages
+    needs: build-docs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: 'v0.32.1'
+        cache: true
+
+    - name: Install Java (required for PlantUML)
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Install documentation dependencies
+      run: pixi install -e docs
+
+    - name: Build documentation for GitHub Pages
+      run: |
+        pixi run docs-html
+        pixi run gh-pages-build
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: gh-pages/
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+  validate-docs:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: 'v0.32.1'
+        cache: true
+
+    - name: Install Java (required for PlantUML)
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Install documentation dependencies
+      run: pixi install -e docs
+
+    - name: Validate PlantUML diagrams
+      run: |
+        echo "Validating PlantUML diagrams..."
+        pixi run -e docs docs-generate-diagrams
+
+    - name: Build HTML documentation
+      run: pixi run docs-html
+
+    - name: Build PDF documentation
+      run: pixi run docs-pdf
+
+    - name: Check for broken links (basic validation)
+      run: |
+        echo "Checking for basic structural issues..."
+        # Check that main guides were generated
+        test -f docs-output/developer-guide.html || (echo "Missing developer-guide.html" && exit 1)
+        test -f docs-output/implementor-guide.html || (echo "Missing implementor-guide.html" && exit 1)
+        test -f docs-output/operator-guide.html || (echo "Missing operator-guide.html" && exit 1)
+
+        # Check that PDFs were generated
+        test -f docs-output/developer-guide.pdf || (echo "Missing developer-guide.pdf" && exit 1)
+        test -f docs-output/implementor-guide.pdf || (echo "Missing implementor-guide.pdf" && exit 1)
+        test -f docs-output/operator-guide.pdf || (echo "Missing operator-guide.pdf" && exit 1)
+
+        echo "All required files generated successfully!"
+
+    - name: Comment on PR with preview info
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+
+          // Get list of generated files
+          const files = fs.readdirSync('docs-output/');
+          const htmlFiles = files.filter(f => f.endsWith('.html'));
+          const pdfFiles = files.filter(f => f.endsWith('.pdf'));
+
+          const comment = `## Documentation Build Results 📚
+
+          ✅ Documentation build completed successfully!
+
+          **Generated Files:**
+          - HTML files: ${htmlFiles.length} (${htmlFiles.join(', ')})
+          - PDF files: ${pdfFiles.length} (${pdfFiles.join(', ')})
+
+          **Validation Status:**
+          - PlantUML diagrams: ✅ Generated
+          - HTML builds: ✅ Successful
+          - PDF builds: ✅ Successful
+          - Structure check: ✅ Passed
+
+          The documentation artifacts are available for download from this workflow run.`;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
