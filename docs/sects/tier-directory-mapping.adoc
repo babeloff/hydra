@@ -1,0 +1,424 @@
+= Hydra Dependency Tiers: Directory Structure and File Organization
+:toc: left
+:toclevels: 3
+:sectlinks:
+:sectanchors:
+
+== Overview
+
+The Hydra project organizes code according to a strict dependency tier system where higher-numbered tiers can depend on lower-numbered tiers, but not vice versa. This section maps each tier to its corresponding directories and files within the Hydra codebase.
+
+[plantuml,tier-dependencies-overview,png]
+....
+@startuml
+!theme plain
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+
+package "Tier-5: Third-Party Code" as T5 {
+  [User-defined Functions]
+  [External Sources]
+}
+
+package "Tier-4: Non-Kernel Code" as T4 {
+  [Language Coders]
+  [Built-in Utilities]
+}
+
+package "Tier-3: Kernel Sources" as T3 {
+  [DSL-based Definitions]
+  [Code Generation Specs]
+}
+
+package "Tier-2: Kernel Modules" as T2 {
+  [Generated Advanced Code]
+}
+
+package "Tier-1: Kernel Modules" as T1 {
+  [Generated Primitives]
+}
+
+package "Tier-0: Foundation" as T0 {
+  [Core Type Definitions]
+  [Basic DSL Types]
+}
+
+T5 --> T4
+T4 --> T3
+T3 --> T2
+T2 --> T1
+T1 --> T0
+
+@enduml
+....
+
+== Tier-0: Foundation Tier
+
+**Purpose**: Core type definitions and basic data structures with no dependencies on higher tiers.
+
+=== Directory Structure
+
+==== Source Definitions (Haskell)
+```
+hydra-haskell/src/main/haskell/Hydra/Sources/Kernel/Types/
+├── Core.hs                    # Core type definitions (Term, Type, etc.)
+├── Graph.hs                   # Graph and module structures
+├── Mantle.hs                  # Basic utility types (Either, Maybe, etc.)
+├── Compute.hs                 # Flow and computation types
+├── Module.hs                  # Module system types
+├── Phantoms.hs                # Phantom types for type safety
+└── ...                        # Other foundational type definitions
+```
+
+==== Generated Code (Java)
+```
+hydra-java/src/gen-main/java/hydra/core/
+├── Type.java                  # Core type representations
+├── Term.java                  # Core term representations
+├── Name.java                  # Name and identifier types
+├── Literal.java               # Literal value types
+├── Function.java              # Function type definitions
+├── Application.java           # Function application types
+└── ...                        # All core data structures
+```
+
+```
+hydra-java/src/gen-main/java/hydra/graph/
+├── Graph.java                 # Graph data structures
+├── Element.java               # Graph element types
+└── ...                        # Graph-related types
+```
+
+==== DSL Support
+```
+hydra-haskell/src/main/haskell/Hydra/Dsl/
+├── Types.hs                   # Basic type DSL
+├── Core.hs                    # Core term DSL
+├── Graph.hs                   # Graph DSL
+└── Phantoms.hs                # Phantom type DSL
+```
+
+=== Key Characteristics
+
+* **No Dependencies**: Cannot depend on any higher tiers
+* **Pure Data**: Primarily data type definitions and constructors
+* **Universal**: Used by all other tiers
+* **Stable**: Changes rarely as they affect entire system
+
+== Tier-1: Kernel Modules with Primitives
+
+**Purpose**: Generated code that includes primitive functions and basic operations on Tier-0 types.
+
+=== Directory Structure
+
+==== Generated Code (Java)
+```
+hydra-java/src/gen-main/java/hydra/tier1/
+└── Tier1.java                 # Primitive operations and basic functions
+```
+
+==== Library Functions (Haskell)
+```
+hydra-haskell/src/main/haskell/Hydra/Lib/
+├── Lists.hs                   # List manipulation primitives
+├── Maps.hs                    # Map/dictionary operations
+├── Sets.hs                    # Set operations
+├── Strings.hs                 # String processing primitives
+├── Math.hs                    # Mathematical operations
+├── Logic.hs                   # Boolean and logical operations
+├── Optionals.hs               # Optional/Maybe operations
+├── Literals.hs                # Literal value operations
+├── Equality.hs                # Equality and comparison
+└── Flows.hs                   # Basic flow operations
+```
+
+==== Basic DSLs
+```
+hydra-haskell/src/main/haskell/Hydra/Dsl/
+├── Terms.hs                   # Advanced term DSL
+├── Literals.hs                # Literal construction DSL
+├── Prims.hs                   # Primitive function DSL
+└── Common.hs                  # Common DSL utilities
+```
+
+=== Key Characteristics
+
+* **Primitive Operations**: Basic functions on core types
+* **Generated Content**: Mostly generated from DSL specifications
+* **Building Blocks**: Used to construct higher-level operations
+* **Performance Critical**: Often highly optimized implementations
+
+== Tier-2: Advanced Kernel Modules
+
+**Purpose**: More complex generated code with advanced functions and logic built on Tier-1 primitives.
+
+=== Directory Structure
+
+==== Generated Code (Java)
+```
+hydra-java/src/gen-main/java/hydra/tier2/
+└── Tier2.java                 # Advanced kernel functions
+```
+
+==== Kernel Terms (Haskell Sources)
+```
+hydra-haskell/src/main/haskell/Hydra/Sources/Kernel/Terms/
+├── Annotations.hs             # Annotation handling
+├── Arity.hs                   # Function arity operations
+├── Constants.hs               # Constant management
+├── Decoding.hs                # Term decoding operations
+├── Formatting.hs              # Term formatting
+├── Inference.hs               # Type inference
+├── Lexical.hs                 # Lexical analysis
+├── Literals.hs                # Literal term operations
+├── Names.hs                   # Name resolution
+├── Reduction.hs               # Term reduction/evaluation
+├── Rewriting.hs               # Term rewriting
+├── Substitution.hs            # Variable substitution
+├── Unification.hs             # Type unification
+└── Variants.hs                # Variant type handling
+```
+
+==== Advanced DSLs
+```
+hydra-haskell/src/main/haskell/Hydra/Dsl/
+├── Annotations.hs             # Annotation DSL
+├── Bootstrap.hs               # Bootstrapping DSL
+├── Compute.hs                 # Computation DSL
+├── Grammar.hs                 # Grammar construction DSL
+├── Testing.hs                 # Testing utilities DSL
+└── Typing.hs                  # Type system DSL
+```
+
+=== Key Characteristics
+
+* **Complex Logic**: Sophisticated operations like type inference, unification
+* **Algorithmic**: Implements core algorithms (reduction, rewriting, etc.)
+* **Language Features**: Supports advanced language features
+* **Compiler Components**: Core compiler/interpreter functionality
+
+== Tier-3: Kernel Sources and Code Generation
+
+**Purpose**: DSL-based definitions and specifications for code generation. The "source of truth" for generated content.
+
+=== Directory Structure
+
+==== Generated Code (Java)
+```
+hydra-java/src/gen-main/java/hydra/tier3/
+└── Tier3.java                 # Complete kernel source aggregation
+```
+
+==== Source Collections (Haskell)
+```
+hydra-haskell/src/main/haskell/Hydra/Sources/
+├── All.hs                     # Master module aggregation
+├── Libraries.hs               # Library definitions
+└── Kernel/
+    ├── Types/All.hs           # All type definitions
+    └── Terms/All.hs           # All term definitions
+```
+
+==== Language-Specific Sources
+```
+hydra-haskell/src/main/haskell/Hydra/Sources/
+├── Haskell/                   # Haskell language bindings
+│   ├── Ast.hs                 # Haskell AST definitions
+│   ├── Coder.hs               # Haskell code generation
+│   ├── Language.hs            # Haskell language model
+│   └── ...
+├── Json/                      # JSON processing
+│   ├── Coder.hs               # JSON coder
+│   ├── Decoding.hs            # JSON decoding
+│   └── Language.hs            # JSON language model
+└── Yaml/                      # YAML processing
+    └── Model.hs               # YAML data model
+```
+
+==== Code Generation Support
+```
+hydra-haskell/src/main/haskell/Hydra/
+├── Generation.hs              # Code generation orchestration
+├── Kernel.hs                  # Kernel module proxy
+└── Staging/                   # Code staging utilities
+```
+
+=== Key Characteristics
+
+* **Specifications**: Contains the authoritative definitions
+* **Code Generation**: Source for all generated code in lower tiers
+* **Language Bindings**: Defines language-specific code generation
+* **Meta-Programming**: Implements the meta-programming system
+
+== Tier-4: Non-Kernel Code and Language Coders
+
+**Purpose**: Language-specific coders, built-in utilities, and non-kernel functionality.
+
+=== Directory Structure
+
+==== Language Coders (Java Generated)
+```
+hydra-java/src/gen-main/java/hydra/ext/
+├── haskell/                   # Haskell code generation
+├── java/                      # Java code generation
+├── python/                    # Python code generation
+├── scala/                     # Scala code generation
+├── csharp/                    # C# code generation
+├── cypher/                    # Cypher query generation
+├── protobuf/                  # Protocol Buffers
+├── pegasus/                   # Pegasus schema
+├── typeScript/                # TypeScript generation
+├── org/                       # Org-mode format
+├── tabular/                   # Tabular data formats
+└── relationalModel/           # Relational database models
+```
+
+==== Manual Implementation Support (Java)
+```
+hydra-java/src/main/java/hydra/
+├── Adapters.java              # Language adapters
+├── Coders.java                # Coder implementations
+├── Lexical.java               # Lexical utilities
+├── Reduction.java             # Reduction strategies
+├── Rewriting.java             # Rewriting engines
+└── ext/                       # Extension points
+```
+
+==== Utilities and Tools
+```
+hydra-java/src/gen-main/java/hydra/
+├── coders/                    # Generic coder infrastructure
+├── compute/                   # Computation utilities
+├── json/                      # JSON processing
+├── pg/                        # Property graph support
+├── printing/                  # Pretty printing
+├── query/                     # Query processing
+├── testing/                   # Testing framework
+└── workflow/                  # Workflow management
+```
+
+==== Haskell Tools and Utilities
+```
+hydra-haskell/src/main/haskell/Hydra/Tools/
+├── Debug.hs                   # Debugging utilities
+├── Monads.hs                  # Monad utilities
+└── Bytestrings.hs             # Bytestring operations
+```
+
+=== Key Characteristics
+
+* **Language Specific**: Implements language-specific code generation
+* **Non-Essential**: Not required for core Hydra operation
+* **Extensions**: Provides extension points for new languages
+* **Utilities**: Supporting tools and helper functions
+
+== Tier-5: Third-Party Code and User Extensions
+
+**Purpose**: User-defined functions, external sources, and third-party integrations.
+
+=== Directory Structure
+
+==== Test Code and Examples
+```
+hydra-haskell/src/main/haskell/Hydra/Sources/Test/
+├── TestGraph.hs               # Test graph definitions
+└── TestSuite.hs               # Test suite implementations
+```
+
+==== External Integration Points
+```
+hydra-java/src/main/java/hydra/
+├── HydraTestBase.java         # Test framework base
+└── util/                      # External utility integrations
+```
+
+==== User Extension Areas
+
+* **Custom Language Coders**: User-defined language support
+* **Domain-Specific Models**: Application-specific type definitions
+* **External Data Sources**: Integration with external systems
+* **Custom Transformations**: User-defined data transformations
+
+=== Key Characteristics
+
+* **User-Defined**: Created by Hydra users, not core developers
+* **External Dependencies**: May depend on external libraries
+* **Domain-Specific**: Tailored to specific use cases
+* **Highest Tier**: Can depend on all lower tiers
+
+== Build and Generation Process
+
+=== Code Generation Flow
+
+```
+Tier-3 Sources (Haskell DSL)
+         ↓
+   Code Generation
+         ↓
+Tier-0,1,2 Generated Code (Java/Haskell)
+         ↓
+   Language Coders (Tier-4)
+         ↓
+Target Language Output
+```
+
+=== Key Generation Commands
+
+```bash
+# Generate all kernel code from sources
+pixi run -e haskell hydra-build
+
+# Generate Java code specifically
+pixi run -e haskell generate-java
+
+# Build complete system
+pixi run build-all
+```
+
+== Dependencies and Import Rules
+
+=== Allowed Dependencies
+
+* **Tier-5** → Tier-4, Tier-3, Tier-2, Tier-1, Tier-0
+* **Tier-4** → Tier-3, Tier-2, Tier-1, Tier-0
+* **Tier-3** → Tier-2, Tier-1, Tier-0
+* **Tier-2** → Tier-1, Tier-0
+* **Tier-1** → Tier-0
+* **Tier-0** → (no dependencies)
+
+=== Forbidden Dependencies
+
+* **Lower tiers cannot import higher tiers**
+* **Circular dependencies within tiers are not allowed**
+* **Generated code should not be manually edited**
+
+== Maintenance Guidelines
+
+=== Source of Truth Priority
+
+1. **Tier-3 Haskell Sources**: Authoritative definitions
+2. **Tier-4 Manual Code**: Language-specific implementations
+3. **Generated Code**: Always regenerated, never manually edited
+4. **Documentation**: Should reflect current tier organization
+
+=== Adding New Functionality
+
+1. **Core Types**: Add to Tier-0 sources (rare)
+2. **Primitive Operations**: Add to Tier-1 libraries
+3. **Advanced Operations**: Add to Tier-2 kernel terms
+4. **Language Support**: Add to Tier-4 coders
+5. **User Features**: Implement in Tier-5
+
+=== Evolution Considerations
+
+* **Breaking Changes**: Most impactful at lower tiers
+* **Backwards Compatibility**: Maintain stability in Tier-0 and Tier-1
+* **Performance**: Focus optimization efforts on lower tiers
+* **Testing**: Test tier boundaries and dependency constraints
+
+== Related Documentation
+
+* <<dependency-tiers#,Dependency Tiers Overview>>
+* <<code-generation#,Code Generation Process>>
+* <<developer-guide#,Complete Developer Guide>>
+* <<build-system#,Build System Guide>>

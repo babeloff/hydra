@@ -35,6 +35,8 @@ include::sects/pixi-task-status.adoc[leveloffset=+1]
 
 include::sects/dependency-tiers.adoc[leveloffset=+1]
 
+include::sects/tier-directory-mapping.adoc[leveloffset=+1]
+
 == Part IV: Code Generation
 
 include::sects/code-generation.adoc[leveloffset=+1]

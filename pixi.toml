@@ -2,7 +2,10 @@
 name = "hydra"
 version = "0.12.0"
 description = "The Hydra language for type-safe transformations"
-authors = ["Joshua Shinavier <josh@fortytwo.net>"]
+authors = [
+    "Joshua Shinavier <josh@fortytwo.net>",
+    "Fred Eisele <fredrick.eisele@gmail.com>",
+]
 channels = [
     "conda-forge",
     "file:///var/home/phreed/Projects/conda-forge-babeloff/build_artifacts",
