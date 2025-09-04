@@ -76,7 +76,8 @@ ext-test = { cmd = "stack test hydra-ext --system-ghc", cwd = ".", env = { LD_LI
 ext-ghci = { cmd = "stack ghci hydra-ext --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
 
 # Combined development tasks
-ghci-all = { cmd = "stack ghci --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
+ghci-all = { cmd = "stack ghci --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX", LIBRARY_PATH_BACKUP = "$LIBRARY_PATH" } }
+ghci-all-fixed = { cmd = "bash -c 'export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:/usr/lib64:/lib64; export PATH=$CONDA_PREFIX/.ghcup/bin:/usr/bin:/bin; stack ghci --system-ghc'", cwd = ".", env = { GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
 ghci-interactive = { cmd = "stack ghci hydra-ext --system-ghc", cwd = ".", env = { LD_LIBRARY_PATH = "$CONDA_PREFIX/lib:$LD_LIBRARY_PATH", LIBRARY_PATH = "$CONDA_PREFIX/lib:$LIBRARY_PATH", CPATH = "$CONDA_PREFIX/include:$CPATH", PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH", GHCUP_INSTALL_BASE_PREFIX = "$CONDA_PREFIX" } }
 
 # Module and code exploration tasks
@@ -104,6 +105,9 @@ haskell-setup-all = { depends-on = ["haskell-setup", "stack-setup"] }
 haskell-build-all = { depends-on = ["stack-build"] }
 haskell-test-all = { depends-on = ["stack-test"] }
 haskell-clean-all = { depends-on = ["stack-clean"] }
+
+# Alternative ghci task with minimal conda interference
+ghci-minimal = { cmd = "bash -c 'export PATH=$CONDA_PREFIX/.ghcup/bin:/usr/bin:/bin:/usr/local/bin; exec stack ghci --system-ghc'", cwd = "." }
 
 [feature.scala.dependencies]
 openjdk = "17.*"
