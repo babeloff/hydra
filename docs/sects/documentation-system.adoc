@@ -273,7 +273,7 @@ This creates a `gh-pages/` directory with:
 1. **Build documentation** using pixi tasks
 2. **Run GitHub Pages build** to prepare files
 3. **Commit and push** to gh-pages branch:
-
++
 [source,bash]
 ----
 cd gh-pages
@@ -281,7 +281,7 @@ git add .
 git commit -m "Update documentation"
 git push origin gh-pages
 ----
-
++
 4. **Verify deployment** at GitHub Pages URL
 
 === Custom Domain Support

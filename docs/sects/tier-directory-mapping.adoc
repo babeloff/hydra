@@ -59,7 +59,9 @@ T1 --> T0
 === Directory Structure
 
 ==== Source Definitions (Haskell)
-```
+
+[source,text]
+----
 hydra-haskell/src/main/haskell/Hydra/Sources/Kernel/Types/
 ├── Core.hs                    # Core type definitions (Term, Type, etc.)
 ├── Graph.hs                   # Graph and module structures
@@ -68,10 +70,12 @@ hydra-haskell/src/main/haskell/Hydra/Sources/Kernel/Types/
 ├── Module.hs                  # Module system types
 ├── Phantoms.hs                # Phantom types for type safety
 └── ...                        # Other foundational type definitions
-```
+----
 
 ==== Generated Code (Java)
-```
+
+[source,text]
+----
 hydra-java/src/gen-main/java/hydra/core/
 ├── Type.java                  # Core type representations
 ├── Term.java                  # Core term representations
@@ -80,23 +84,26 @@ hydra-java/src/gen-main/java/hydra/core/
 ├── Function.java              # Function type definitions
 ├── Application.java           # Function application types
 └── ...                        # All core data structures
-```
+----
 
-```
+[source,text]
+----
 hydra-java/src/gen-main/java/hydra/graph/
 ├── Graph.java                 # Graph data structures
 ├── Element.java               # Graph element types
 └── ...                        # Graph-related types
-```
+----
 
 ==== DSL Support
-```
+
+[source,text]
+----
 hydra-haskell/src/main/haskell/Hydra/Dsl/
 ├── Types.hs                   # Basic type DSL
 ├── Core.hs                    # Core term DSL
 ├── Graph.hs                   # Graph DSL
 └── Phantoms.hs                # Phantom type DSL
-```
+----
 
 === Key Characteristics
 
@@ -112,13 +119,17 @@ hydra-haskell/src/main/haskell/Hydra/Dsl/
 === Directory Structure
 
 ==== Generated Code (Java)
-```
+
+[source,text]
+----
 hydra-java/src/gen-main/java/hydra/tier1/
 └── Tier1.java                 # Primitive operations and basic functions
-```
+----
 
 ==== Library Functions (Haskell)
-```
+
+[source,text]
+----
 hydra-haskell/src/main/haskell/Hydra/Lib/
 ├── Lists.hs                   # List manipulation primitives
 ├── Maps.hs                    # Map/dictionary operations
@@ -130,16 +141,18 @@ hydra-haskell/src/main/haskell/Hydra/Lib/
 ├── Literals.hs                # Literal value operations
 ├── Equality.hs                # Equality and comparison
 └── Flows.hs                   # Basic flow operations
-```
+----
 
 ==== Basic DSLs
-```
+
+[source,text]
+----
 hydra-haskell/src/main/haskell/Hydra/Dsl/
 ├── Terms.hs                   # Advanced term DSL
 ├── Literals.hs                # Literal construction DSL
 ├── Prims.hs                   # Primitive function DSL
 └── Common.hs                  # Common DSL utilities
-```
+----
 
 === Key Characteristics
 
@@ -155,13 +168,17 @@ hydra-haskell/src/main/haskell/Hydra/Dsl/
 === Directory Structure
 
 ==== Generated Code (Java)
-```
+
+[source,text]
+----
 hydra-java/src/gen-main/java/hydra/tier2/
 └── Tier2.java                 # Advanced kernel functions
-```
+----
 
 ==== Kernel Terms (Haskell Sources)
-```
+
+[source,text]
+----
 hydra-haskell/src/main/haskell/Hydra/Sources/Kernel/Terms/
 ├── Annotations.hs             # Annotation handling
 ├── Arity.hs                   # Function arity operations
@@ -177,10 +194,12 @@ hydra-haskell/src/main/haskell/Hydra/Sources/Kernel/Terms/
 ├── Substitution.hs            # Variable substitution
 ├── Unification.hs             # Type unification
 └── Variants.hs                # Variant type handling
-```
+----
 
 ==== Advanced DSLs
-```
+
+[source,text]
+----
 hydra-haskell/src/main/haskell/Hydra/Dsl/
 ├── Annotations.hs             # Annotation DSL
 ├── Bootstrap.hs               # Bootstrapping DSL
@@ -188,7 +207,7 @@ hydra-haskell/src/main/haskell/Hydra/Dsl/
 ├── Grammar.hs                 # Grammar construction DSL
 ├── Testing.hs                 # Testing utilities DSL
 └── Typing.hs                  # Type system DSL
-```
+----
 
 === Key Characteristics
 
@@ -204,23 +223,29 @@ hydra-haskell/src/main/haskell/Hydra/Dsl/
 === Directory Structure
 
 ==== Generated Code (Java)
-```
+
+[source,text]
+----
 hydra-java/src/gen-main/java/hydra/tier3/
 └── Tier3.java                 # Complete kernel source aggregation
-```
+----
 
 ==== Source Collections (Haskell)
-```
+
+[source,text]
+----
 hydra-haskell/src/main/haskell/Hydra/Sources/
 ├── All.hs                     # Master module aggregation
 ├── Libraries.hs               # Library definitions
 └── Kernel/
     ├── Types/All.hs           # All type definitions
     └── Terms/All.hs           # All term definitions
-```
+----
 
 ==== Language-Specific Sources
-```
+
+[source,text]
+----
 hydra-haskell/src/main/haskell/Hydra/Sources/
 ├── Haskell/                   # Haskell language bindings
 │   ├── Ast.hs                 # Haskell AST definitions
@@ -233,15 +258,17 @@ hydra-haskell/src/main/haskell/Hydra/Sources/
 │   └── Language.hs            # JSON language model
 └── Yaml/                      # YAML processing
     └── Model.hs               # YAML data model
-```
+----
 
 ==== Code Generation Support
-```
+
+[source,text]
+----
 hydra-haskell/src/main/haskell/Hydra/
 ├── Generation.hs              # Code generation orchestration
 ├── Kernel.hs                  # Kernel module proxy
 └── Staging/                   # Code staging utilities
-```
+----
 
 === Key Characteristics
 
@@ -257,7 +284,9 @@ hydra-haskell/src/main/haskell/Hydra/
 === Directory Structure
 
 ==== Language Coders (Java Generated)
-```
+
+[source,text]
+----
 hydra-java/src/gen-main/java/hydra/ext/
 ├── haskell/                   # Haskell code generation
 ├── java/                      # Java code generation
@@ -271,10 +300,12 @@ hydra-java/src/gen-main/java/hydra/ext/
 ├── org/                       # Org-mode format
 ├── tabular/                   # Tabular data formats
 └── relationalModel/           # Relational database models
-```
+----
 
 ==== Manual Implementation Support (Java)
-```
+
+[source,text]
+----
 hydra-java/src/main/java/hydra/
 ├── Adapters.java              # Language adapters
 ├── Coders.java                # Coder implementations
@@ -282,10 +313,12 @@ hydra-java/src/main/java/hydra/
 ├── Reduction.java             # Reduction strategies
 ├── Rewriting.java             # Rewriting engines
 └── ext/                       # Extension points
-```
+----
 
 ==== Utilities and Tools
-```
+
+[source,text]
+----
 hydra-java/src/gen-main/java/hydra/
 ├── coders/                    # Generic coder infrastructure
 ├── compute/                   # Computation utilities
@@ -295,15 +328,17 @@ hydra-java/src/gen-main/java/hydra/
 ├── query/                     # Query processing
 ├── testing/                   # Testing framework
 └── workflow/                  # Workflow management
-```
+----
 
 ==== Haskell Tools and Utilities
-```
+
+[source,text]
+----
 hydra-haskell/src/main/haskell/Hydra/Tools/
 ├── Debug.hs                   # Debugging utilities
 ├── Monads.hs                  # Monad utilities
 └── Bytestrings.hs             # Bytestring operations
-```
+----
 
 === Key Characteristics
 
@@ -319,18 +354,22 @@ hydra-haskell/src/main/haskell/Hydra/Tools/
 === Directory Structure
 
 ==== Test Code and Examples
-```
+
+[source,text]
+----
 hydra-haskell/src/main/haskell/Hydra/Sources/Test/
 ├── TestGraph.hs               # Test graph definitions
 └── TestSuite.hs               # Test suite implementations
-```
+----
 
 ==== External Integration Points
-```
+
+[source,text]
+----
 hydra-java/src/main/java/hydra/
 ├── HydraTestBase.java         # Test framework base
 └── util/                      # External utility integrations
-```
+----
 
 ==== User Extension Areas
 
@@ -350,7 +389,8 @@ hydra-java/src/main/java/hydra/
 
 === Code Generation Flow
 
-```
+[source,text]
+----
 Tier-3 Sources (Haskell DSL)
          ↓
    Code Generation
@@ -360,11 +400,12 @@ Tier-0,1,2 Generated Code (Java/Haskell)
    Language Coders (Tier-4)
          ↓
 Target Language Output
-```
+----
 
 === Key Generation Commands
 
-```bash
+[source,bash]
+----
 # Generate all kernel code from sources
 pixi run -e haskell hydra-build
 
@@ -373,7 +414,7 @@ pixi run -e haskell generate-java
 
 # Build complete system
 pixi run build-all
-```
+----
 
 == Dependencies and Import Rules
 

@@ -439,8 +439,7 @@ git push origin :refs/tags/0.12.1
 
 Template for urgent hotfix announcements:
 
-```
-🚨 Hydra Hotfix Release 0.12.2
+[Alert] Hydra Hotfix Release 0.12.2
 
 Critical bug fix for issue #XXX affecting [component].
 

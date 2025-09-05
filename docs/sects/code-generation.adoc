@@ -178,7 +178,7 @@ hydra-java/src/gen-main/java/
     ├── core/
     ├── graph/
     └── compute/
-```
+----
 
 Generated Java features:
 * Immutable data classes
@@ -218,7 +218,7 @@ yourLanguageConstraints = LanguageConstraints {
   -- Define supported constructs
   }
 ----
-
++
 2. **Create Language Coder**:
 [source,haskell]
 ----
@@ -226,14 +226,14 @@ yourLanguageConstraints = LanguageConstraints {
 codeType :: Type -> Flow (Context) YourLanguageSyntax
 codeTerm :: Term -> Flow (Context) YourLanguageSyntax
 ----
-
++
 3. **Implement Serializer**:
 [source,haskell]
 ----
 -- In Hydra/Ext/YourLanguage/Serializer.hs
 serializeExpression :: YourLanguageSyntax -> String
 ----
-
++
 4. **Register Generation Function**:
 [source,haskell]
 ----
@@ -428,7 +428,7 @@ pixi run -e haskell run-example-graphson
 
 # Verify same results in other languages
 pixi run -e java gradle run --args="verify-graphson"
-```
+----
 
 == Troubleshooting
 
