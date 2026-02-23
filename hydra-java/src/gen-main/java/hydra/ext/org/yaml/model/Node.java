@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * A YAML node (value)
  */
-public abstract class Node implements Serializable {
+public abstract class Node implements Serializable, Comparable<Node> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.org.yaml.model.Node");
   
   public static final hydra.core.Name FIELD_NAME_MAPPING = new hydra.core.Name("mapping");
@@ -32,27 +32,29 @@ public abstract class Node implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(Node instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Mapping instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Scalar instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Sequence instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
+  /**
+   * A mapping from nodes to nodes
+   */
   public static final class Mapping extends hydra.ext.org.yaml.model.Node implements Serializable {
     public final java.util.Map<hydra.ext.org.yaml.model.Node, hydra.ext.org.yaml.model.Node> value;
     
     public Mapping (java.util.Map<hydra.ext.org.yaml.model.Node, hydra.ext.org.yaml.model.Node> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -61,13 +63,28 @@ public abstract class Node implements Serializable {
       if (!(other instanceof Mapping)) {
         return false;
       }
-      Mapping o = (Mapping) (other);
-      return value.equals(o.value);
+      Mapping o = (Mapping) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Node other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Mapping o = (Mapping) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override
@@ -76,11 +93,13 @@ public abstract class Node implements Serializable {
     }
   }
   
+  /**
+   * A scalar value
+   */
   public static final class Scalar extends hydra.ext.org.yaml.model.Node implements Serializable {
     public final hydra.ext.org.yaml.model.Scalar value;
     
     public Scalar (hydra.ext.org.yaml.model.Scalar value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -89,13 +108,26 @@ public abstract class Node implements Serializable {
       if (!(other instanceof Scalar)) {
         return false;
       }
-      Scalar o = (Scalar) (other);
-      return value.equals(o.value);
+      Scalar o = (Scalar) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Node other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Scalar o = (Scalar) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -104,11 +136,13 @@ public abstract class Node implements Serializable {
     }
   }
   
+  /**
+   * A sequence of nodes
+   */
   public static final class Sequence extends hydra.ext.org.yaml.model.Node implements Serializable {
     public final java.util.List<hydra.ext.org.yaml.model.Node> value;
     
     public Sequence (java.util.List<hydra.ext.org.yaml.model.Node> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -117,13 +151,28 @@ public abstract class Node implements Serializable {
       if (!(other instanceof Sequence)) {
         return false;
       }
-      Sequence o = (Sequence) (other);
-      return value.equals(o.value);
+      Sequence o = (Sequence) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Node other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Sequence o = (Sequence) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override

@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class StarEtc implements Serializable {
+public abstract class StarEtc implements Serializable, Comparable<StarEtc> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.StarEtc");
   
   public static final hydra.core.Name FIELD_NAME_STAR_NO_DEFAULT = new hydra.core.Name("starNoDefault");
@@ -33,23 +33,23 @@ public abstract class StarEtc implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(StarEtc instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(StarNoDefault instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(StarNoDefaultStarAnnotation instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(StarComma instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Keywords instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -57,7 +57,6 @@ public abstract class StarEtc implements Serializable {
     public final hydra.ext.python.syntax.NoDefaultStarEtc value;
     
     public StarNoDefault (hydra.ext.python.syntax.NoDefaultStarEtc value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -66,13 +65,26 @@ public abstract class StarEtc implements Serializable {
       if (!(other instanceof StarNoDefault)) {
         return false;
       }
-      StarNoDefault o = (StarNoDefault) (other);
-      return value.equals(o.value);
+      StarNoDefault o = (StarNoDefault) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarEtc other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      StarNoDefault o = (StarNoDefault) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -85,7 +97,6 @@ public abstract class StarEtc implements Serializable {
     public final hydra.ext.python.syntax.NoDefaultStarAnnotationStarEtc value;
     
     public StarNoDefaultStarAnnotation (hydra.ext.python.syntax.NoDefaultStarAnnotationStarEtc value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -94,13 +105,26 @@ public abstract class StarEtc implements Serializable {
       if (!(other instanceof StarNoDefaultStarAnnotation)) {
         return false;
       }
-      StarNoDefaultStarAnnotation o = (StarNoDefaultStarAnnotation) (other);
-      return value.equals(o.value);
+      StarNoDefaultStarAnnotation o = (StarNoDefaultStarAnnotation) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarEtc other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      StarNoDefaultStarAnnotation o = (StarNoDefaultStarAnnotation) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -113,7 +137,6 @@ public abstract class StarEtc implements Serializable {
     public final hydra.ext.python.syntax.CommaStarEtc value;
     
     public StarComma (hydra.ext.python.syntax.CommaStarEtc value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -122,13 +145,26 @@ public abstract class StarEtc implements Serializable {
       if (!(other instanceof StarComma)) {
         return false;
       }
-      StarComma o = (StarComma) (other);
-      return value.equals(o.value);
+      StarComma o = (StarComma) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarEtc other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      StarComma o = (StarComma) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -141,7 +177,6 @@ public abstract class StarEtc implements Serializable {
     public final hydra.ext.python.syntax.Keywords value;
     
     public Keywords (hydra.ext.python.syntax.Keywords value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -150,13 +185,26 @@ public abstract class StarEtc implements Serializable {
       if (!(other instanceof Keywords)) {
         return false;
       }
-      Keywords o = (Keywords) (other);
-      return value.equals(o.value);
+      Keywords o = (Keywords) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarEtc other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Keywords o = (Keywords) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

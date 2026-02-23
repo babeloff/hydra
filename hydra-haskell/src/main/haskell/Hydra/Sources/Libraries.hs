@@ -1,15 +1,18 @@
-{-# LANGUAGE OverloadedStrings #-}
 
 -- | Implementations of the Hydra standard libraries in Haskell
-module Hydra.Sources.Libraries where
+module Hydra.Sources.Libraries (
+  module Hydra.Sources.Libraries,
+  module Hydra.Staging.Lib.Names,
+) where
 
 import Hydra.Kernel
-import qualified Hydra.Extract.Core as ExtractCore
+import Hydra.Staging.Lib.Names
 import Hydra.Dsl.Prims as Prims
 import qualified Hydra.Dsl.Terms as Terms
 import qualified Hydra.Dsl.Types as Types
 
 import qualified Hydra.Lib.Chars as Chars
+import qualified Hydra.Lib.Eithers as Eithers
 import qualified Hydra.Lib.Equality as Equality
 import qualified Hydra.Lib.Flows as Flows
 import qualified Hydra.Lib.Lists as Lists
@@ -17,14 +20,87 @@ import qualified Hydra.Lib.Literals as Literals
 import qualified Hydra.Lib.Logic as Logic
 import qualified Hydra.Lib.Maps as Maps
 import qualified Hydra.Lib.Math as Math
-import qualified Hydra.Lib.Optionals as Optionals
+import qualified Hydra.Lib.Maybes as Maybes
+import qualified Hydra.Lib.Pairs as Pairs
 import qualified Hydra.Lib.Sets as Sets
 import qualified Hydra.Lib.Strings as Strings
+
+import qualified Hydra.Eval.Lib.Eithers as EvalEithers
+import qualified Hydra.Eval.Lib.Flows as EvalFlows
+import qualified Hydra.Eval.Lib.Lists as EvalLists
+import qualified Hydra.Eval.Lib.Maps as EvalMaps
+import qualified Hydra.Eval.Lib.Maybes as EvalMaybes
+import qualified Hydra.Eval.Lib.Pairs as EvalPairs
+import qualified Hydra.Eval.Lib.Sets as EvalSets
 
 import qualified Data.List as L
 
 
--- * Hydra standard library
+-- Type variables (TypeVar) for primitive type schemes
+-- Unconstrained
+_a, _b, _c, _d, _k, _k1, _k2, _s, _v, _v1, _v2, _w, _x, _y, _z :: TypeVar
+_a = v "a"
+_b = v "b"
+_c = v "c"
+_d = v "d"
+_k = v "k"
+_k1 = v "k1"
+_k2 = v "k2"
+_s = v "s"
+_v = v "v"
+_v1 = v "v1"
+_v2 = v "v2"
+_w = v "w"
+_x = v "x"
+_y = v "y"
+_z = v "z"
+
+-- Ord-constrained
+_kOrd, _k1Ord, _k2Ord, _xOrd, _yOrd :: TypeVar
+_kOrd = vOrd "k"
+_k1Ord = vOrd "k1"
+_k2Ord = vOrd "k2"
+_xOrd = vOrd "x"
+_yOrd = vOrd "y"
+
+-- Eq-constrained
+_xEq :: TypeVar
+_xEq = vEq "x"
+
+-- Term coders for type variables (used in primitive implementations)
+a_, b_, c_, d_, k_, k1_, k2_, s_, v_, v1_, v2_, w_, x_, y_, z_ :: TermCoder Term
+a_ = variable "a"
+b_ = variable "b"
+c_ = variable "c"
+d_ = variable "d"
+k_ = variable "k"
+k1_ = variable "k1"
+k2_ = variable "k2"
+s_ = variable "s"
+v_ = variable "v"
+v1_ = variable "v1"
+v2_ = variable "v2"
+w_ = variable "w"
+x_ = variable "x"
+y_ = variable "y"
+z_ = variable "z"
+
+standardLibraries :: [Library]
+standardLibraries = [
+  hydraLibChars,
+  hydraLibEithers,
+  hydraLibEquality,
+  hydraLibFlows,
+  hydraLibLists,
+  hydraLibLiterals,
+  hydraLibLogic,
+  hydraLibMaps,
+  hydraLibMathFloat64,
+  hydraLibMathInt32,
+  hydraLibMaybes,
+  hydraLibPairs,
+  hydraLibSets,
+  hydraLibStrings]
 
 standardLibrary :: Namespace -> [Primitive] -> Library
 standardLibrary ns prims = Library {
@@ -32,263 +108,97 @@ standardLibrary ns prims = Library {
   libraryPrefix = L.drop (L.length ("hydra.lib." :: String)) $ unNamespace ns,
   libraryPrimitives = prims}
 
-standardLibraries :: [Library]
-standardLibraries = [
-  hydraLibChars,
-  hydraLibEquality,
-  hydraLibFlows,
-  hydraLibLists,
-  hydraLibLiterals,
-  hydraLibLogic,
-  hydraLibMaps,
-  hydraLibMathInt32,
-  hydraLibOptionals,
-  hydraLibSets,
-  hydraLibStrings]
-
--- * hydra.lib.chars primitives
-
-_hydra_lib_chars :: Namespace
-_hydra_lib_chars = Namespace "hydra.lib.chars"
-
-_chars_isAlphaNum = qname _hydra_lib_chars "isAlphaNum" :: Name
-_chars_isLower    = qname _hydra_lib_chars "isLower" :: Name
-_chars_isSpace    = qname _hydra_lib_chars "isSpace" :: Name
-_chars_isUpper    = qname _hydra_lib_chars "isUpper" :: Name
-_chars_toLower    = qname _hydra_lib_chars "toLower" :: Name
-_chars_toUpper    = qname _hydra_lib_chars "toUpper" :: Name
-
 hydraLibChars :: Library
-hydraLibChars = standardLibrary _hydra_lib_strings [
+hydraLibChars = standardLibrary _hydra_lib_chars [
   prim1 _chars_isAlphaNum Chars.isAlphaNum [] int32 boolean,
-  prim1 _chars_isLower Chars.isLower [] int32 boolean,
-  prim1 _chars_isSpace Chars.isSpace [] int32 boolean,
-  prim1 _chars_isUpper Chars.isUpper [] int32 boolean,
-  prim1 _chars_toLower Chars.toLower [] int32 int32,
-  prim1 _chars_toUpper Chars.toUpper [] int32 int32]
+  prim1 _chars_isLower    Chars.isLower    [] int32 boolean,
+  prim1 _chars_isSpace    Chars.isSpace    [] int32 boolean,
+  prim1 _chars_isUpper    Chars.isUpper    [] int32 boolean,
+  prim1 _chars_toLower    Chars.toLower    [] int32 int32,
+  prim1 _chars_toUpper    Chars.toUpper    [] int32 int32]
 
--- * hydra.lib.equality primitives
-
-_hydra_lib_equality :: Namespace
-_hydra_lib_equality = Namespace "hydra.lib.equality"
-
-_equality_compare  = qname _hydra_lib_equality "compare" :: Name
-_equality_equal    = qname _hydra_lib_equality "equal" :: Name
-_equality_gt       = qname _hydra_lib_equality "gt" :: Name
-_equality_gte      = qname _hydra_lib_equality "gte" :: Name
-_equality_identity = qname _hydra_lib_equality "identity" :: Name
-_equality_lt       = qname _hydra_lib_equality "lt" :: Name
-_equality_lte      = qname _hydra_lib_equality "lte" :: Name
-_equality_max      = qname _hydra_lib_equality "max" :: Name
-_equality_min      = qname _hydra_lib_equality "min" :: Name
+hydraLibEithers :: Library
+hydraLibEithers = standardLibrary _hydra_lib_eithers [
+    prim2Eval   _eithers_bind             EvalEithers.bind         [_x, _y, _z]     (Prims.either_ x_ y_) (function y_ (Prims.either_ x_ z_)) (Prims.either_ x_ z_),
+    prim3Eval   _eithers_bimap            EvalEithers.bimap        [_x, _y, _z, _w] (function x_ z_) (function y_ w_) (Prims.either_ x_ y_) (Prims.either_ z_ w_),
+    prim3Eval   _eithers_either           EvalEithers.either       [_x, _y, _z]     (function x_ z_) (function y_ z_) (Prims.either_ x_ y_) z_,
+    prim2       _eithers_fromLeft         Eithers.fromLeft         [_x, _y]         x_ (Prims.either_ x_ y_) x_,
+    prim2       _eithers_fromRight        Eithers.fromRight        [_x, _y]         y_ (Prims.either_ x_ y_) y_,
+    prim1       _eithers_isLeft           Eithers.isLeft           [_x, _y]         (Prims.either_ x_ y_) boolean,
+    prim1       _eithers_isRight          Eithers.isRight          [_x, _y]         (Prims.either_ x_ y_) boolean,
+    prim1       _eithers_lefts            Eithers.lefts            [_x, _y]         (list $ Prims.either_ x_ y_) (list x_),
+    prim2Eval   _eithers_map              EvalEithers.map          [_x, _y, _z]     (function x_ y_) (Prims.either_ z_ x_) (Prims.either_ z_ y_),
+    prim2Eval   _eithers_mapList          EvalEithers.mapList      [_x, _y, _z]     (function x_ (Prims.either_ z_ y_)) (list x_) (Prims.either_ z_ (list y_)),
+    prim2Eval   _eithers_mapMaybe         EvalEithers.mapMaybe     [_x, _y, _z]     (function x_ (Prims.either_ z_ y_)) (optional x_) (Prims.either_ z_ (optional y_)),
+    prim1       _eithers_partitionEithers Eithers.partitionEithers [_x, _y]         (list $ Prims.either_ x_ y_) (pair (list x_) (list y_)),
+    prim1       _eithers_rights           Eithers.rights           [_x, _y]         (list $ Prims.either_ x_ y_) (list y_)]
 
 hydraLibEquality :: Library
 hydraLibEquality = standardLibrary _hydra_lib_equality [
-    prim2 _equality_compare  Equality.compare  ["x"] x x comparison,
-    prim2 _equality_equal    Equality.equal    ["x"] x x boolean,
-    prim1 _equality_identity Equality.identity ["x"] x x,
-    prim2 _equality_gt       Equality.gt       ["x"] x x boolean,
-    prim2 _equality_gte      Equality.gte      ["x"] x x boolean,
-    prim2 _equality_lt       Equality.lt       ["x"] x x boolean,
-    prim2 _equality_lte      Equality.lte      ["x"] x x boolean,
-    prim2 _equality_max      Equality.max      ["x"] x x x,
-    prim2 _equality_min      Equality.min      ["x"] x x x]
-  where
-    x = variable "x"
-
--- * hydra.lib.flows primitives
-
-_hydra_lib_flows :: Namespace
-_hydra_lib_flows = Namespace "hydra.lib.flows"
-
-_flows_apply       = qname _hydra_lib_flows "apply" :: Name
-_flows_bind        = qname _hydra_lib_flows "bind" :: Name
-_flows_fail        = qname _hydra_lib_flows "fail" :: Name
-_flows_map         = qname _hydra_lib_flows "map" :: Name
-_flows_mapElems    = qname _hydra_lib_flows "mapElems" :: Name
-_flows_mapKeys     = qname _hydra_lib_flows "mapKeys" :: Name
-_flows_mapList     = qname _hydra_lib_flows "mapList" :: Name
-_flows_mapOptional = qname _hydra_lib_flows "mapOptional" :: Name
-_flows_mapSet      = qname _hydra_lib_flows "mapSet" :: Name
-_flows_pure        = qname _hydra_lib_flows "pure" :: Name
-_flows_sequence    = qname _hydra_lib_flows "sequence" :: Name
+    prim2 _equality_compare  Equality.compare  [_xOrd] x_ x_ comparison,
+    prim2 _equality_equal    Equality.equal    [_xEq]  x_ x_ boolean,
+    prim1 _equality_identity Equality.identity [_x]    x_ x_,
+    prim2 _equality_gt       Equality.gt       [_xOrd] x_ x_ boolean,
+    prim2 _equality_gte      Equality.gte      [_xOrd] x_ x_ boolean,
+    prim2 _equality_lt       Equality.lt       [_xOrd] x_ x_ boolean,
+    prim2 _equality_lte      Equality.lte      [_xOrd] x_ x_ boolean,
+    prim2 _equality_max      Equality.max      [_xOrd] x_ x_ x_,
+    prim2 _equality_min      Equality.min      [_xOrd] x_ x_ x_]
 
 hydraLibFlows :: Library
 hydraLibFlows = standardLibrary _hydra_lib_flows [
-    prim2 _flows_apply       Flows.apply    ["s", "x", "y"]        (flow s (function x y)) (flow s x) (flow s y),
-    prim2 _flows_bind        Flows.bind     ["s", "x", "y"]        (flow s x) (function x (flow s y)) (flow s y),
-    prim1 _flows_fail        Flows.fail     ["s", "x"]             string (flow s x),
-    prim2 _flows_map         Flows.map      ["s", "x", "y"]        (function x y) (flow s x) (flow s y),
-    prim2 _flows_mapElems    Flows.mapElems ["s", "k", "v1", "v2"] (function v1 (flow s v2)) (Prims.map k v1) (flow s (Prims.map k v2)),
-    prim2 _flows_mapKeys     Flows.mapKeys  ["s", "k1", "k2", "v"] (function k1 (flow s k2)) (Prims.map k1 v) (flow s (Prims.map k2 v)),
-    prim2 _flows_mapList     Flows.mapList  ["s", "x", "y"]        (function x (flow s y)) (list x) (flow s (list y)),
-    prim2 _flows_mapOptional Flows.mapOptional ["s", "x", "y"]     (function x $ flow s y) (optional x) (flow s $ optional y),
-    prim2 _flows_mapSet      Flows.mapSet   ["s", "x", "y"]        (function x (flow s y)) (set x) (flow s (set y)),
-    prim1 _flows_pure        Flows.pure     ["s", "x"]             x (flow s x),
-    prim1 _flows_sequence    Flows.sequence ["s", "x"]             (list (flow s x)) (flow s (list x))]
-  where
-    s = variable "s"
-    k = variable "k"
-    k1 = variable "k1"
-    k2 = variable "k2"
-    x = variable "x"
-    v = variable "v"
-    v1 = variable "v1"
-    v2 = variable "v2"
-    y = variable "y"
-
--- * hydra.lib.lists primitives
-
-_hydra_lib_lists :: Namespace
-_hydra_lib_lists = Namespace "hydra.lib.lists"
-
-_lists_apply       = qname _hydra_lib_lists "apply" :: Name
-_lists_at          = qname _hydra_lib_lists "at" :: Name
-_lists_bind        = qname _hydra_lib_lists "bind" :: Name
-_lists_concat      = qname _hydra_lib_lists "concat" :: Name
-_lists_concat2     = qname _hydra_lib_lists "concat2" :: Name
-_lists_cons        = qname _hydra_lib_lists "cons" :: Name
-_lists_drop        = qname _hydra_lib_lists "drop" :: Name
-_lists_dropWhile   = qname _hydra_lib_lists "dropWhile" :: Name
-_lists_elem        = qname _hydra_lib_lists "elem" :: Name
-_lists_filter      = qname _hydra_lib_lists "filter" :: Name
-_lists_foldl       = qname _hydra_lib_lists "foldl" :: Name
-_lists_group       = qname _hydra_lib_lists "group" :: Name
-_lists_head        = qname _hydra_lib_lists "head" :: Name
-_lists_init        = qname _hydra_lib_lists "init" :: Name
-_lists_intercalate = qname _hydra_lib_lists "intercalate" :: Name
-_lists_intersperse = qname _hydra_lib_lists "intersperse" :: Name
-_lists_last        = qname _hydra_lib_lists "last" :: Name
-_lists_length      = qname _hydra_lib_lists "length" :: Name
-_lists_map         = qname _hydra_lib_lists "map" :: Name
-_lists_nub         = qname _hydra_lib_lists "nub" :: Name
-_lists_null        = qname _hydra_lib_lists "null" :: Name
-_lists_pure        = qname _hydra_lib_lists "pure" :: Name
-_lists_replicate   = qname _hydra_lib_lists "replicate" :: Name
-_lists_reverse     = qname _hydra_lib_lists "reverse" :: Name
-_lists_safeHead    = qname _hydra_lib_lists "safeHead" :: Name
-_lists_singleton   = qname _hydra_lib_lists "singleton" :: Name
-_lists_sort        = qname _hydra_lib_lists "sort" :: Name
-_lists_sortOn      = qname _hydra_lib_lists "sortOn" :: Name
-_lists_span        = qname _hydra_lib_lists "span" :: Name
-_lists_tail        = qname _hydra_lib_lists "tail" :: Name
-_lists_take        = qname _hydra_lib_lists "take" :: Name
-_lists_transpose   = qname _hydra_lib_lists "transpose" :: Name
-_lists_zip         = qname _hydra_lib_lists "zip" :: Name
-_lists_zipWith     = qname _hydra_lib_lists "zipWith" :: Name
+    prim2Eval _flows_apply    EvalFlows.apply    [_s, _x, _y]                 (flow s_ (function x_ y_)) (flow s_ x_) (flow s_ y_),
+    prim2Eval _flows_bind     EvalFlows.bind     [_s, _x, _y]                 (flow s_ x_) (function x_ (flow s_ y_)) (flow s_ y_),
+    prim1     _flows_fail     Flows.fail         [_s, _x]                     string (flow s_ x_),
+    prim3Eval _flows_foldl    EvalFlows.foldl    [_y, _x, _s]                 (function y_ (function x_ (flow s_ y_))) y_ (list x_) (flow s_ y_),
+    prim2Eval _flows_map      EvalFlows.map      [_x, _y, _s]                 (function x_ y_) (flow s_ x_) (flow s_ y_),
+    prim2Eval _flows_mapElems EvalFlows.mapElems [_v1, _s, _v2, _kOrd]        (function v1_ (flow s_ v2_)) (Prims.map k_ v1_) (flow s_ (Prims.map k_ v2_)),
+    prim2Eval _flows_mapKeys  EvalFlows.mapKeys  [_k1Ord, _s, _k2Ord, _v]     (function k1_ (flow s_ k2_)) (Prims.map k1_ v_) (flow s_ (Prims.map k2_ v_)),
+    prim2Eval _flows_mapList  EvalFlows.mapList  [_x, _s, _y]                 (function x_ (flow s_ y_)) (list x_) (flow s_ (list y_)),
+    prim2Eval _flows_mapMaybe EvalFlows.mapMaybe [_x, _s, _y]                 (function x_ $ flow s_ y_) (optional x_) (flow s_ $ optional y_),
+    prim2Eval _flows_mapSet   EvalFlows.mapSet   [_xOrd, _s, _yOrd]           (function x_ (flow s_ y_)) (set x_) (flow s_ (set y_)),
+    prim1     _flows_pure     Flows.pure         [_s, _x]                     x_ (flow s_ x_),
+    prim1     _flows_sequence Flows.sequence     [_s, _x]                     (list (flow s_ x_)) (flow s_ (list x_)),
+    prim2Eval _flows_withDefault EvalFlows.withDefault [_s, _x]               x_ (flow s_ x_) (flow s_ x_)]
 
 hydraLibLists :: Library
 hydraLibLists = standardLibrary _hydra_lib_lists [
-    prim2Interp _lists_apply       (Just applyInterp) ["x", "y"] (list $ function x y) (list x) (list y),
-    prim2       _lists_at          Lists.at           ["x"] int32 (list x) x,
-    prim2Interp _lists_bind        (Just bindInterp)  ["x", "y"] (list x) (function x (list y)) (list y),
-    prim1       _lists_concat      Lists.concat       ["x"] (list (list x)) (list x),
-    prim2       _lists_concat2     Lists.concat2      ["x"] (list x) (list x) (list x),
-    prim2       _lists_cons        Lists.cons         ["x"] x (list x) (list x),
-    prim2       _lists_drop        Lists.drop         ["x"] int32 (list x) (list x),
-    prim2Interp _lists_dropWhile   Nothing            ["x"] (function x boolean) (list x) (list x),
-    prim2       _lists_elem        Lists.elem         ["x"] x (list x) boolean,
-    prim2       _lists_filter      Lists.filter       ["x"] (function x boolean) (list x) (list x),
-    prim3       _lists_foldl       Lists.foldl        ["x", "y"] (function y (function x y)) y (list x) y,
-    prim1       _lists_group       Lists.group        ["x"] (list x) (list (list x)),
-    prim1       _lists_head        Lists.head         ["x"] (list x) x,
-    prim1       _lists_init        Lists.init         ["x"] (list x) (list x),
-    prim2       _lists_intercalate Lists.intercalate  ["x"] (list x) (list (list x)) (list x),
-    prim2       _lists_intersperse Lists.intersperse  ["x"] x (list x) (list x),
-    prim1       _lists_last        Lists.last         ["x"] (list x) x,
-    prim1       _lists_length      Lists.length       ["x"] (list x) int32,
-    prim2Interp _lists_map         (Just mapInterp)   ["x", "y"] (function x y) (list x) (list y),
-    prim1       _lists_nub         Lists.nub          ["x"] (list x) (list x),
-    prim1       _lists_null        Lists.null         ["x"] (list x) boolean,
-    prim1       _lists_pure        Lists.pure         ["x"] x (list x),
-    prim2       _lists_replicate   Lists.replicate    ["x"] int32 x (list x),
-    prim1       _lists_reverse     Lists.reverse      ["x"] (list x) (list x),
-    prim1       _lists_safeHead    Lists.safeHead     ["x"] (list x) (optional x),
-    prim1       _lists_singleton   Lists.singleton    ["x"] x (list x),
-    prim2Interp _lists_sortOn      Nothing            ["x", "y"] (function x y) (list x) (list x),
-    prim2Interp _lists_span        Nothing            ["x", "y"] (function x boolean) (list x) (pair (list x) (list x)),
-    prim1       _lists_sort        Lists.sort         ["x"] (list x) (list x),
-    prim1       _lists_tail        Lists.tail         ["x"] (list x) (list x),
-    prim2       _lists_take        Lists.take         ["x"] int32 (list x) (list x),
-    prim1       _lists_transpose   Lists.transpose    ["x"] (list (list x)) (list (list x)),
-    prim2       _lists_zip         Lists.zip          ["x", "y"] (list x) (list y) (list (pair x y)),
-    prim3       _lists_zipWith     Lists.zipWith      ["x", "y", "z"] (function x $ function y z) (list x) (list y) (list z)]
-  where
-    x = variable "x"
-    y = variable "y"
-    z = variable "z"
-
--- | Interpreted implementation of hydra.lib.lists.apply
-applyInterp :: Term -> Term -> Flow Graph Term
-applyInterp funs' args' = do
-    funs <- ExtractCore.list funs'
-    args <- ExtractCore.list args'
-    return $ Terms.list $ L.concat (helper args <$> funs)
-  where
-    helper args f = Terms.apply f <$> args
-
--- | Interpreted implementation of hydra.lib.lists.bind
-bindInterp :: Term -> Term -> Flow Graph Term
-bindInterp args' fun = do
-    args <- ExtractCore.list args'
-    return $ Terms.apply (Terms.primitive _lists_concat) (Terms.list $ Terms.apply fun <$> args)
-
--- | Interpreted implementation of hydra.lib.lists.map
-mapInterp :: Term -> Term -> Flow Graph Term
-mapInterp fun args' = do
-    args <- ExtractCore.list args'
-    return $ Terms.list (Terms.apply fun <$> args)
-
--- * hydra.lib.literals primitives
-
-_hydra_lib_literals :: Namespace
-_hydra_lib_literals = Namespace "hydra.lib.literals"
-
-_literals_bigfloatToBigint  = qname _hydra_lib_literals "bigfloatToBigint" :: Name
-_literals_bigfloatToFloat32 = qname _hydra_lib_literals "bigfloatToFloat32" :: Name
-_literals_bigfloatToFloat64 = qname _hydra_lib_literals "bigfloatToFloat64" :: Name
-_literals_bigintToBigfloat  = qname _hydra_lib_literals "bigintToBigfloat" :: Name
-_literals_bigintToInt8      = qname _hydra_lib_literals "bigintToInt8" :: Name
-_literals_bigintToInt16     = qname _hydra_lib_literals "bigintToInt16" :: Name
-_literals_bigintToInt32     = qname _hydra_lib_literals "bigintToInt32" :: Name
-_literals_bigintToInt64     = qname _hydra_lib_literals "bigintToInt64" :: Name
-_literals_bigintToUint8     = qname _hydra_lib_literals "bigintToUint8" :: Name
-_literals_bigintToUint16    = qname _hydra_lib_literals "bigintToUint16" :: Name
-_literals_bigintToUint32    = qname _hydra_lib_literals "bigintToUint32" :: Name
-_literals_bigintToUint64    = qname _hydra_lib_literals "bigintToUint64" :: Name
-_literals_binaryToString    = qname _hydra_lib_literals "binaryToString" :: Name
-_literals_float32ToBigfloat = qname _hydra_lib_literals "float32ToBigfloat" :: Name
-_literals_float64ToBigfloat = qname _hydra_lib_literals "float64ToBigfloat" :: Name
-_literals_int8ToBigint      = qname _hydra_lib_literals "int8ToBigint" :: Name
-_literals_int16ToBigint     = qname _hydra_lib_literals "int16ToBigint" :: Name
-_literals_int32ToBigint     = qname _hydra_lib_literals "int32ToBigint" :: Name
-_literals_int64ToBigint     = qname _hydra_lib_literals "int64ToBigint" :: Name
-_literals_readBigfloat      = qname _hydra_lib_literals "readBigfloat" :: Name
-_literals_readBoolean       = qname _hydra_lib_literals "readBoolean" :: Name
-_literals_readFloat32       = qname _hydra_lib_literals "readFloat32" :: Name
-_literals_readFloat64       = qname _hydra_lib_literals "readFloat64" :: Name
-_literals_readInt32         = qname _hydra_lib_literals "readInt32" :: Name
-_literals_readInt64         = qname _hydra_lib_literals "readInt64" :: Name
-_literals_readString        = qname _hydra_lib_literals "readString" :: Name
-_literals_showBigfloat      = qname _hydra_lib_literals "showBigfloat" :: Name
-_literals_showBigint        = qname _hydra_lib_literals "showBigint" :: Name
-_literals_showBoolean       = qname _hydra_lib_literals "show" :: Name
-_literals_showFloat32       = qname _hydra_lib_literals "showFloat32" :: Name
-_literals_showFloat64       = qname _hydra_lib_literals "showFloat64" :: Name
-_literals_showInt8          = qname _hydra_lib_literals "showInt8" :: Name
-_literals_showInt16         = qname _hydra_lib_literals "showInt16" :: Name
-_literals_showInt32         = qname _hydra_lib_literals "showInt32" :: Name
-_literals_showInt64         = qname _hydra_lib_literals "showInt64" :: Name
-_literals_showUint8         = qname _hydra_lib_literals "showUint8" :: Name
-_literals_showUint16        = qname _hydra_lib_literals "showUint16" :: Name
-_literals_showUint32        = qname _hydra_lib_literals "showUint32" :: Name
-_literals_showUint64        = qname _hydra_lib_literals "showUint64" :: Name
-_literals_showString        = qname _hydra_lib_literals "showString" :: Name
-_literals_stringToBinary    = qname _hydra_lib_literals "stringToBinary" :: Name
-_literals_uint8ToBigint     = qname _hydra_lib_literals "uint8ToBigint" :: Name
-_literals_uint16ToBigint    = qname _hydra_lib_literals "uint16ToBigint" :: Name
-_literals_uint32ToBigint    = qname _hydra_lib_literals "uint32ToBigint" :: Name
-_literals_uint64ToBigint    = qname _hydra_lib_literals "uint64ToBigint" :: Name
+    prim2Eval _lists_apply       EvalLists.apply     [_x, _y]     (list $ function x_ y_) (list x_) (list y_),
+    prim2     _lists_at          Lists.at            [_x]         int32 (list x_) x_,
+    prim2Eval _lists_bind        EvalLists.bind      [_x, _y]     (list x_) (function x_ (list y_)) (list y_),
+    prim1     _lists_concat      Lists.concat        [_x]         (list (list x_)) (list x_),
+    prim2     _lists_concat2     Lists.concat2       [_x]         (list x_) (list x_) (list x_),
+    prim2     _lists_cons        Lists.cons          [_x]         x_ (list x_) (list x_),
+    prim2     _lists_drop        Lists.drop          [_x]         int32 (list x_) (list x_),
+    prim2Eval _lists_dropWhile   EvalLists.dropWhile [_x]         (function x_ boolean) (list x_) (list x_),
+    prim2     _lists_elem        Lists.elem          [_xEq]       x_ (list x_) boolean,
+    prim2Eval _lists_filter      EvalLists.filter    [_x]         (function x_ boolean) (list x_) (list x_),
+    prim2Eval _lists_find        EvalLists.find      [_x]         (function x_ boolean) (list x_) (optional x_),
+    prim3Eval _lists_foldl       EvalLists.foldl     [_y, _x]     (function y_ (function x_ y_)) y_ (list x_) y_,
+    prim1     _lists_group       Lists.group         [_xEq]       (list x_) (list (list x_)),
+    prim1     _lists_head        Lists.head          [_x]         (list x_) x_,
+    prim1     _lists_init        Lists.init          [_x]         (list x_) (list x_),
+    prim2     _lists_intercalate Lists.intercalate   [_x]         (list x_) (list (list x_)) (list x_),
+    prim2     _lists_intersperse Lists.intersperse   [_x]         x_ (list x_) (list x_),
+    prim1     _lists_last        Lists.last          [_x]         (list x_) x_,
+    prim1     _lists_length      Lists.length        [_x]         (list x_) int32,
+    prim2Eval _lists_map         EvalLists.map       [_x, _y]     (function x_ y_) (list x_) (list y_),
+    prim1     _lists_nub         Lists.nub           [_xEq]       (list x_) (list x_),
+    prim1     _lists_null        Lists.null          [_x]         (list x_) boolean,
+    prim2Eval _lists_partition   EvalLists.partition [_x]         (function x_ boolean) (list x_) (pair (list x_) (list x_)),
+    prim1     _lists_pure        Lists.pure          [_x]         x_ (list x_),
+    prim2     _lists_replicate   Lists.replicate     [_x]         int32 x_ (list x_),
+    prim1     _lists_reverse     Lists.reverse       [_x]         (list x_) (list x_),
+    prim1     _lists_safeHead    Lists.safeHead      [_x]         (list x_) (optional x_),
+    prim1     _lists_singleton   Lists.singleton     [_x]         x_ (list x_),
+    prim2Eval _lists_sortOn      EvalLists.sortOn    [_x, _yOrd]  (function x_ y_) (list x_) (list x_),
+    prim2Eval _lists_span        EvalLists.span      [_x]         (function x_ boolean) (list x_) (pair (list x_) (list x_)),
+    prim1     _lists_sort        Lists.sort          [_xOrd]      (list x_) (list x_),
+    prim1     _lists_tail        Lists.tail          [_x]         (list x_) (list x_),
+    prim2     _lists_take        Lists.take          [_x]         int32 (list x_) (list x_),
+    prim1     _lists_transpose   Lists.transpose     [_x]         (list (list x_)) (list (list x_)),
+    prim2     _lists_zip         Lists.zip           [_x, _y]     (list x_) (list y_) (list (pair x_ y_)),
+    prim3Eval _lists_zipWith     EvalLists.zipWith   [_x, _y, _z] (function x_ $ function y_ z_) (list x_) (list y_) (list z_)]
 
 hydraLibLiterals :: Library
 hydraLibLiterals = standardLibrary _hydra_lib_literals [
@@ -304,6 +214,7 @@ hydraLibLiterals = standardLibrary _hydra_lib_literals [
   prim1 _literals_bigintToUint16    Literals.bigintToUint16    [] bigint uint16,
   prim1 _literals_bigintToUint32    Literals.bigintToUint32    [] bigint uint32,
   prim1 _literals_bigintToUint64    Literals.bigintToUint64    [] bigint uint64,
+  prim1 _literals_binaryToBytes     Literals.binaryToBytes     [] binary (list int32),
   prim1 _literals_binaryToString    Literals.binaryToString    [] binary string,
   prim1 _literals_float32ToBigfloat Literals.float32ToBigfloat [] float32 bigfloat,
   prim1 _literals_float64ToBigfloat Literals.float64ToBigfloat [] float64 bigfloat,
@@ -312,12 +223,19 @@ hydraLibLiterals = standardLibrary _hydra_lib_literals [
   prim1 _literals_int32ToBigint     Literals.int32ToBigint     [] int32 bigint,
   prim1 _literals_int64ToBigint     Literals.int64ToBigint     [] int64 bigint,
   prim1 _literals_readBigfloat      Literals.readBigfloat      [] string (optional bigfloat),
+  prim1 _literals_readBigint        Literals.readBigint        [] string (optional bigint),
   prim1 _literals_readBoolean       Literals.readBoolean       [] string (optional boolean),
   prim1 _literals_readFloat32       Literals.readFloat32       [] string (optional float32),
   prim1 _literals_readFloat64       Literals.readFloat64       [] string (optional float64),
+  prim1 _literals_readInt8          Literals.readInt8          [] string (optional int8),
+  prim1 _literals_readInt16         Literals.readInt16         [] string (optional int16),
   prim1 _literals_readInt32         Literals.readInt32         [] string (optional int32),
   prim1 _literals_readInt64         Literals.readInt64         [] string (optional int64),
   prim1 _literals_readString        Literals.readString        [] string (optional string),
+  prim1 _literals_readUint8         Literals.readUint8         [] string (optional uint8),
+  prim1 _literals_readUint16        Literals.readUint16        [] string (optional uint16),
+  prim1 _literals_readUint32        Literals.readUint32        [] string (optional uint32),
+  prim1 _literals_readUint64        Literals.readUint64        [] string (optional uint64),
   prim1 _literals_showBigfloat      Literals.showBigfloat      [] bigfloat string,
   prim1 _literals_showBigint        Literals.showBigint        [] bigint string,
   prim1 _literals_showBoolean       Literals.showBoolean       [] boolean string,
@@ -338,226 +256,122 @@ hydraLibLiterals = standardLibrary _hydra_lib_literals [
   prim1 _literals_uint32ToBigint    Literals.uint32ToBigint    [] uint32 bigint,
   prim1 _literals_uint64ToBigint    Literals.uint64ToBigint    [] uint64 bigint]
 
--- * hydra.lib.logic primitives
-
-_hydra_lib_logic :: Namespace
-_hydra_lib_logic = Namespace "hydra.lib.logic"
-
-_logic_and = qname _hydra_lib_logic "and" :: Name
-_logic_ifElse = qname _hydra_lib_logic "ifElse" :: Name
-_logic_not    = qname _hydra_lib_logic "not" :: Name
-_logic_or     = qname _hydra_lib_logic "or" :: Name
-
 hydraLibLogic :: Library
 hydraLibLogic = standardLibrary _hydra_lib_logic [
-    prim2 _logic_and    Logic.and    []    boolean boolean boolean,
-    prim3 _logic_ifElse Logic.ifElse ["x"] boolean x x x,
-    prim1 _logic_not    Logic.not    []    boolean boolean,
-    prim2 _logic_or     Logic.or     []    boolean boolean boolean]
-  where
-    x = variable "x"
-
--- * hydra.lib.maps primitives
-
-_hydra_lib_maps :: Namespace
-_hydra_lib_maps = Namespace "hydra.lib.maps"
-
-_maps_alter           = qname _hydra_lib_maps "alter" :: Name
-_maps_bimap           = qname _hydra_lib_maps "bimap" :: Name
-_maps_elems           = qname _hydra_lib_maps "elems" :: Name
-_maps_empty           = qname _hydra_lib_maps "empty" :: Name
-_maps_filter          = qname _hydra_lib_maps "filter" :: Name
-_maps_filterWithKey   = qname _hydra_lib_maps "filterWithKey" :: Name
-_maps_findWithDefault = qname _hydra_lib_maps "findWithDefault" :: Name
-_maps_fromList        = qname _hydra_lib_maps "fromList" :: Name
-_maps_insert          = qname _hydra_lib_maps "insert" :: Name
-_maps_keys            = qname _hydra_lib_maps "keys" :: Name
-_maps_lookup          = qname _hydra_lib_maps "lookup" :: Name
-_maps_map             = qname _hydra_lib_maps "map" :: Name
-_maps_mapKeys         = qname _hydra_lib_maps "mapKeys" :: Name
-_maps_member          = qname _hydra_lib_maps "member" :: Name
-_maps_null            = qname _hydra_lib_maps "null" :: Name
-_maps_remove          = qname _hydra_lib_maps "remove" :: Name
-_maps_singleton       = qname _hydra_lib_maps "singleton" :: Name
-_maps_size            = qname _hydra_lib_maps "size" :: Name
-_maps_toList          = qname _hydra_lib_maps "toList" :: Name
-_maps_union           = qname _hydra_lib_maps "union" :: Name
-_maps_values          = qname _hydra_lib_maps "values" :: Name
+    prim2 _logic_and    Logic.and    []   boolean boolean boolean,
+    prim3 _logic_ifElse Logic.ifElse [_x] boolean x_ x_ x_,
+    prim1 _logic_not    Logic.not    []   boolean boolean,
+    prim2 _logic_or     Logic.or     []   boolean boolean boolean]
 
 hydraLibMaps :: Library
 hydraLibMaps = standardLibrary _hydra_lib_maps [
-    prim3Interp _maps_alter     Nothing        ["k", "v"]               (function (optional v) (optional v)) k mapKv mapKv,
-    prim3 _maps_bimap           Maps.bimap     ["k1", "k2", "v1", "v2"] (function k1 k2) (function v1 v2) (Prims.map k1 v1) (Prims.map k2 v2),
-    prim1 _maps_elems           Maps.elems     ["k", "v"]               mapKv (list v),
-    prim0 _maps_empty           Maps.empty     ["k", "v"]               mapKv,
-    prim2 _maps_filter          Maps.filter    ["k", "v"]               (function v boolean) mapKv mapKv,
-    prim2 _maps_filterWithKey   Maps.filterWithKey ["k", "v"]           (function k (function v boolean)) mapKv mapKv,
-    prim3 _maps_findWithDefault Maps.findWithDefault ["k", "v"]         v k mapKv v,
-    prim1 _maps_fromList        Maps.fromList  ["k", "v"]               (list $ pair k v) mapKv,
-    prim3 _maps_insert          Maps.insert    ["k", "v"]               k v mapKv mapKv,
-    prim1 _maps_keys            Maps.keys      ["k", "v"]               mapKv (list k),
-    prim2 _maps_lookup          Maps.lookup    ["k", "v"]               k mapKv (optional v),
-    prim2 _maps_map             Maps.map       ["k", "v1", "v2"]        (function v1 v2) (Prims.map k v1) (Prims.map k v2),
-    prim2 _maps_mapKeys         Maps.mapKeys   ["k1", "k2", "v"]        (function k1 k2) (Prims.map k1 v) (Prims.map k2 v),
-    prim2 _maps_member          Maps.member    ["k", "v"]               k mapKv boolean,
-    prim1 _maps_null            Maps.null      ["k", "v"]               mapKv boolean,
-    prim1 _maps_size            Maps.size      ["k", "v"]               mapKv int32,
-    prim2 _maps_remove          Maps.remove    ["k", "v"]               k mapKv mapKv,
-    prim2 _maps_singleton       Maps.singleton ["k", "v"]               k v mapKv,
-    prim1 _maps_size            Maps.size      ["k", "v"]               mapKv int32,
-    prim1 _maps_toList          Maps.toList    ["k", "v"]               mapKv (list $ pair k v),
-    prim2 _maps_union           Maps.union     ["k", "v"]               mapKv mapKv mapKv]
+    prim3Eval _maps_alter           EvalMaps.alter         [_v, _kOrd]                  (function (optional v_) (optional v_)) k_ mapKv mapKv,
+    prim3Eval _maps_bimap           EvalMaps.bimap         [_k1Ord, _k2Ord, _v1, _v2]   (function k1_ k2_) (function v1_ v2_) (Prims.map k1_ v1_) (Prims.map k2_ v2_),
+    prim1     _maps_elems           Maps.elems             [_kOrd, _v]                  mapKv (list v_),
+    prim2     _maps_delete          Maps.delete            [_kOrd, _v]                  k_ mapKv mapKv,
+    prim0     _maps_empty           Maps.empty             [_kOrd, _v]                  mapKv,
+    prim2Eval _maps_filter          EvalMaps.filter        [_v, _kOrd]                  (function v_ boolean) mapKv mapKv,
+    prim2Eval _maps_filterWithKey   EvalMaps.filterWithKey [_kOrd, _v]                  (function k_ (function v_ boolean)) mapKv mapKv,
+    prim3     _maps_findWithDefault Maps.findWithDefault   [_v, _kOrd]                  v_ k_ mapKv v_,
+    prim1     _maps_fromList        Maps.fromList          [_kOrd, _v]                  (list $ pair k_ v_) mapKv,
+    prim3     _maps_insert          Maps.insert            [_kOrd, _v]                  k_ v_ mapKv mapKv,
+    prim1     _maps_keys            Maps.keys              [_kOrd, _v]                  mapKv (list k_),
+    prim2     _maps_lookup          Maps.lookup            [_kOrd, _v]                  k_ mapKv (optional v_),
+    prim2Eval _maps_map             EvalMaps.map           [_v1, _v2, _kOrd]            (function v1_ v2_) (Prims.map k_ v1_) (Prims.map k_ v2_),
+    prim2Eval _maps_mapKeys         EvalMaps.mapKeys       [_k1Ord, _k2Ord, _v]         (function k1_ k2_) (Prims.map k1_ v_) (Prims.map k2_ v_),
+    prim2     _maps_member          Maps.member            [_kOrd, _v]                  k_ mapKv boolean,
+    prim1     _maps_null            Maps.null              [_kOrd, _v]                  mapKv boolean,
+    prim1     _maps_size            Maps.size              [_kOrd, _v]                  mapKv int32,
+    prim2     _maps_singleton       Maps.singleton         [_kOrd, _v]                  k_ v_ mapKv,
+    prim1     _maps_toList          Maps.toList            [_kOrd, _v]                  mapKv (list $ pair k_ v_),
+    prim2     _maps_union           Maps.union             [_kOrd, _v]                  mapKv mapKv mapKv]
   where
-    k = variable "k"
-    k1 = variable "k1"
-    k2 = variable "k2"
-    v = variable "v"
-    v1 = variable "v1"
-    v2 = variable "v2"
-    mapKv = Prims.map k v
+    mapKv = Prims.map k_ v_
 
--- * hydra.lib.math primitives
-
-_hydra_lib_math :: Namespace
-_hydra_lib_math = Namespace "hydra.lib.math"
-
-_math_add   = qname _hydra_lib_math "add" :: Name
-_math_div   = qname _hydra_lib_math "div" :: Name
-_math_mod   = qname _hydra_lib_math "mod" :: Name
-_math_mul   = qname _hydra_lib_math "mul" :: Name
-_math_neg   = qname _hydra_lib_math "neg" :: Name
-_math_range = qname _hydra_lib_math "range" :: Name
-_math_rem   = qname _hydra_lib_math "rem" :: Name
-_math_sub   = qname _hydra_lib_math "sub" :: Name
+hydraLibMathFloat64 :: Library
+hydraLibMathFloat64 = standardLibrary _hydra_lib_math [
+  prim1 _math_acos     Math.acos     [] float64 float64,
+  prim1 _math_acosh    Math.acosh    [] float64 float64,
+  prim1 _math_asin     Math.asin     [] float64 float64,
+  prim1 _math_asinh    Math.asinh    [] float64 float64,
+  prim1 _math_atan     Math.atan     [] float64 float64,
+  prim2 _math_atan2    Math.atan2    [] float64 float64 float64,
+  prim1 _math_atanh    Math.atanh    [] float64 float64,
+  prim1 _math_ceiling  Math.ceiling  [] float64 bigint,
+  prim1 _math_cos      Math.cos      [] float64 float64,
+  prim1 _math_cosh     Math.cosh     [] float64 float64,
+  prim0 _math_e        Math.e        [] float64,
+  prim1 _math_exp      Math.exp      [] float64 float64,
+  prim1 _math_floor    Math.floor    [] float64 bigint,
+  prim1 _math_log      Math.log      [] float64 float64,
+  prim2 _math_logBase  Math.logBase  [] float64 float64 float64,
+  prim0 _math_pi       Math.pi       [] float64,
+  prim2 _math_pow      Math.pow      [] float64 float64 float64,
+  prim1 _math_round    Math.round    [] float64 bigint,
+  prim1 _math_sin      Math.sin      [] float64 float64,
+  prim1 _math_sinh     Math.sinh     [] float64 float64,
+  prim1 _math_sqrt     Math.sqrt     [] float64 float64,
+  prim1 _math_tan      Math.tan      [] float64 float64,
+  prim1 _math_tanh     Math.tanh     [] float64 float64,
+  prim1 _math_truncate Math.truncate [] float64 bigint]
 
 hydraLibMathInt32 :: Library
 hydraLibMathInt32 = standardLibrary _hydra_lib_math [
-  prim2 _math_add   Math.add   [] int32 int32 int32,
-  prim2 _math_div   Math.div   [] int32 int32 int32,
-  prim2 _math_mod   Math.mod   [] int32 int32 int32,
-  prim2 _math_mul   Math.mul   [] int32 int32 int32,
-  prim1 _math_neg   Math.neg   [] int32 int32,
-  prim2 _math_range Math.range [] int32 int32 (list int32),
-  prim2 _math_rem   Math.rem   [] int32 int32 int32,
-  prim2 _math_sub   Math.sub   [] int32 int32 int32]
+  prim1 _math_abs    Math.abs    [] int32 int32,
+  prim2 _math_add    Math.add    [] int32 int32 int32,
+  prim2 _math_div    Math.div    [] int32 int32 int32,
+  prim1 _math_even   Math.even   [] int32 boolean,
+  prim2 _math_max    Math.max    [] int32 int32 int32,
+  prim2 _math_min    Math.min    [] int32 int32 int32,
+  prim2 _math_mod    Math.mod    [] int32 int32 int32,
+  prim2 _math_mul    Math.mul    [] int32 int32 int32,
+  prim1 _math_negate Math.negate [] int32 int32,
+  prim1 _math_odd    Math.odd    [] int32 boolean,
+  prim1 _math_pred   Math.pred   [] int32 int32,
+  prim2 _math_range  Math.range  [] int32 int32 (list int32),
+  prim2 _math_rem    Math.rem    [] int32 int32 int32,
+  prim1 _math_signum Math.signum [] int32 int32,
+  prim2 _math_sub    Math.sub    [] int32 int32 int32,
+  prim1 _math_succ   Math.succ   [] int32 int32]
 
--- * hydra.lib.optionals primitives
+hydraLibMaybes :: Library
+hydraLibMaybes = standardLibrary _hydra_lib_maybes [
+    prim2Eval _maybes_apply     EvalMaybes.apply    [_x, _y]     (optional $ function x_ y_) (optional x_) (optional y_),
+    prim2Eval _maybes_bind      EvalMaybes.bind     [_x, _y]     (optional x_) (function x_ (optional y_)) (optional y_),
+    prim3Eval _maybes_cases     EvalMaybes.cases    [_x, _y]     (optional x_) y_ (function x_ y_) y_,
+    prim1     _maybes_cat       Maybes.cat          [_x]         (list $ optional x_) (list x_),
+    prim3Eval _maybes_compose   EvalMaybes.compose  [_x, _y, _z] (function x_ $ optional y_) (function y_ $ optional z_) x_ (optional z_),
+    prim1     _maybes_fromJust  Maybes.fromJust     [_x]         (optional x_) x_,
+    prim2     _maybes_fromMaybe Maybes.fromMaybe    [_x]         x_ (optional x_) x_,
+    prim1     _maybes_isJust    Maybes.isJust       [_x]         (optional x_) boolean,
+    prim1     _maybes_isNothing Maybes.isNothing    [_x]         (optional x_) boolean,
+    prim2Eval _maybes_map       EvalMaybes.map      [_x, _y]     (function x_ y_) (optional x_) (optional y_),
+    prim2Eval _maybes_mapMaybe  EvalMaybes.mapMaybe [_x, _y]     (function x_ $ optional y_) (list x_) (list y_),
+    prim3Eval _maybes_maybe     EvalMaybes.maybe    [_y, _x]     y_ (function x_ y_) (optional x_) y_,
+    prim1     _maybes_pure      Maybes.pure         [_x]         x_ (optional x_)]
 
-_hydra_lib_optionals :: Namespace
-_hydra_lib_optionals = Namespace "hydra.lib.optionals"
-
-_optionals_apply :: Name
-_optionals_apply     = qname _hydra_lib_optionals "apply" :: Name
-_optionals_bind      = qname _hydra_lib_optionals "bind" :: Name
-_optionals_cases     = qname _hydra_lib_optionals "cases" :: Name
-_optionals_cat       = qname _hydra_lib_optionals "cat" :: Name
-_optionals_compose   = qname _hydra_lib_optionals "compose" :: Name
-_optionals_fromJust  = qname _hydra_lib_optionals "fromJust" :: Name
-_optionals_fromMaybe = qname _hydra_lib_optionals "fromMaybe" :: Name
-_optionals_isJust    = qname _hydra_lib_optionals "isJust" :: Name
-_optionals_isNothing = qname _hydra_lib_optionals "isNothing" :: Name
-_optionals_map       = qname _hydra_lib_optionals "map" :: Name
-_optionals_mapMaybe  = qname _hydra_lib_optionals "mapMaybe" :: Name
-_optionals_maybe     = qname _hydra_lib_optionals "maybe" :: Name
-_optionals_pure      = qname _hydra_lib_optionals "pure" :: Name
-
-hydraLibOptionals :: Library
-hydraLibOptionals = standardLibrary _hydra_lib_optionals [
-    prim2       _optionals_apply     Optionals.apply           ["x", "y"]      (optional $ function x y) (optional x) (optional y),
-    prim2       _optionals_bind      Optionals.bind            ["x", "y"]      (optional x) (function x (optional y)) (optional y),
-    prim3Interp _optionals_cases     (Just casesInterp)        ["x", "y"]      (optional x) y (function x y) y,
-    prim1       _optionals_cat       Optionals.cat             ["x"]           (list $ optional x) (list x),
-    prim2       _optionals_compose   Optionals.compose         ["x", "y", "z"] (function x $ optional y) (function y $ optional z) (function x $ optional z),
-    prim1       _optionals_fromJust  Optionals.fromJust        ["x"]           (optional x) x,
-    prim2       _optionals_fromMaybe Optionals.fromMaybe       ["x"]           x (optional x) x,
-    prim1       _optionals_isJust    Optionals.isJust          ["x"]           (optional x) boolean,
-    prim1       _optionals_isNothing Optionals.isNothing       ["x"]           (optional x) boolean,
-    prim2Interp _optionals_map       (Just optionalsMapInterp) ["x", "y"]      (function x y) (optional x) (optional y),
-    prim2Interp _optionals_mapMaybe  Nothing                   ["x", "y"]      (function x $ optional y) (list x) (list y),
-    prim3Interp _optionals_maybe     (Just maybeInterp)        ["x", "y"]      y (function x y) (optional x) y,
-    prim1       _optionals_pure      Optionals.pure            ["x"]           x (optional x)]
-  where
-    x = variable "x"
-    y = variable "y"
-    z = variable "z"
-
--- | Interpreted implementation of hydra.lib.optionals.cases
-casesInterp :: Term -> Term -> Term -> Flow Graph Term
-casesInterp opt def fun = maybeInterp def fun opt
-
--- | Interpreted implementation of hydra.lib.optionals.maybe
-maybeInterp :: Term -> Term -> Term -> Flow Graph Term
-maybeInterp def fun opt = do
-    mval <- ExtractCore.optional Prelude.pure opt
-    return $ case mval of
-      Nothing -> def
-      Just val -> Terms.apply fun val
-
-optionalsMapInterp :: Term -> Term -> Flow Graph Term
-optionalsMapInterp fun opt = do
-    mval <- ExtractCore.optional Prelude.pure opt
-    return $ case mval of
-      Nothing -> Terms.nothing
-      Just val -> Terms.just $ Terms.apply fun val
-
--- * hydra.lib.sets primitives
-
-_hydra_lib_sets :: Namespace
-_hydra_lib_sets = Namespace "hydra.lib.sets"
-
-_sets_delete       = qname _hydra_lib_sets "delete" :: Name
-_sets_difference   = qname _hydra_lib_sets "difference" :: Name
-_sets_empty        = qname _hydra_lib_sets "empty" :: Name
-_sets_fromList     = qname _hydra_lib_sets "fromList" :: Name
-_sets_insert       = qname _hydra_lib_sets "insert" :: Name
-_sets_intersection = qname _hydra_lib_sets "intersection" :: Name
-_sets_map          = qname _hydra_lib_sets "map" :: Name
-_sets_member       = qname _hydra_lib_sets "member" :: Name
-_sets_null         = qname _hydra_lib_sets "null" :: Name
-_sets_singleton    = qname _hydra_lib_sets "singleton" :: Name
-_sets_size         = qname _hydra_lib_sets "size" :: Name
-_sets_toList       = qname _hydra_lib_sets "toList" :: Name
-_sets_union        = qname _hydra_lib_sets "union" :: Name
-_sets_unions       = qname _hydra_lib_sets "unions" :: Name
+hydraLibPairs :: Library
+hydraLibPairs = standardLibrary _hydra_lib_pairs [
+    prim3Eval _pairs_bimap  EvalPairs.bimap  [_a, _b, _c, _d] (function a_ c_) (function b_ d_) (pair a_ b_) (pair c_ d_),
+    prim1     _pairs_first  Pairs.first      [_a, _b]         (pair a_ b_) a_,
+    prim1     _pairs_second Pairs.second     [_a, _b]         (pair a_ b_) b_]
 
 hydraLibSets :: Library
 hydraLibSets = standardLibrary _hydra_lib_sets [
-    prim2 _sets_delete       Sets.delete       ["x"]      x (set x) (set x),
-    prim2 _sets_difference   Sets.difference   ["x"]      (set x) (set x) (set x),
-    prim0 _sets_empty        Sets.empty        ["x"]      (set x),
-    prim1 _sets_fromList     Sets.fromList     ["x"]      (list x) (set x),
-    prim2 _sets_insert       Sets.insert       ["x"]      x (set x) (set x),
-    prim2 _sets_intersection Sets.intersection ["x"]      (set x) (set x) (set x),
-    prim2 _sets_map          Sets.map          ["x", "y"] (function x y) (set x) (set y),
-    prim2 _sets_member       Sets.member       ["x"]      x (set x) boolean,
-    prim1 _sets_null         Sets.null         ["x"]      (set x) boolean,
-    prim1 _sets_singleton    Sets.singleton    ["x"]      x (set x),
-    prim1 _sets_size         Sets.size         ["x"]      (set x) int32,
-    prim1 _sets_toList       Sets.toList       ["x"]      (set x) (list x),
-    prim2 _sets_union        Sets.union        ["x"]      (set x) (set x) (set x),
-    prim1 _sets_unions       Sets.unions       ["x"]      (list $ set x) (set x)]
-  where
-    x = variable "x"
-    y = variable "y"
-
--- * hydra.lib.strings primitives
-
-_hydra_lib_strings :: Namespace
-_hydra_lib_strings = Namespace "hydra.lib.strings"
-
-_strings_cat         = qname _hydra_lib_strings "cat" :: Name
-_strings_cat2        = qname _hydra_lib_strings "cat2" :: Name
-_strings_charAt      = qname _hydra_lib_strings "charAt" :: Name
-_strings_fromList    = qname _hydra_lib_strings "fromList" :: Name
-_strings_intercalate = qname _hydra_lib_strings "intercalate" :: Name
-_strings_null        = qname _hydra_lib_strings "null" :: Name
-_strings_length      = qname _hydra_lib_strings "length" :: Name
-_strings_lines       = qname _hydra_lib_strings "lines" :: Name
-_strings_splitOn     = qname _hydra_lib_strings "splitOn" :: Name
-_strings_toList      = qname _hydra_lib_strings "toList" :: Name
-_strings_toLower     = qname _hydra_lib_strings "toLower" :: Name
-_strings_toUpper     = qname _hydra_lib_strings "toUpper" :: Name
-_strings_unlines     = qname _hydra_lib_strings "unlines" :: Name
+    prim2     _sets_delete       Sets.delete       [_xOrd]        x_ (set x_) (set x_),
+    prim2     _sets_difference   Sets.difference   [_xOrd]        (set x_) (set x_) (set x_),
+    prim0     _sets_empty        Sets.empty        [_xOrd]        (set x_),
+    prim1     _sets_fromList     Sets.fromList     [_xOrd]        (list x_) (set x_),
+    prim2     _sets_insert       Sets.insert       [_xOrd]        x_ (set x_) (set x_),
+    prim2     _sets_intersection Sets.intersection [_xOrd]        (set x_) (set x_) (set x_),
+    prim2Eval _sets_map          EvalSets.map      [_xOrd, _yOrd] (function x_ y_) (set x_) (set y_),
+    prim2     _sets_member       Sets.member       [_xOrd]        x_ (set x_) boolean,
+    prim1     _sets_null         Sets.null         [_xOrd]        (set x_) boolean,
+    prim1     _sets_singleton    Sets.singleton    [_xOrd]        x_ (set x_),
+    prim1     _sets_size         Sets.size         [_xOrd]        (set x_) int32,
+    prim1     _sets_toList       Sets.toList       [_xOrd]        (set x_) (list x_),
+    prim2     _sets_union        Sets.union        [_xOrd]        (set x_) (set x_) (set x_),
+    prim1     _sets_unions       Sets.unions       [_xOrd]        (list $ set x_) (set x_)]
 
 hydraLibStrings :: Library
 hydraLibStrings = standardLibrary _hydra_lib_strings [

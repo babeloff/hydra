@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class UntypedAssignment implements Serializable {
+public class UntypedAssignment implements Serializable, Comparable<UntypedAssignment> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.UntypedAssignment");
   
   public static final hydra.core.Name FIELD_NAME_TARGETS = new hydra.core.Name("targets");
@@ -17,12 +17,9 @@ public class UntypedAssignment implements Serializable {
   
   public final hydra.ext.python.syntax.AnnotatedRhs rhs;
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.TypeComment> typeComment;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.TypeComment> typeComment;
   
-  public UntypedAssignment (java.util.List<hydra.ext.python.syntax.StarTarget> targets, hydra.ext.python.syntax.AnnotatedRhs rhs, hydra.util.Opt<hydra.ext.python.syntax.TypeComment> typeComment) {
-    java.util.Objects.requireNonNull((targets));
-    java.util.Objects.requireNonNull((rhs));
-    java.util.Objects.requireNonNull((typeComment));
+  public UntypedAssignment (java.util.List<hydra.ext.python.syntax.StarTarget> targets, hydra.ext.python.syntax.AnnotatedRhs rhs, hydra.util.Maybe<hydra.ext.python.syntax.TypeComment> typeComment) {
     this.targets = targets;
     this.rhs = rhs;
     this.typeComment = typeComment;
@@ -33,27 +30,49 @@ public class UntypedAssignment implements Serializable {
     if (!(other instanceof UntypedAssignment)) {
       return false;
     }
-    UntypedAssignment o = (UntypedAssignment) (other);
-    return targets.equals(o.targets) && rhs.equals(o.rhs) && typeComment.equals(o.typeComment);
+    UntypedAssignment o = (UntypedAssignment) other;
+    return java.util.Objects.equals(
+      this.targets,
+      o.targets) && java.util.Objects.equals(
+      this.rhs,
+      o.rhs) && java.util.Objects.equals(
+      this.typeComment,
+      o.typeComment);
   }
   
   @Override
   public int hashCode() {
-    return 2 * targets.hashCode() + 3 * rhs.hashCode() + 5 * typeComment.hashCode();
+    return 2 * java.util.Objects.hashCode(targets) + 3 * java.util.Objects.hashCode(rhs) + 5 * java.util.Objects.hashCode(typeComment);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(UntypedAssignment other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      targets.hashCode(),
+      other.targets.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) rhs).compareTo(other.rhs);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      typeComment.hashCode(),
+      other.typeComment.hashCode());
   }
   
   public UntypedAssignment withTargets(java.util.List<hydra.ext.python.syntax.StarTarget> targets) {
-    java.util.Objects.requireNonNull((targets));
     return new UntypedAssignment(targets, rhs, typeComment);
   }
   
   public UntypedAssignment withRhs(hydra.ext.python.syntax.AnnotatedRhs rhs) {
-    java.util.Objects.requireNonNull((rhs));
     return new UntypedAssignment(targets, rhs, typeComment);
   }
   
-  public UntypedAssignment withTypeComment(hydra.util.Opt<hydra.ext.python.syntax.TypeComment> typeComment) {
-    java.util.Objects.requireNonNull((typeComment));
+  public UntypedAssignment withTypeComment(hydra.util.Maybe<hydra.ext.python.syntax.TypeComment> typeComment) {
     return new UntypedAssignment(targets, rhs, typeComment);
   }
 }

@@ -6,6 +6,7 @@ import hydra.core.Name;
 import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Terms;
+import hydra.dsl.Types;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -18,6 +19,9 @@ import static hydra.dsl.Types.list;
 import static hydra.dsl.Types.scheme;
 
 
+/**
+ * Wraps a value in a flow.
+ */
 public class Pure extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.lists.pure");
@@ -25,7 +29,7 @@ public class Pure extends PrimitiveFunction {
 
     @Override
     public TypeScheme type() {
-        return scheme("a", function("a", list("a")));
+        return scheme("a", function(Types.var("a"), list("a")));
     }
 
     @Override
@@ -35,6 +39,9 @@ public class Pure extends PrimitiveFunction {
 
     /**
      * Apply the function to the single argument.
+     * @param <X> the element type
+     * @param single the element to wrap in a list
+     * @return a singleton list containing the element
      */
     public static <X> List<X> apply(X single) {
         return Collections.singletonList(single);

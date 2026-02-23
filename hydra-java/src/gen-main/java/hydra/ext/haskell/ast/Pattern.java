@@ -4,7 +4,10 @@ package hydra.ext.haskell.ast;
 
 import java.io.Serializable;
 
-public abstract class Pattern implements Serializable {
+/**
+ * A pattern
+ */
+public abstract class Pattern implements Serializable, Comparable<Pattern> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.haskell.ast.Pattern");
   
   public static final hydra.core.Name FIELD_NAME_APPLICATION = new hydra.core.Name("application");
@@ -57,55 +60,57 @@ public abstract class Pattern implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(Pattern instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Application instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(As instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(List instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Literal instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Name instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Parens instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Record instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Tuple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Typed instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Wildcard instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
+  /**
+   * An application pattern
+   */
   public static final class Application extends hydra.ext.haskell.ast.Pattern implements Serializable {
     public final hydra.ext.haskell.ast.ApplicationPattern value;
     
     public Application (hydra.ext.haskell.ast.ApplicationPattern value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -114,13 +119,26 @@ public abstract class Pattern implements Serializable {
       if (!(other instanceof Application)) {
         return false;
       }
-      Application o = (Application) (other);
-      return value.equals(o.value);
+      Application o = (Application) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Pattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Application o = (Application) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -129,11 +147,13 @@ public abstract class Pattern implements Serializable {
     }
   }
   
+  /**
+   * An 'as' pattern
+   */
   public static final class As extends hydra.ext.haskell.ast.Pattern implements Serializable {
     public final hydra.ext.haskell.ast.AsPattern value;
     
     public As (hydra.ext.haskell.ast.AsPattern value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -142,13 +162,26 @@ public abstract class Pattern implements Serializable {
       if (!(other instanceof As)) {
         return false;
       }
-      As o = (As) (other);
-      return value.equals(o.value);
+      As o = (As) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Pattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      As o = (As) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -157,11 +190,13 @@ public abstract class Pattern implements Serializable {
     }
   }
   
+  /**
+   * A list pattern
+   */
   public static final class List extends hydra.ext.haskell.ast.Pattern implements Serializable {
     public final java.util.List<hydra.ext.haskell.ast.Pattern> value;
     
     public List (java.util.List<hydra.ext.haskell.ast.Pattern> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -170,13 +205,28 @@ public abstract class Pattern implements Serializable {
       if (!(other instanceof List)) {
         return false;
       }
-      List o = (List) (other);
-      return value.equals(o.value);
+      List o = (List) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Pattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      List o = (List) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override
@@ -185,11 +235,13 @@ public abstract class Pattern implements Serializable {
     }
   }
   
+  /**
+   * A literal pattern
+   */
   public static final class Literal extends hydra.ext.haskell.ast.Pattern implements Serializable {
     public final hydra.ext.haskell.ast.Literal value;
     
     public Literal (hydra.ext.haskell.ast.Literal value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -198,13 +250,26 @@ public abstract class Pattern implements Serializable {
       if (!(other instanceof Literal)) {
         return false;
       }
-      Literal o = (Literal) (other);
-      return value.equals(o.value);
+      Literal o = (Literal) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Pattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Literal o = (Literal) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -213,11 +278,13 @@ public abstract class Pattern implements Serializable {
     }
   }
   
+  /**
+   * A name pattern
+   */
   public static final class Name extends hydra.ext.haskell.ast.Pattern implements Serializable {
     public final hydra.ext.haskell.ast.Name value;
     
     public Name (hydra.ext.haskell.ast.Name value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -226,13 +293,26 @@ public abstract class Pattern implements Serializable {
       if (!(other instanceof Name)) {
         return false;
       }
-      Name o = (Name) (other);
-      return value.equals(o.value);
+      Name o = (Name) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Pattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Name o = (Name) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -241,11 +321,13 @@ public abstract class Pattern implements Serializable {
     }
   }
   
+  /**
+   * A parenthesized pattern
+   */
   public static final class Parens extends hydra.ext.haskell.ast.Pattern implements Serializable {
     public final hydra.ext.haskell.ast.Pattern value;
     
     public Parens (hydra.ext.haskell.ast.Pattern value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -254,13 +336,26 @@ public abstract class Pattern implements Serializable {
       if (!(other instanceof Parens)) {
         return false;
       }
-      Parens o = (Parens) (other);
-      return value.equals(o.value);
+      Parens o = (Parens) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Pattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Parens o = (Parens) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -269,11 +364,13 @@ public abstract class Pattern implements Serializable {
     }
   }
   
+  /**
+   * A record pattern
+   */
   public static final class Record extends hydra.ext.haskell.ast.Pattern implements Serializable {
     public final hydra.ext.haskell.ast.RecordPattern value;
     
     public Record (hydra.ext.haskell.ast.RecordPattern value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -282,13 +379,26 @@ public abstract class Pattern implements Serializable {
       if (!(other instanceof Record)) {
         return false;
       }
-      Record o = (Record) (other);
-      return value.equals(o.value);
+      Record o = (Record) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Pattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Record o = (Record) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -297,11 +407,13 @@ public abstract class Pattern implements Serializable {
     }
   }
   
+  /**
+   * A tuple pattern
+   */
   public static final class Tuple extends hydra.ext.haskell.ast.Pattern implements Serializable {
     public final java.util.List<hydra.ext.haskell.ast.Pattern> value;
     
     public Tuple (java.util.List<hydra.ext.haskell.ast.Pattern> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -310,13 +422,28 @@ public abstract class Pattern implements Serializable {
       if (!(other instanceof Tuple)) {
         return false;
       }
-      Tuple o = (Tuple) (other);
-      return value.equals(o.value);
+      Tuple o = (Tuple) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Pattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Tuple o = (Tuple) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override
@@ -325,11 +452,13 @@ public abstract class Pattern implements Serializable {
     }
   }
   
+  /**
+   * A typed pattern
+   */
   public static final class Typed extends hydra.ext.haskell.ast.Pattern implements Serializable {
     public final hydra.ext.haskell.ast.TypedPattern value;
     
     public Typed (hydra.ext.haskell.ast.TypedPattern value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -338,13 +467,26 @@ public abstract class Pattern implements Serializable {
       if (!(other instanceof Typed)) {
         return false;
       }
-      Typed o = (Typed) (other);
-      return value.equals(o.value);
+      Typed o = (Typed) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Pattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Typed o = (Typed) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -353,6 +495,9 @@ public abstract class Pattern implements Serializable {
     }
   }
   
+  /**
+   * A wildcard pattern
+   */
   public static final class Wildcard extends hydra.ext.haskell.ast.Pattern implements Serializable {
     public Wildcard () {
     
@@ -363,12 +508,22 @@ public abstract class Pattern implements Serializable {
       if (!(other instanceof Wildcard)) {
         return false;
       }
-      Wildcard o = (Wildcard) (other);
+      Wildcard o = (Wildcard) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Pattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

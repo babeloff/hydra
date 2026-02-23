@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class AnnotatedStatement implements Serializable {
+public class AnnotatedStatement implements Serializable, Comparable<AnnotatedStatement> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.AnnotatedStatement");
   
   public static final hydra.core.Name FIELD_NAME_COMMENT = new hydra.core.Name("comment");
@@ -16,8 +16,6 @@ public class AnnotatedStatement implements Serializable {
   public final hydra.ext.python.syntax.Statement statement;
   
   public AnnotatedStatement (String comment, hydra.ext.python.syntax.Statement statement) {
-    java.util.Objects.requireNonNull((comment));
-    java.util.Objects.requireNonNull((statement));
     this.comment = comment;
     this.statement = statement;
   }
@@ -27,22 +25,35 @@ public class AnnotatedStatement implements Serializable {
     if (!(other instanceof AnnotatedStatement)) {
       return false;
     }
-    AnnotatedStatement o = (AnnotatedStatement) (other);
-    return comment.equals(o.comment) && statement.equals(o.statement);
+    AnnotatedStatement o = (AnnotatedStatement) other;
+    return java.util.Objects.equals(
+      this.comment,
+      o.comment) && java.util.Objects.equals(
+      this.statement,
+      o.statement);
   }
   
   @Override
   public int hashCode() {
-    return 2 * comment.hashCode() + 3 * statement.hashCode();
+    return 2 * java.util.Objects.hashCode(comment) + 3 * java.util.Objects.hashCode(statement);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(AnnotatedStatement other) {
+    int cmp = 0;
+    cmp = ((Comparable) comment).compareTo(other.comment);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) statement).compareTo(other.statement);
   }
   
   public AnnotatedStatement withComment(String comment) {
-    java.util.Objects.requireNonNull((comment));
     return new AnnotatedStatement(comment, statement);
   }
   
   public AnnotatedStatement withStatement(hydra.ext.python.syntax.Statement statement) {
-    java.util.Objects.requireNonNull((statement));
     return new AnnotatedStatement(comment, statement);
   }
 }

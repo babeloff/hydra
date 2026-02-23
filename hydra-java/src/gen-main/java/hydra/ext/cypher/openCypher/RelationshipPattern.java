@@ -15,11 +15,11 @@ public class RelationshipPattern implements Serializable {
   
   public final Boolean leftArrow;
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.RelationshipDetail> detail;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.RelationshipDetail> detail;
   
   public final Boolean rightArrow;
   
-  public RelationshipPattern (Boolean leftArrow, hydra.util.Opt<hydra.ext.cypher.openCypher.RelationshipDetail> detail, Boolean rightArrow) {
+  public RelationshipPattern (Boolean leftArrow, hydra.util.Maybe<hydra.ext.cypher.openCypher.RelationshipDetail> detail, Boolean rightArrow) {
     java.util.Objects.requireNonNull((leftArrow));
     java.util.Objects.requireNonNull((detail));
     java.util.Objects.requireNonNull((rightArrow));
@@ -47,7 +47,7 @@ public class RelationshipPattern implements Serializable {
     return new RelationshipPattern(leftArrow, detail, rightArrow);
   }
   
-  public RelationshipPattern withDetail(hydra.util.Opt<hydra.ext.cypher.openCypher.RelationshipDetail> detail) {
+  public RelationshipPattern withDetail(hydra.util.Maybe<hydra.ext.cypher.openCypher.RelationshipDetail> detail) {
     java.util.Objects.requireNonNull((detail));
     return new RelationshipPattern(leftArrow, detail, rightArrow);
   }

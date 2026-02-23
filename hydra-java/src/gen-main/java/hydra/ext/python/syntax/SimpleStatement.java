@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class SimpleStatement implements Serializable {
+public abstract class SimpleStatement implements Serializable, Comparable<SimpleStatement> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.SimpleStatement");
   
   public static final hydra.core.Name FIELD_NAME_ASSIGNMENT = new hydra.core.Name("assignment");
@@ -73,63 +73,63 @@ public abstract class SimpleStatement implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(SimpleStatement instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Assignment instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(TypeAlias instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(StarExpressions instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Return instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Import instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Raise instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Pass instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Del instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Yield instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Assert instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Break instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Continue instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Global instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Nonlocal instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -137,7 +137,6 @@ public abstract class SimpleStatement implements Serializable {
     public final hydra.ext.python.syntax.Assignment value;
     
     public Assignment (hydra.ext.python.syntax.Assignment value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -146,13 +145,26 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Assignment)) {
         return false;
       }
-      Assignment o = (Assignment) (other);
-      return value.equals(o.value);
+      Assignment o = (Assignment) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Assignment o = (Assignment) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -165,7 +177,6 @@ public abstract class SimpleStatement implements Serializable {
     public final hydra.ext.python.syntax.TypeAlias value;
     
     public TypeAlias (hydra.ext.python.syntax.TypeAlias value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -174,13 +185,26 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof TypeAlias)) {
         return false;
       }
-      TypeAlias o = (TypeAlias) (other);
-      return value.equals(o.value);
+      TypeAlias o = (TypeAlias) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      TypeAlias o = (TypeAlias) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -193,7 +217,6 @@ public abstract class SimpleStatement implements Serializable {
     public final java.util.List<hydra.ext.python.syntax.StarExpression> value;
     
     public StarExpressions (java.util.List<hydra.ext.python.syntax.StarExpression> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -202,13 +225,28 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof StarExpressions)) {
         return false;
       }
-      StarExpressions o = (StarExpressions) (other);
-      return value.equals(o.value);
+      StarExpressions o = (StarExpressions) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      StarExpressions o = (StarExpressions) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override
@@ -221,7 +259,6 @@ public abstract class SimpleStatement implements Serializable {
     public final hydra.ext.python.syntax.ReturnStatement value;
     
     public Return (hydra.ext.python.syntax.ReturnStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -230,13 +267,26 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Return)) {
         return false;
       }
-      Return o = (Return) (other);
-      return value.equals(o.value);
+      Return o = (Return) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Return o = (Return) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -249,7 +299,6 @@ public abstract class SimpleStatement implements Serializable {
     public final hydra.ext.python.syntax.ImportStatement value;
     
     public Import (hydra.ext.python.syntax.ImportStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -258,13 +307,26 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Import)) {
         return false;
       }
-      Import o = (Import) (other);
-      return value.equals(o.value);
+      Import o = (Import) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Import o = (Import) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -277,7 +339,6 @@ public abstract class SimpleStatement implements Serializable {
     public final hydra.ext.python.syntax.RaiseStatement value;
     
     public Raise (hydra.ext.python.syntax.RaiseStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -286,13 +347,26 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Raise)) {
         return false;
       }
-      Raise o = (Raise) (other);
-      return value.equals(o.value);
+      Raise o = (Raise) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Raise o = (Raise) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -311,12 +385,22 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Pass)) {
         return false;
       }
-      Pass o = (Pass) (other);
+      Pass o = (Pass) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -330,7 +414,6 @@ public abstract class SimpleStatement implements Serializable {
     public final hydra.ext.python.syntax.DelStatement value;
     
     public Del (hydra.ext.python.syntax.DelStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -339,13 +422,26 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Del)) {
         return false;
       }
-      Del o = (Del) (other);
-      return value.equals(o.value);
+      Del o = (Del) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Del o = (Del) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -358,7 +454,6 @@ public abstract class SimpleStatement implements Serializable {
     public final hydra.ext.python.syntax.YieldStatement value;
     
     public Yield (hydra.ext.python.syntax.YieldStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -367,13 +462,26 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Yield)) {
         return false;
       }
-      Yield o = (Yield) (other);
-      return value.equals(o.value);
+      Yield o = (Yield) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Yield o = (Yield) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -386,7 +494,6 @@ public abstract class SimpleStatement implements Serializable {
     public final hydra.ext.python.syntax.AssertStatement value;
     
     public Assert (hydra.ext.python.syntax.AssertStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -395,13 +502,26 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Assert)) {
         return false;
       }
-      Assert o = (Assert) (other);
-      return value.equals(o.value);
+      Assert o = (Assert) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Assert o = (Assert) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -420,12 +540,22 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Break)) {
         return false;
       }
-      Break o = (Break) (other);
+      Break o = (Break) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -445,12 +575,22 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Continue)) {
         return false;
       }
-      Continue o = (Continue) (other);
+      Continue o = (Continue) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -464,7 +604,6 @@ public abstract class SimpleStatement implements Serializable {
     public final java.util.List<hydra.ext.python.syntax.Name> value;
     
     public Global (java.util.List<hydra.ext.python.syntax.Name> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -473,13 +612,28 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Global)) {
         return false;
       }
-      Global o = (Global) (other);
-      return value.equals(o.value);
+      Global o = (Global) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Global o = (Global) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override
@@ -492,7 +646,6 @@ public abstract class SimpleStatement implements Serializable {
     public final java.util.List<hydra.ext.python.syntax.Name> value;
     
     public Nonlocal (java.util.List<hydra.ext.python.syntax.Name> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -501,13 +654,28 @@ public abstract class SimpleStatement implements Serializable {
       if (!(other instanceof Nonlocal)) {
         return false;
       }
-      Nonlocal o = (Nonlocal) (other);
-      return value.equals(o.value);
+      Nonlocal o = (Nonlocal) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SimpleStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Nonlocal o = (Nonlocal) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override

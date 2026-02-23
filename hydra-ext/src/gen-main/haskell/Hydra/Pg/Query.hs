@@ -1,10 +1,13 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A common model for pattern-matching queries over property graphs
 
 module Hydra.Pg.Query where
 
 import qualified Hydra.Core as Core
 import qualified Hydra.Pg.Model as Model
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M

@@ -18,6 +18,9 @@ import static hydra.dsl.Types.list;
 import static hydra.dsl.Types.scheme;
 
 
+/**
+ * Returns the first element of a list.
+ */
 public class Head extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.lists.head");
@@ -34,7 +37,11 @@ public class Head extends PrimitiveFunction {
     }
 
     /**
-     * Apply the function to its single argument.
+     * Returns the first element of a list. Throws if the list is empty.
+     * @param <X> the element type
+     * @param list the list to get the head from
+     * @return the first element
+     * @throws IllegalArgumentException if the list is empty
      */
     public static <X> X apply(List<X> list) {
         if (list.isEmpty()) {

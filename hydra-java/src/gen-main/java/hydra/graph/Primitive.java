@@ -2,10 +2,12 @@
 
 package hydra.graph;
 
+import java.io.Serializable;
+
 /**
  * A built-in function
  */
-public class Primitive {
+public class Primitive implements Serializable, Comparable<Primitive> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.graph.Primitive");
   
   public static final hydra.core.Name FIELD_NAME_NAME = new hydra.core.Name("name");
@@ -30,9 +32,6 @@ public class Primitive {
   public final java.util.function.Function<java.util.List<hydra.core.Term>, hydra.compute.Flow<hydra.graph.Graph, hydra.core.Term>> implementation;
   
   public Primitive (hydra.core.Name name, hydra.core.TypeScheme type, java.util.function.Function<java.util.List<hydra.core.Term>, hydra.compute.Flow<hydra.graph.Graph, hydra.core.Term>> implementation) {
-    java.util.Objects.requireNonNull((name));
-    java.util.Objects.requireNonNull((type));
-    java.util.Objects.requireNonNull((implementation));
     this.name = name;
     this.type = type;
     this.implementation = implementation;
@@ -43,27 +42,47 @@ public class Primitive {
     if (!(other instanceof Primitive)) {
       return false;
     }
-    Primitive o = (Primitive) (other);
-    return name.equals(o.name) && type.equals(o.type) && implementation.equals(o.implementation);
+    Primitive o = (Primitive) other;
+    return java.util.Objects.equals(
+      this.name,
+      o.name) && java.util.Objects.equals(
+      this.type,
+      o.type) && java.util.Objects.equals(
+      this.implementation,
+      o.implementation);
   }
   
   @Override
   public int hashCode() {
-    return 2 * name.hashCode() + 3 * type.hashCode() + 5 * implementation.hashCode();
+    return 2 * java.util.Objects.hashCode(name) + 3 * java.util.Objects.hashCode(type) + 5 * java.util.Objects.hashCode(implementation);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Primitive other) {
+    int cmp = 0;
+    cmp = ((Comparable) name).compareTo(other.name);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) type).compareTo(other.type);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      implementation.hashCode(),
+      other.implementation.hashCode());
   }
   
   public Primitive withName(hydra.core.Name name) {
-    java.util.Objects.requireNonNull((name));
     return new Primitive(name, type, implementation);
   }
   
   public Primitive withType(hydra.core.TypeScheme type) {
-    java.util.Objects.requireNonNull((type));
     return new Primitive(name, type, implementation);
   }
   
   public Primitive withImplementation(java.util.function.Function<java.util.List<hydra.core.Term>, hydra.compute.Flow<hydra.graph.Graph, hydra.core.Term>> implementation) {
-    java.util.Objects.requireNonNull((implementation));
     return new Primitive(name, type, implementation);
   }
 }

@@ -1,0 +1,56 @@
+{-# LANGUAGE FlexibleContexts #-}
+
+-- | Phantom-typed term DSL for the hydra.lib.sets library
+
+module Hydra.Dsl.Meta.Lib.Sets where
+
+import Hydra.Phantoms
+import Hydra.Dsl.AsTerm
+import Hydra.Dsl.Meta.Phantoms
+import qualified Hydra.Dsl.Terms as Terms
+import Hydra.Sources.Libraries
+
+import Data.Set
+
+
+delete :: AsTerm t a => t -> TTerm (Set a) -> TTerm (Set a)
+delete x = primitive2 _sets_delete (asTerm x)
+
+difference :: TTerm (Set a) -> TTerm (Set a) -> TTerm (Set a)
+difference = primitive2 _sets_difference
+
+empty :: TTerm (Set a)
+empty = primitive _sets_empty
+
+fromList :: AsTerm t [a] => t -> TTerm (Set a)
+fromList xs = primitive1 _sets_fromList (asTerm xs)
+
+insert :: TTerm a -> TTerm (Set a) -> TTerm (Set a)
+insert = primitive2 _sets_insert
+
+intersection :: TTerm (Set a) -> TTerm (Set a) -> TTerm (Set a)
+intersection = primitive2 _sets_intersection
+
+map :: TTerm (a -> b) -> TTerm (Set a) -> TTerm (Set b)
+map = primitive2 _sets_map
+
+member :: TTerm a -> TTerm (Set a) -> TTerm Bool
+member = primitive2 _sets_member
+
+null :: TTerm (Set a) -> TTerm Bool
+null = primitive1 _sets_null
+
+singleton :: TTerm a -> TTerm (Set a)
+singleton = primitive1 _sets_singleton
+
+size :: TTerm (Set a) -> TTerm Int
+size = primitive1 _sets_size
+
+toList :: TTerm (Set a) -> TTerm [a]
+toList = primitive1 _sets_toList
+
+union :: TTerm (Set a) -> TTerm (Set a) -> TTerm (Set a)
+union = primitive2 _sets_union
+
+unions :: TTerm [Set a] -> TTerm (Set a)
+unions = primitive1 _sets_unions

@@ -1,9 +1,12 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A model from the Graphviz DOT graph description language. Based on the grammar at https://graphviz.org/doc/info/lang.html
 
 module Hydra.Ext.Org.Graphviz.Dot where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M

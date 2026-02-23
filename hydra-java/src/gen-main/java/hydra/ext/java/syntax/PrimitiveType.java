@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class PrimitiveType implements Serializable {
+public abstract class PrimitiveType implements Serializable, Comparable<PrimitiveType> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.PrimitiveType");
   
   public static final hydra.core.Name FIELD_NAME_NUMERIC = new hydra.core.Name("numeric");
@@ -25,15 +25,15 @@ public abstract class PrimitiveType implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(PrimitiveType instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Numeric instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Boolean_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -41,7 +41,6 @@ public abstract class PrimitiveType implements Serializable {
     public final hydra.ext.java.syntax.NumericType value;
     
     public Numeric (hydra.ext.java.syntax.NumericType value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -50,13 +49,26 @@ public abstract class PrimitiveType implements Serializable {
       if (!(other instanceof Numeric)) {
         return false;
       }
-      Numeric o = (Numeric) (other);
-      return value.equals(o.value);
+      Numeric o = (Numeric) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(PrimitiveType other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Numeric o = (Numeric) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -75,12 +87,22 @@ public abstract class PrimitiveType implements Serializable {
       if (!(other instanceof Boolean_)) {
         return false;
       }
-      Boolean_ o = (Boolean_) (other);
+      Boolean_ o = (Boolean_) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(PrimitiveType other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

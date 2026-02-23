@@ -7,6 +7,7 @@ import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Expect;
 import hydra.dsl.Terms;
+import hydra.dsl.Types;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -18,6 +19,9 @@ import static hydra.dsl.Types.function;
 import static hydra.dsl.Types.list;
 import static hydra.dsl.Types.scheme;
 
+/**
+ * Concatenates two lists.
+ */
 public class Concat2 extends PrimitiveFunction {
     public static final Name NAME = new Name("hydra.lib.lists.concat2");
 
@@ -40,6 +44,10 @@ public class Concat2 extends PrimitiveFunction {
 
     /**
      * Apply the function to both arguments.
+     * @param <X> the element type
+     * @param l1 the first list
+     * @param l2 the second list
+     * @return the concatenated list
      */
     public static <X> List<X> apply(List<X> l1, List<X> l2) {
         List<X> combined = new ArrayList<>();

@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class Lambda implements Serializable {
+public class Lambda implements Serializable, Comparable<Lambda> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Lambda");
   
   public static final hydra.core.Name FIELD_NAME_PARAMS = new hydra.core.Name("params");
@@ -16,8 +16,6 @@ public class Lambda implements Serializable {
   public final hydra.ext.python.syntax.Expression body;
   
   public Lambda (hydra.ext.python.syntax.LambdaParameters params, hydra.ext.python.syntax.Expression body) {
-    java.util.Objects.requireNonNull((params));
-    java.util.Objects.requireNonNull((body));
     this.params = params;
     this.body = body;
   }
@@ -27,22 +25,35 @@ public class Lambda implements Serializable {
     if (!(other instanceof Lambda)) {
       return false;
     }
-    Lambda o = (Lambda) (other);
-    return params.equals(o.params) && body.equals(o.body);
+    Lambda o = (Lambda) other;
+    return java.util.Objects.equals(
+      this.params,
+      o.params) && java.util.Objects.equals(
+      this.body,
+      o.body);
   }
   
   @Override
   public int hashCode() {
-    return 2 * params.hashCode() + 3 * body.hashCode();
+    return 2 * java.util.Objects.hashCode(params) + 3 * java.util.Objects.hashCode(body);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Lambda other) {
+    int cmp = 0;
+    cmp = ((Comparable) params).compareTo(other.params);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) body).compareTo(other.body);
   }
   
   public Lambda withParams(hydra.ext.python.syntax.LambdaParameters params) {
-    java.util.Objects.requireNonNull((params));
     return new Lambda(params, body);
   }
   
   public Lambda withBody(hydra.ext.python.syntax.Expression body) {
-    java.util.Objects.requireNonNull((body));
     return new Lambda(params, body);
   }
 }

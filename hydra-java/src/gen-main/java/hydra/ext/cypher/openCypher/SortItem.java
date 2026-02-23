@@ -13,9 +13,9 @@ public class SortItem implements Serializable {
   
   public final hydra.ext.cypher.openCypher.Expression expression;
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.SortOrder> order;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.SortOrder> order;
   
-  public SortItem (hydra.ext.cypher.openCypher.Expression expression, hydra.util.Opt<hydra.ext.cypher.openCypher.SortOrder> order) {
+  public SortItem (hydra.ext.cypher.openCypher.Expression expression, hydra.util.Maybe<hydra.ext.cypher.openCypher.SortOrder> order) {
     java.util.Objects.requireNonNull((expression));
     java.util.Objects.requireNonNull((order));
     this.expression = expression;
@@ -41,7 +41,7 @@ public class SortItem implements Serializable {
     return new SortItem(expression, order);
   }
   
-  public SortItem withOrder(hydra.util.Opt<hydra.ext.cypher.openCypher.SortOrder> order) {
+  public SortItem withOrder(hydra.util.Maybe<hydra.ext.cypher.openCypher.SortOrder> order) {
     java.util.Objects.requireNonNull((order));
     return new SortItem(expression, order);
   }

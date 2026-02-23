@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class StatementWithoutTrailingSubstatement implements Serializable {
+public abstract class StatementWithoutTrailingSubstatement implements Serializable, Comparable<StatementWithoutTrailingSubstatement> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.StatementWithoutTrailingSubstatement");
   
   public static final hydra.core.Name FIELD_NAME_BLOCK = new hydra.core.Name("block");
@@ -65,55 +65,55 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(StatementWithoutTrailingSubstatement instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Block instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Empty instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Expression instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Assert instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Switch instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Do instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Break instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Continue instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Return instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Synchronized instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Throw instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Try instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -121,7 +121,6 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
     public final hydra.ext.java.syntax.Block value;
     
     public Block (hydra.ext.java.syntax.Block value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -130,13 +129,26 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Block)) {
         return false;
       }
-      Block o = (Block) (other);
-      return value.equals(o.value);
+      Block o = (Block) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Block o = (Block) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -146,11 +158,8 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
   }
   
   public static final class Empty extends hydra.ext.java.syntax.StatementWithoutTrailingSubstatement implements Serializable {
-    public final hydra.ext.java.syntax.EmptyStatement value;
+    public Empty () {
     
-    public Empty (hydra.ext.java.syntax.EmptyStatement value) {
-      java.util.Objects.requireNonNull((value));
-      this.value = value;
     }
     
     @Override
@@ -158,13 +167,23 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Empty)) {
         return false;
       }
-      Empty o = (Empty) (other);
-      return value.equals(o.value);
+      Empty o = (Empty) other;
+      return true;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      return 0;
     }
     
     @Override
@@ -177,7 +196,6 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
     public final hydra.ext.java.syntax.ExpressionStatement value;
     
     public Expression (hydra.ext.java.syntax.ExpressionStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -186,13 +204,26 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Expression)) {
         return false;
       }
-      Expression o = (Expression) (other);
-      return value.equals(o.value);
+      Expression o = (Expression) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Expression o = (Expression) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -205,7 +236,6 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
     public final hydra.ext.java.syntax.AssertStatement value;
     
     public Assert (hydra.ext.java.syntax.AssertStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -214,13 +244,26 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Assert)) {
         return false;
       }
-      Assert o = (Assert) (other);
-      return value.equals(o.value);
+      Assert o = (Assert) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Assert o = (Assert) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -233,7 +276,6 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
     public final hydra.ext.java.syntax.SwitchStatement value;
     
     public Switch (hydra.ext.java.syntax.SwitchStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -242,13 +284,26 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Switch)) {
         return false;
       }
-      Switch o = (Switch) (other);
-      return value.equals(o.value);
+      Switch o = (Switch) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Switch o = (Switch) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -261,7 +316,6 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
     public final hydra.ext.java.syntax.DoStatement value;
     
     public Do (hydra.ext.java.syntax.DoStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -270,13 +324,26 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Do)) {
         return false;
       }
-      Do o = (Do) (other);
-      return value.equals(o.value);
+      Do o = (Do) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Do o = (Do) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -289,7 +356,6 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
     public final hydra.ext.java.syntax.BreakStatement value;
     
     public Break (hydra.ext.java.syntax.BreakStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -298,13 +364,26 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Break)) {
         return false;
       }
-      Break o = (Break) (other);
-      return value.equals(o.value);
+      Break o = (Break) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Break o = (Break) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -317,7 +396,6 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
     public final hydra.ext.java.syntax.ContinueStatement value;
     
     public Continue (hydra.ext.java.syntax.ContinueStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -326,13 +404,26 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Continue)) {
         return false;
       }
-      Continue o = (Continue) (other);
-      return value.equals(o.value);
+      Continue o = (Continue) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Continue o = (Continue) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -345,7 +436,6 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
     public final hydra.ext.java.syntax.ReturnStatement value;
     
     public Return (hydra.ext.java.syntax.ReturnStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -354,13 +444,26 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Return)) {
         return false;
       }
-      Return o = (Return) (other);
-      return value.equals(o.value);
+      Return o = (Return) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Return o = (Return) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -373,7 +476,6 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
     public final hydra.ext.java.syntax.SynchronizedStatement value;
     
     public Synchronized (hydra.ext.java.syntax.SynchronizedStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -382,13 +484,26 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Synchronized)) {
         return false;
       }
-      Synchronized o = (Synchronized) (other);
-      return value.equals(o.value);
+      Synchronized o = (Synchronized) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Synchronized o = (Synchronized) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -401,7 +516,6 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
     public final hydra.ext.java.syntax.ThrowStatement value;
     
     public Throw (hydra.ext.java.syntax.ThrowStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -410,13 +524,26 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Throw)) {
         return false;
       }
-      Throw o = (Throw) (other);
-      return value.equals(o.value);
+      Throw o = (Throw) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Throw o = (Throw) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -429,7 +556,6 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
     public final hydra.ext.java.syntax.TryStatement value;
     
     public Try (hydra.ext.java.syntax.TryStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -438,13 +564,26 @@ public abstract class StatementWithoutTrailingSubstatement implements Serializab
       if (!(other instanceof Try)) {
         return false;
       }
-      Try o = (Try) (other);
-      return value.equals(o.value);
+      Try o = (Try) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementWithoutTrailingSubstatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Try o = (Try) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

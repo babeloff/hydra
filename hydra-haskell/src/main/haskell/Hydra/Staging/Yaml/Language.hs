@@ -1,3 +1,5 @@
+-- | Language constraints for YAML, defining which Hydra types can be represented in YAML
+
 module Hydra.Staging.Yaml.Language where
 
 import Hydra.Kernel
@@ -17,7 +19,7 @@ yamlLanguage = Language (LanguageName "hydra.ext.yaml") $ LanguageConstraints {
     TermVariantLiteral,
     TermVariantList,
     TermVariantMap,
-    TermVariantOptional,
+    TermVariantMaybe,
     TermVariantRecord,
     TermVariantUnit],
     -- Note: TermVariantUnit is excluded because YAML null is used for optionals
@@ -25,10 +27,10 @@ yamlLanguage = Language (LanguageName "hydra.ext.yaml") $ LanguageConstraints {
     TypeVariantLiteral,
     TypeVariantList,
     TypeVariantMap,
-    TypeVariantOptional,
+    TypeVariantMaybe,
     TypeVariantRecord,
     TypeVariantUnit],
     -- Note: TypeVariantUnit is excluded because YAML null is used for optionals
   languageConstraintsTypes = \typ -> case deannotateType typ of
-    TypeOptional (TypeOptional _) -> False
+    TypeMaybe (TypeMaybe _) -> False
     _ -> True }

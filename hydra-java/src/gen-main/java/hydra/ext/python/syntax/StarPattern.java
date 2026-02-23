@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class StarPattern implements Serializable {
+public abstract class StarPattern implements Serializable, Comparable<StarPattern> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.StarPattern");
   
   public static final hydra.core.Name FIELD_NAME_CAPTURE = new hydra.core.Name("capture");
@@ -25,15 +25,15 @@ public abstract class StarPattern implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(StarPattern instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Capture instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Wildcard instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -41,7 +41,6 @@ public abstract class StarPattern implements Serializable {
     public final hydra.ext.python.syntax.PatternCaptureTarget value;
     
     public Capture (hydra.ext.python.syntax.PatternCaptureTarget value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -50,13 +49,26 @@ public abstract class StarPattern implements Serializable {
       if (!(other instanceof Capture)) {
         return false;
       }
-      Capture o = (Capture) (other);
-      return value.equals(o.value);
+      Capture o = (Capture) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarPattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Capture o = (Capture) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -75,12 +87,22 @@ public abstract class StarPattern implements Serializable {
       if (!(other instanceof Wildcard)) {
         return false;
       }
-      Wildcard o = (Wildcard) (other);
+      Wildcard o = (Wildcard) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarPattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

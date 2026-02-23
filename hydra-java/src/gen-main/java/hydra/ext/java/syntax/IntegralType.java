@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class IntegralType implements Serializable {
+public abstract class IntegralType implements Serializable, Comparable<IntegralType> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.IntegralType");
   
   public static final hydra.core.Name FIELD_NAME_BYTE = new hydra.core.Name("byte");
@@ -37,27 +37,27 @@ public abstract class IntegralType implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(IntegralType instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Byte_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Short_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Int instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Long_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Char instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -71,12 +71,22 @@ public abstract class IntegralType implements Serializable {
       if (!(other instanceof Byte_)) {
         return false;
       }
-      Byte_ o = (Byte_) (other);
+      Byte_ o = (Byte_) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(IntegralType other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -96,12 +106,22 @@ public abstract class IntegralType implements Serializable {
       if (!(other instanceof Short_)) {
         return false;
       }
-      Short_ o = (Short_) (other);
+      Short_ o = (Short_) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(IntegralType other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -121,12 +141,22 @@ public abstract class IntegralType implements Serializable {
       if (!(other instanceof Int)) {
         return false;
       }
-      Int o = (Int) (other);
+      Int o = (Int) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(IntegralType other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -146,12 +176,22 @@ public abstract class IntegralType implements Serializable {
       if (!(other instanceof Long_)) {
         return false;
       }
-      Long_ o = (Long_) (other);
+      Long_ o = (Long_) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(IntegralType other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -171,12 +211,22 @@ public abstract class IntegralType implements Serializable {
       if (!(other instanceof Char)) {
         return false;
       }
-      Char o = (Char) (other);
+      Char o = (Char) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(IntegralType other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

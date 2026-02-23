@@ -1,5 +1,9 @@
+# Hydra wiki
+wiki/
+
 # Haskell / Stack / Cabal
 .stack-work
+dist-newstyle/
 stack.yaml.lock
 *.cabal
 
@@ -41,9 +45,14 @@ conda-bld/
 *.tar.bz2
 
 # IDEs
+.bsp/
 .idea
 *.iml
 .vscode
+
+# Python
+__pycache__/
+*.pyc
 
 # Other
 *.swp

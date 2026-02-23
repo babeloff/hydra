@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class Primary implements Serializable {
+public abstract class Primary implements Serializable, Comparable<Primary> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.Primary");
   
   public static final hydra.core.Name FIELD_NAME_NO_NEW_ARRAY = new hydra.core.Name("noNewArray");
@@ -25,15 +25,15 @@ public abstract class Primary implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(Primary instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(NoNewArray instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ArrayCreation instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -41,7 +41,6 @@ public abstract class Primary implements Serializable {
     public final hydra.ext.java.syntax.PrimaryNoNewArray value;
     
     public NoNewArray (hydra.ext.java.syntax.PrimaryNoNewArray value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -50,13 +49,26 @@ public abstract class Primary implements Serializable {
       if (!(other instanceof NoNewArray)) {
         return false;
       }
-      NoNewArray o = (NoNewArray) (other);
-      return value.equals(o.value);
+      NoNewArray o = (NoNewArray) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Primary other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      NoNewArray o = (NoNewArray) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -69,7 +81,6 @@ public abstract class Primary implements Serializable {
     public final hydra.ext.java.syntax.ArrayCreationExpression value;
     
     public ArrayCreation (hydra.ext.java.syntax.ArrayCreationExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -78,13 +89,26 @@ public abstract class Primary implements Serializable {
       if (!(other instanceof ArrayCreation)) {
         return false;
       }
-      ArrayCreation o = (ArrayCreation) (other);
-      return value.equals(o.value);
+      ArrayCreation o = (ArrayCreation) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Primary other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ArrayCreation o = (ArrayCreation) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

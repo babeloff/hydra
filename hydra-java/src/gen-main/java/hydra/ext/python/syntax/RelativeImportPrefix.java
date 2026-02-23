@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class RelativeImportPrefix implements Serializable {
+public abstract class RelativeImportPrefix implements Serializable, Comparable<RelativeImportPrefix> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.RelativeImportPrefix");
   
   public static final hydra.core.Name FIELD_NAME_DOT = new hydra.core.Name("dot");
@@ -25,15 +25,15 @@ public abstract class RelativeImportPrefix implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(RelativeImportPrefix instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Dot instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Ellipsis instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -47,12 +47,22 @@ public abstract class RelativeImportPrefix implements Serializable {
       if (!(other instanceof Dot)) {
         return false;
       }
-      Dot o = (Dot) (other);
+      Dot o = (Dot) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(RelativeImportPrefix other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -72,12 +82,22 @@ public abstract class RelativeImportPrefix implements Serializable {
       if (!(other instanceof Ellipsis)) {
         return false;
       }
-      Ellipsis o = (Ellipsis) (other);
+      Ellipsis o = (Ellipsis) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(RelativeImportPrefix other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

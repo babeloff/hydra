@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class FuncType implements Serializable {
+public class FuncType implements Serializable, Comparable<FuncType> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.FuncType");
   
   public static final hydra.core.Name FIELD_NAME_TYPE = new hydra.core.Name("type");
@@ -16,8 +16,6 @@ public class FuncType implements Serializable {
   public final hydra.ext.python.syntax.Expression body;
   
   public FuncType (java.util.List<hydra.ext.python.syntax.TypeExpression> type, hydra.ext.python.syntax.Expression body) {
-    java.util.Objects.requireNonNull((type));
-    java.util.Objects.requireNonNull((body));
     this.type = type;
     this.body = body;
   }
@@ -27,22 +25,37 @@ public class FuncType implements Serializable {
     if (!(other instanceof FuncType)) {
       return false;
     }
-    FuncType o = (FuncType) (other);
-    return type.equals(o.type) && body.equals(o.body);
+    FuncType o = (FuncType) other;
+    return java.util.Objects.equals(
+      this.type,
+      o.type) && java.util.Objects.equals(
+      this.body,
+      o.body);
   }
   
   @Override
   public int hashCode() {
-    return 2 * type.hashCode() + 3 * body.hashCode();
+    return 2 * java.util.Objects.hashCode(type) + 3 * java.util.Objects.hashCode(body);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(FuncType other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      type.hashCode(),
+      other.type.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) body).compareTo(other.body);
   }
   
   public FuncType withType(java.util.List<hydra.ext.python.syntax.TypeExpression> type) {
-    java.util.Objects.requireNonNull((type));
     return new FuncType(type, body);
   }
   
   public FuncType withBody(hydra.ext.python.syntax.Expression body) {
-    java.util.Objects.requireNonNull((body));
     return new FuncType(type, body);
   }
 }

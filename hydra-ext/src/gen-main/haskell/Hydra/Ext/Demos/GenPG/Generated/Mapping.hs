@@ -3,18 +3,18 @@
 module Hydra.Ext.Demos.GenPG.Generated.Mapping where
 
 import Hydra.Core (Term)
-import Hydra.Pg.Model (Vertex, Edge)
+import Hydra.Pg.Model (Vertex, Edge, LazyGraph)
 import Hydra.Formatting (decapitalize)
 import Hydra.Phantoms (TTerm)
-import Hydra.Dsl.Phantoms ((@@), constant, just, lambda, nothing, string, var)
-import Hydra.Ext.Dsl.Pg.Mappings (LazyGraph, column, edgeNoId, graph, property, vertex)
-import qualified Hydra.Dsl.Lib.Literals as Literals
-import qualified Hydra.Dsl.Lib.Optionals as Optionals
-import qualified Hydra.Dsl.Lib.Strings as Strings
+import Hydra.Dsl.Meta.Phantoms ((@@), constant, just, lambda, nothing, string, var)
+import Hydra.Ext.Dsl.Pg.Mappings (column, edgeNoId, graph, property, vertex)
+import qualified Hydra.Dsl.Meta.Lib.Literals as Literals
+import qualified Hydra.Dsl.Meta.Lib.Maybes as Maybes
+import qualified Hydra.Dsl.Meta.Lib.Strings as Strings
 import Hydra.Ext.Demos.GenPG.Generated.GraphSchema
 
 labeledIntId :: String -> TTerm (r -> Maybe Int) -> TTerm (r -> String)
-labeledIntId itype iid = lambda "r" $ Optionals.map
+labeledIntId itype iid = lambda "r" $ Maybes.map
   (lambda "i" $ Strings.concat [
     string $ decapitalize itype,
     string "_",

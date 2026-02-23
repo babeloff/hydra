@@ -1,3 +1,5 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | The Apache Atlas meta-model
 -- | Based on the the org.apache.atlas.model package in the master branch as of 2022-06-01
 -- |   https://github.com/apache/atlas/tree/master/intg/src/main/java/org/apache/atlas/model
@@ -6,7 +8,8 @@ module Hydra.Ext.Org.Apache.Atlas where
 
 import qualified Hydra.Core as Core
 import qualified Hydra.Ext.Org.W3.Xml.Schema as Schema
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -151,7 +154,7 @@ _AtlasConstraintDef_params = (Core.Name "params")
 -- | class that captures details of a entity-type.
 data AtlasEntityDef = 
   AtlasEntityDef {
-    atlasEntityDefAsAtlasStructDef :: AtlasStructDef,
+    atlasEntityDefAsAtlasStruct :: AtlasStructDef,
     atlasEntityDefSuperTypes :: (S.Set String),
     -- | the value of this field is derived from 'superTypes' specified in all AtlasEntityDef
     atlasEntityDefSubTypes :: (S.Set String),
@@ -163,7 +166,7 @@ data AtlasEntityDef =
 
 _AtlasEntityDef = (Core.Name "hydra.ext.org.apache.atlas.AtlasEntityDef")
 
-_AtlasEntityDef_asAtlasStructDef = (Core.Name "asAtlasStructDef")
+_AtlasEntityDef_asAtlasStruct = (Core.Name "asAtlasStruct")
 
 _AtlasEntityDef_superTypes = (Core.Name "superTypes")
 
@@ -176,14 +179,14 @@ _AtlasEntityDef_businessAttributeDefs = (Core.Name "businessAttributeDefs")
 -- | class that captures details of a struct-attribute.
 data AtlasRelationshipAttributeDef = 
   AtlasRelationshipAttributeDef {
-    atlasRelationshipAttributeDefAsAtlasAttributeDef :: AtlasAttributeDef,
+    atlasRelationshipAttributeDefAsAtlasAttribute :: AtlasAttributeDef,
     atlasRelationshipAttributeDefRelationshipTypeName :: (Maybe String),
     atlasRelationshipAttributeDefIsLegacyAttribute :: Bool}
   deriving (Eq, Ord, Read, Show)
 
 _AtlasRelationshipAttributeDef = (Core.Name "hydra.ext.org.apache.atlas.AtlasRelationshipAttributeDef")
 
-_AtlasRelationshipAttributeDef_asAtlasAttributeDef = (Core.Name "asAtlasAttributeDef")
+_AtlasRelationshipAttributeDef_asAtlasAttribute = (Core.Name "asAtlasAttribute")
 
 _AtlasRelationshipAttributeDef_relationshipTypeName = (Core.Name "relationshipTypeName")
 
@@ -192,13 +195,13 @@ _AtlasRelationshipAttributeDef_isLegacyAttribute = (Core.Name "isLegacyAttribute
 -- | class that captures details of a struct-type.
 data AtlasStructDef = 
   AtlasStructDef {
-    atlasStructDefAsAtlasBaseTypeDef :: AtlasBaseTypeDef,
+    atlasStructDefAsAtlasBaseType :: AtlasBaseTypeDef,
     atlasStructDefAttributeDefs :: [AtlasAttributeDef]}
   deriving (Eq, Ord, Read, Show)
 
 _AtlasStructDef = (Core.Name "hydra.ext.org.apache.atlas.AtlasStructDef")
 
-_AtlasStructDef_asAtlasBaseTypeDef = (Core.Name "asAtlasBaseTypeDef")
+_AtlasStructDef_asAtlasBaseType = (Core.Name "asAtlasBaseType")
 
 _AtlasStructDef_attributeDefs = (Core.Name "attributeDefs")
 

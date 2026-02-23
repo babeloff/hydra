@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * Specifies either a pre-order or post-order traversal
  */
-public abstract class TraversalOrder implements Serializable {
+public abstract class TraversalOrder implements Serializable, Comparable<TraversalOrder> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.coders.TraversalOrder");
   
   public static final hydra.core.Name FIELD_NAME_PRE = new hydra.core.Name("pre");
@@ -28,15 +28,15 @@ public abstract class TraversalOrder implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(TraversalOrder instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Pre instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Post instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -53,12 +53,22 @@ public abstract class TraversalOrder implements Serializable {
       if (!(other instanceof Pre)) {
         return false;
       }
-      Pre o = (Pre) (other);
+      Pre o = (Pre) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TraversalOrder other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -81,12 +91,22 @@ public abstract class TraversalOrder implements Serializable {
       if (!(other instanceof Post)) {
         return false;
       }
-      Post o = (Post) (other);
+      Post o = (Post) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TraversalOrder other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

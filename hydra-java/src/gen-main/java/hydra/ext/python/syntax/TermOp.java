@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class TermOp implements Serializable {
+public abstract class TermOp implements Serializable, Comparable<TermOp> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.TermOp");
   
   public static final hydra.core.Name FIELD_NAME_MUL = new hydra.core.Name("mul");
@@ -37,27 +37,27 @@ public abstract class TermOp implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(TermOp instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Mul instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Div instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Floordiv instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Mod instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Matmul instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -71,12 +71,22 @@ public abstract class TermOp implements Serializable {
       if (!(other instanceof Mul)) {
         return false;
       }
-      Mul o = (Mul) (other);
+      Mul o = (Mul) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TermOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -96,12 +106,22 @@ public abstract class TermOp implements Serializable {
       if (!(other instanceof Div)) {
         return false;
       }
-      Div o = (Div) (other);
+      Div o = (Div) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TermOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -121,12 +141,22 @@ public abstract class TermOp implements Serializable {
       if (!(other instanceof Floordiv)) {
         return false;
       }
-      Floordiv o = (Floordiv) (other);
+      Floordiv o = (Floordiv) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TermOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -146,12 +176,22 @@ public abstract class TermOp implements Serializable {
       if (!(other instanceof Mod)) {
         return false;
       }
-      Mod o = (Mod) (other);
+      Mod o = (Mod) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TermOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -171,12 +211,22 @@ public abstract class TermOp implements Serializable {
       if (!(other instanceof Matmul)) {
         return false;
       }
-      Matmul o = (Matmul) (other);
+      Matmul o = (Matmul) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TermOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

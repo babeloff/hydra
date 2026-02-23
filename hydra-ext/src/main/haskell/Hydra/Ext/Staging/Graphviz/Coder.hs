@@ -7,6 +7,7 @@ module Hydra.Ext.Staging.Graphviz.Coder (
 import Hydra.Kernel
 import Hydra.Sources.Libraries
 import qualified Hydra.Ext.Org.Graphviz.Dot as Dot
+import qualified Hydra.Lib.Literals as Literals
 import qualified Hydra.Names as Names
 import qualified Hydra.Show.Accessors as ShowAccessors
 
@@ -66,7 +67,7 @@ termToAccessorDotStmts namespaces term = (nodeStmt <$> nodes) ++ (edgeStmt <$> e
     showPath path = L.intercalate "/" $ Y.catMaybes (ShowAccessors.termAccessor <$> path)
 
 termToDotStmts :: M.Map Namespace String -> Term -> [Dot.Stmt]
-termToDotStmts namespaces term = fst $ encode Nothing False M.empty Nothing ([], S.empty) (TermAccessorAnnotatedSubject, term)
+termToDotStmts namespaces term = fst $ encode Nothing False M.empty Nothing ([], S.empty) (TermAccessorAnnotatedBody, term)
   where
     encode mlabstyle isElement ids mparent (stmts, visited) (accessor, term) = case term of
         TermFunction (FunctionLambda (Lambda v _ body)) ->
@@ -81,7 +82,7 @@ termToDotStmts namespaces term = fst $ encode Nothing False M.empty Nothing ([],
               Dot.nodeStmtAttributes = Just $ labelAttrs NodeStyleVariable $ unName v}
             varEdgeStmt = Dot.StmtEdge $ Dot.EdgeStmt (toNodeOrSubgraph selfId) [toNodeOrSubgraph varId] $
               Just $ edgeAttrs "var"
-        TermLet (Let bindings env) -> encode Nothing False ids1 (Just selfId) (stmts1, visited2) (TermAccessorLetEnvironment, env)
+        TermLet (Let bindings env) -> encode Nothing False ids1 (Just selfId) (stmts1, visited2) (TermAccessorLetBody, env)
           where
             (stmts1, visited2) = L.foldl addBinding (selfStmts, selfVisited) bindings
               where
@@ -127,7 +128,6 @@ termLabel compact namespaces term = case term of
     TermFunction f -> case f of
       FunctionLambda (Lambda v _ body) -> simpleLabel $ if compact then "\x03BB" else "lambda"
       FunctionElimination e -> case e of
-        EliminationProduct (TupleProjection n i _) -> simpleLabel $ "[" ++ show i ++ "/" ++ show n ++ "]"
         EliminationRecord (Projection tname fname) -> simpleLabel $ "{" ++ Names.compactName namespaces tname ++ "}." ++ unName fname
         EliminationUnion (CaseStatement tname _ _) -> simpleLabel $ "cases_{" ++ Names.compactName namespaces tname ++ "}"
         EliminationWrap name -> simpleLabel $ "unwrap_{" ++ Names.compactName namespaces name ++ "}"
@@ -135,7 +135,7 @@ termLabel compact namespaces term = case term of
     TermLet (Let bindings env) -> simpleLabel "let"
     TermList _ -> simpleLabel $ if compact then "[]" else "list"
     TermLiteral l -> simpleLabel $ case l of
-      LiteralBinary s -> s
+      LiteralBinary s -> Literals.binaryToStringBS s
       LiteralBoolean b -> show b
       LiteralInteger i -> case i of
         IntegerValueBigint v -> show v
@@ -153,11 +153,10 @@ termLabel compact namespaces term = case term of
         FloatValueFloat64 v -> show v
       LiteralString s -> s -- show s
     TermMap _ -> simpleLabel $ if compact then "<,>" else "map"
-    TermOptional _ -> simpleLabel $ if compact then "opt" else "optional"
-    TermProduct _ -> simpleLabel $ if compact then "\x2227" else "product"
+    TermMaybe _ -> simpleLabel $ if compact then "opt" else "optional"
     TermRecord (Record name _) -> simpleLabel $ "\x2227" ++ Names.compactName namespaces name
     TermTypeLambda (TypeLambda v term1) -> simpleLabel "tyabs"
-    TermTypeApplication (TypedTerm term _) -> simpleLabel "tyapp"
+    TermTypeApplication (TypeApplicationTerm term _) -> simpleLabel "tyapp"
     TermUnion (Injection tname _) -> simpleLabel $ "\x22BB" ++ Names.compactName namespaces tname
     TermVariable name -> simpleLabel $ Names.compactName namespaces name
     TermWrap (WrappedTerm name term1) -> simpleLabel $ "(" ++ Names.compactName namespaces name ++ ")"

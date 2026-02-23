@@ -7,6 +7,7 @@ import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Expect;
 import hydra.dsl.Terms;
+import hydra.dsl.Types;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -19,16 +20,31 @@ import static hydra.dsl.Types.function;
 import static hydra.dsl.Types.scheme;
 import static hydra.dsl.Types.set;
 
+/**
+ * Computes the union of two sets.
+ */
 public class Union extends PrimitiveFunction {
+    /**
+     * Returns the name of this primitive function.
+     * @return the name "hydra.lib.sets.union"
+     */
     public Name name() {
         return new Name("hydra.lib.sets.union");
     }
 
+    /**
+     * Returns the type scheme of this function.
+     * @return the type scheme for a function that computes set union
+     */
     @Override
     public TypeScheme type() {
         return scheme("x", function(set("x"), set("x"), set("x")));
     }
 
+    /**
+     * Provides the implementation of this primitive function.
+     * @return a function that transforms terms to a flow of graph and term
+     */
     @Override
     protected Function<List<Term>, Flow<Graph, Term>> implementation() {
         return args -> Flows.map2(
@@ -37,16 +53,26 @@ public class Union extends PrimitiveFunction {
                 (s1, s2) -> Terms.set(apply(s1, s2)));
     }
 
+    /**
+     * Computes the union of two sets.
+     * @param <X> the type of elements in the sets
+     * @param s1 the first set
+     * @return a function that takes the second set and returns the union
+     */
     public static <X> Function<Set<X>, Set<X>> apply(Set<X> s1) {
         return (s2) -> apply(s1, s2);
     }
 
     /**
-     * Apply the function to both arguments.
+     * Computes the union of two sets.
+     * @param <X> the type of elements in the sets
+     * @param s1 the first set
+     * @param s2 the second set
+     * @return a new set containing all elements from both sets
      */
     public static <X> Set<X> apply(Set<X> s1, Set<X> s2) {
-        Set<X> newSet = new HashSet<>(s1);
-        newSet.addAll(s2);
-        return newSet;
+        java.util.LinkedHashSet<X> combined = new java.util.LinkedHashSet<>(s1);
+        combined.addAll(s2);
+        return FromList.orderedSet(combined);
     }
 }

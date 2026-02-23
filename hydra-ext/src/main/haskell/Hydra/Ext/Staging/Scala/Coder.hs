@@ -4,7 +4,6 @@ import Hydra.Kernel
 import Hydra.Dsl.Terms
 import Hydra.Ext.Staging.Scala.Language
 import Hydra.Ext.Staging.Scala.Utils
-import Hydra.Adapt.Modules
 import Hydra.Ext.Staging.Scala.Serde
 import qualified Hydra.Dsl.Types as Types
 import qualified Hydra.Ext.Scala.Meta as Scala
@@ -17,23 +16,22 @@ import qualified Data.Set as S
 import qualified Data.Maybe as Y
 
 
-moduleToScala :: Module -> Flow Graph (M.Map FilePath String)
-moduleToScala mod = do
-  pkg <- moduleToScalaPackage mod
+-- | New simple adapter version that works with definitions directly
+moduleToScala :: Module -> [Definition] -> Flow Graph (M.Map FilePath String)
+moduleToScala mod defs = do
+  pkg <- constructModule mod defs
   let s = printExpr $ parenthesize $ writePkg pkg
   return $ M.fromList [(namespaceToFilePath CaseConventionCamel (FileExtension "scala") $ moduleNamespace mod, s)]
 
-moduleToScalaPackage :: Module -> Flow Graph Scala.Pkg
-moduleToScalaPackage = transformModule scalaLanguage encodeUntypedTerm constructModule
-
-constructModule :: Module -> M.Map Type (Coder Graph Graph Term Scala.Data) -> [(Binding, TypedTerm)]
-  -> Flow Graph Scala.Pkg
-constructModule mod coders pairs = do
-    defs <- CM.mapM toDef pairs
+constructModule :: Module -> [Definition] -> Flow Graph Scala.Pkg
+constructModule mod defs = do
+    let (typeDefs, termDefs) = partitionDefinitions defs
+    typeDeclStats <- CM.mapM encodeTypeDefinition typeDefs
+    termDeclStats <- CM.mapM encodeTermDefinition termDefs
     let pname = toScalaName $ h $ moduleNamespace mod
     let pref = Scala.Data_RefName pname
     imports <- findImports
-    return $ Scala.Pkg pname pref (imports ++ defs)
+    return $ Scala.Pkg pname pref (imports ++ typeDeclStats ++ termDeclStats)
   where
     h (Namespace n) = n
     findImports = do
@@ -46,29 +44,99 @@ constructModule mod coders pairs = do
         toPrimImport (Namespace ns) = Scala.StatImportExport $ Scala.ImportExportStatImport $ Scala.Import [
           Scala.Importer (Scala.Data_RefName $ toScalaName ns) []]
     toScalaName name = Scala.Data_Name $ Scala.PredefString $ L.intercalate "." $ Strings.splitOn "." name
-    toDef (el, TypedTerm term typ) = withTrace ("element " ++ unName (bindingName el)) $ do
-        let coder = Y.fromJust $ M.lookup typ coders
-        rhs <- coderEncode coder term
-        Scala.StatDefn <$> case rhs of
-          Scala.DataApply _ -> toVal rhs
-          Scala.DataFunctionData fun -> case deannotateType typ of
-            TypeFunction (FunctionType _ cod) -> toDefn fun cod
-            _ -> fail $ "expected function type, but found " ++ show typ
-          Scala.DataLit _ -> toVal rhs
-          Scala.DataRef _ -> toVal rhs -- TODO
-          _ -> fail $ "unexpected RHS: " ++ show rhs
+
+    encodeTypeDefinition (TypeDefinition name typ) = withTrace ("type " ++ unName name) $ do
+      let lname = localNameOf name
+      let tname = Scala.Type_Name lname
+      let dname = Scala.Data_Name $ Scala.PredefString lname
+      -- Only use unqualified names as type parameters (e.g., "a", "b")
+      -- Qualified names like "hydra.accessors.AccessorNode" are type references, not parameters
+      let freeVars = L.filter (not . isQualifiedName) $ S.toList $ freeVariablesInType typ
+      let tparams = stparam <$> freeVars
+      Scala.StatDefn <$> case deannotateType typ of
+        TypeRecord (RowType _ fields) -> do
+          params <- CM.mapM fieldToParam fields
+          return $ Scala.DefnClass $ Scala.Defn_Class
+            [Scala.ModCase]
+            tname
+            tparams
+            (Scala.Ctor_Primary [] (Scala.NameValue "") [params])
+            emptyTemplate
+        TypeUnion (RowType _ fields) -> do
+          cases <- CM.mapM (fieldToEnumCase lname tparams) fields
+          return $ Scala.DefnEnum $ Scala.Defn_Enum
+            []
+            tname
+            tparams
+            (Scala.Ctor_Primary [] (Scala.NameValue "") [])
+            (Scala.Template [] [] emptySelf cases)
+        TypeWrap (WrappedType _ inner) -> do
+          styp <- encodeType inner
+          return $ Scala.DefnType $ Scala.Defn_Type [] tname tparams styp
+        _ -> do
+          styp <- encodeType typ
+          return $ Scala.DefnType $ Scala.Defn_Type [] tname tparams styp
+
+    fieldToParam :: FieldType -> Flow Graph Scala.Data_Param
+    fieldToParam (FieldType (Name fname) ftyp) = do
+      sftyp <- encodeType ftyp
+      return $ Scala.Data_Param [] (Scala.NameValue fname) (Just sftyp) Nothing
+
+    fieldToEnumCase :: String -> [Scala.Type_Param] -> FieldType -> Flow Graph Scala.Stat
+    fieldToEnumCase parentName tparams (FieldType (Name fname) ftyp) = do
+      sftyp <- encodeType ftyp
+      let caseName = Scala.Data_Name $ Scala.PredefString fname
+      let isUnit = case deannotateType ftyp of
+            TypeUnit -> True
+            TypeRecord (RowType _ []) -> True
+            _ -> False
+      let params = if isUnit then [] else [Scala.Data_Param [] (Scala.NameValue "value") (Just sftyp) Nothing]
+      -- The extends clause for the enum case
+      let parentType = if L.null tparams
+            then stref parentName
+            else stapply (stref parentName) (typeParamToTypeVar <$> tparams)
+      return $ Scala.StatDefn $ Scala.DefnEnumCase $ Scala.Defn_EnumCase
+        []
+        caseName
+        []
+        (Scala.Ctor_Primary [] (Scala.NameValue "") [params])
+        [Scala.Init parentType (Scala.NameValue "") []]
+
+    typeParamToTypeVar :: Scala.Type_Param -> Scala.Type
+    typeParamToTypeVar (Scala.Type_Param _ n _ _ _ _) = Scala.TypeVar $ Scala.Type_Var $ Scala.Type_Name $ nameToString n
       where
-        lname = localNameOf $ bindingName el
+        nameToString (Scala.NameValue s) = s
 
-        freeTypeVars = S.toList $ freeVariablesInType typ
+    emptyTemplate :: Scala.Template
+    emptyTemplate = Scala.Template [] [] emptySelf []
 
-        toDefn (Scala.Data_FunctionDataFunction (Scala.Data_Function params body)) cod = do
+    emptySelf :: Scala.Self
+    emptySelf = Scala.Self ()
+
+    isQualifiedName :: Name -> Bool
+    isQualifiedName (Name n) = '.' `L.elem` n
+
+    encodeTermDefinition (TermDefinition name term typ) = withTrace ("term " ++ unName name) $ do
+        rhs <- encodeTerm term
+        let lname = localNameOf name
+        let typ' = typeSchemeType typ
+        Scala.StatDefn <$> case rhs of
+          Scala.DataApply _ -> toVal lname rhs
+          Scala.DataFunctionData fun -> case deannotateType typ' of
+            TypeFunction (FunctionType _ cod) -> toDefn lname typ' fun cod
+            _ -> toVal lname rhs
+          Scala.DataLit _ -> toVal lname rhs
+          Scala.DataRef _ -> toVal lname rhs
+          _ -> toVal lname rhs
+      where
+        toDefn lname typ0 (Scala.Data_FunctionDataFunction (Scala.Data_Function params body)) cod = do
+          let freeTypeVars = S.toList $ freeVariablesInType typ0
           let tparams = stparam <$> freeTypeVars
           scod <- encodeType cod
           return $ Scala.DefnDef $ Scala.Defn_Def []
             (Scala.Data_Name $ Scala.PredefString lname) tparams [params] (Just scod) body
 
-        toVal rhs = pure $ Scala.DefnVal $ Scala.Defn_Val [] [namePat] Nothing rhs
+        toVal lname rhs = pure $ Scala.DefnVal $ Scala.Defn_Val [] [namePat] Nothing rhs
           where
             namePat = Scala.PatVar $ Scala.Pat_Var $ Scala.Data_Name $ Scala.PredefString lname
 
@@ -163,7 +231,7 @@ encodeTerm term = case deannotateTerm term of
       where
         toPair (k, v) = sassign <$> encodeTerm k <*> encodeTerm v
     TermWrap (WrappedTerm _ term') -> encodeTerm term'
-    TermOptional m -> case m of
+    TermMaybe m -> case m of
       Nothing -> pure $ sname "None"
       Just t -> (\s -> sapply (sname "Some") [s]) <$> encodeTerm t
     TermRecord (Record name fields) -> do
@@ -185,34 +253,38 @@ encodeTerm term = case deannotateTerm term of
 
 encodeType :: Type -> Flow Graph Scala.Type
 encodeType t = case deannotateType t of
+  TypeUnit -> pure $ stref "Unit"
+  TypeEither (EitherType lt rt) -> stapply2 <$> pure (stref "Either") <*> encodeType lt <*> encodeType rt
   TypeFunction (FunctionType dom cod) -> do
     sdom <- encodeType dom
     scod <- encodeType cod
     return $ Scala.TypeFunctionType $ Scala.Type_FunctionTypeFunction $ Scala.Type_Function [sdom] scod
   TypeList lt -> stapply1 <$> pure (stref "Seq") <*> encodeType lt
   TypeLiteral lt -> case lt of
---    TypeBinary ->
+    LiteralTypeBinary -> pure $ stapply (stref "Array") [stref "Byte"]
     LiteralTypeBoolean -> pure $ stref "Boolean"
     LiteralTypeFloat ft -> case ft of
---      FloatTypeBigfloat ->
+      FloatTypeBigfloat -> pure $ stref "BigDecimal"
       FloatTypeFloat32 -> pure $ stref "Float"
       FloatTypeFloat64 -> pure $ stref "Double"
     LiteralTypeInteger it -> case it of
---      IntegerTypeBigint ->
---      IntegerTypeInt8 ->
+      IntegerTypeBigint -> pure $ stref "BigInt"
+      IntegerTypeInt8 -> pure $ stref "Byte"
       IntegerTypeInt16 -> pure $ stref "Short"
       IntegerTypeInt32 -> pure $ stref "Int"
       IntegerTypeInt64 -> pure $ stref "Long"
       IntegerTypeUint8 -> pure $ stref "Byte"
---      IntegerTypeUint16 ->
---      IntegerTypeUint32 ->
---      IntegerTypeUint64 ->
+      IntegerTypeUint16 -> pure $ stref "Int"
+      IntegerTypeUint32 -> pure $ stref "Long"
+      IntegerTypeUint64 -> pure $ stref "BigInt"
     LiteralTypeString -> pure $ stref "String"
   TypeMap (MapType kt vt) -> stapply2 <$> pure (stref "Map") <*> encodeType kt <*> encodeType vt
-  TypeOptional ot -> stapply1 <$> pure (stref "Option") <*> encodeType ot
---  TypeRecord sfields ->
+  TypeMaybe ot -> stapply1 <$> pure (stref "Option") <*> encodeType ot
+  TypePair (PairType ft st) -> stapply2 <$> pure (stref "Tuple2") <*> encodeType ft <*> encodeType st
+  TypeRecord (RowType tname _) -> pure $ stref $ scalaTypeName True tname
   TypeSet st -> stapply1 <$> pure (stref "Set") <*> encodeType st
---  TypeUnion sfields ->
+  TypeUnion (RowType tname _) -> pure $ stref $ scalaTypeName True tname
+  TypeWrap (WrappedType tname _) -> pure $ stref $ scalaTypeName True tname
   TypeForall (ForallType v body) -> do
     sbody <- encodeType body
     return $ Scala.TypeLambda $ Scala.Type_Lambda [stparam v] sbody
@@ -220,5 +292,5 @@ encodeType t = case deannotateType t of
   TypeVariable (Name v) -> pure $ Scala.TypeVar $ Scala.Type_Var $ Scala.Type_Name v
   _ -> fail $ "can't encode unsupported type in Scala: " ++ show t
 
-encodeUntypedTerm :: Term -> Flow Graph Scala.Data
-encodeUntypedTerm term = (inferenceResultTerm <$> inferInGraphContext term) >>= encodeTerm
+encodeUntypeApplicationTerm :: Term -> Flow Graph Scala.Data
+encodeUntypeApplicationTerm term = (inferenceResultTerm <$> inferInGraphContext term) >>= encodeTerm

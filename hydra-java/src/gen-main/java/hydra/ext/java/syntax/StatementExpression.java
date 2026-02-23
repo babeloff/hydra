@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class StatementExpression implements Serializable {
+public abstract class StatementExpression implements Serializable, Comparable<StatementExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.StatementExpression");
   
   public static final hydra.core.Name FIELD_NAME_ASSIGNMENT = new hydra.core.Name("assignment");
@@ -45,35 +45,35 @@ public abstract class StatementExpression implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(StatementExpression instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Assignment instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(PreIncrement instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(PreDecrement instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(PostIncrement instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(PostDecrement instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(MethodInvocation instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ClassInstanceCreation instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -81,7 +81,6 @@ public abstract class StatementExpression implements Serializable {
     public final hydra.ext.java.syntax.Assignment value;
     
     public Assignment (hydra.ext.java.syntax.Assignment value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -90,13 +89,26 @@ public abstract class StatementExpression implements Serializable {
       if (!(other instanceof Assignment)) {
         return false;
       }
-      Assignment o = (Assignment) (other);
-      return value.equals(o.value);
+      Assignment o = (Assignment) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Assignment o = (Assignment) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -109,7 +121,6 @@ public abstract class StatementExpression implements Serializable {
     public final hydra.ext.java.syntax.PreIncrementExpression value;
     
     public PreIncrement (hydra.ext.java.syntax.PreIncrementExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -118,13 +129,26 @@ public abstract class StatementExpression implements Serializable {
       if (!(other instanceof PreIncrement)) {
         return false;
       }
-      PreIncrement o = (PreIncrement) (other);
-      return value.equals(o.value);
+      PreIncrement o = (PreIncrement) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      PreIncrement o = (PreIncrement) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -137,7 +161,6 @@ public abstract class StatementExpression implements Serializable {
     public final hydra.ext.java.syntax.PreDecrementExpression value;
     
     public PreDecrement (hydra.ext.java.syntax.PreDecrementExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -146,13 +169,26 @@ public abstract class StatementExpression implements Serializable {
       if (!(other instanceof PreDecrement)) {
         return false;
       }
-      PreDecrement o = (PreDecrement) (other);
-      return value.equals(o.value);
+      PreDecrement o = (PreDecrement) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      PreDecrement o = (PreDecrement) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -165,7 +201,6 @@ public abstract class StatementExpression implements Serializable {
     public final hydra.ext.java.syntax.PostIncrementExpression value;
     
     public PostIncrement (hydra.ext.java.syntax.PostIncrementExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -174,13 +209,26 @@ public abstract class StatementExpression implements Serializable {
       if (!(other instanceof PostIncrement)) {
         return false;
       }
-      PostIncrement o = (PostIncrement) (other);
-      return value.equals(o.value);
+      PostIncrement o = (PostIncrement) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      PostIncrement o = (PostIncrement) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -193,7 +241,6 @@ public abstract class StatementExpression implements Serializable {
     public final hydra.ext.java.syntax.PostDecrementExpression value;
     
     public PostDecrement (hydra.ext.java.syntax.PostDecrementExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -202,13 +249,26 @@ public abstract class StatementExpression implements Serializable {
       if (!(other instanceof PostDecrement)) {
         return false;
       }
-      PostDecrement o = (PostDecrement) (other);
-      return value.equals(o.value);
+      PostDecrement o = (PostDecrement) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      PostDecrement o = (PostDecrement) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -221,7 +281,6 @@ public abstract class StatementExpression implements Serializable {
     public final hydra.ext.java.syntax.MethodInvocation value;
     
     public MethodInvocation (hydra.ext.java.syntax.MethodInvocation value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -230,13 +289,26 @@ public abstract class StatementExpression implements Serializable {
       if (!(other instanceof MethodInvocation)) {
         return false;
       }
-      MethodInvocation o = (MethodInvocation) (other);
-      return value.equals(o.value);
+      MethodInvocation o = (MethodInvocation) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      MethodInvocation o = (MethodInvocation) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -249,7 +321,6 @@ public abstract class StatementExpression implements Serializable {
     public final hydra.ext.java.syntax.ClassInstanceCreationExpression value;
     
     public ClassInstanceCreation (hydra.ext.java.syntax.ClassInstanceCreationExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -258,13 +329,26 @@ public abstract class StatementExpression implements Serializable {
       if (!(other instanceof ClassInstanceCreation)) {
         return false;
       }
-      ClassInstanceCreation o = (ClassInstanceCreation) (other);
-      return value.equals(o.value);
+      ClassInstanceCreation o = (ClassInstanceCreation) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ClassInstanceCreation o = (ClassInstanceCreation) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

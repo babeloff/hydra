@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class ParamStarAnnotation implements Serializable {
+public class ParamStarAnnotation implements Serializable, Comparable<ParamStarAnnotation> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.ParamStarAnnotation");
   
   public static final hydra.core.Name FIELD_NAME_NAME = new hydra.core.Name("name");
@@ -16,8 +16,6 @@ public class ParamStarAnnotation implements Serializable {
   public final hydra.ext.python.syntax.StarAnnotation annotation;
   
   public ParamStarAnnotation (hydra.ext.python.syntax.Name name, hydra.ext.python.syntax.StarAnnotation annotation) {
-    java.util.Objects.requireNonNull((name));
-    java.util.Objects.requireNonNull((annotation));
     this.name = name;
     this.annotation = annotation;
   }
@@ -27,22 +25,35 @@ public class ParamStarAnnotation implements Serializable {
     if (!(other instanceof ParamStarAnnotation)) {
       return false;
     }
-    ParamStarAnnotation o = (ParamStarAnnotation) (other);
-    return name.equals(o.name) && annotation.equals(o.annotation);
+    ParamStarAnnotation o = (ParamStarAnnotation) other;
+    return java.util.Objects.equals(
+      this.name,
+      o.name) && java.util.Objects.equals(
+      this.annotation,
+      o.annotation);
   }
   
   @Override
   public int hashCode() {
-    return 2 * name.hashCode() + 3 * annotation.hashCode();
+    return 2 * java.util.Objects.hashCode(name) + 3 * java.util.Objects.hashCode(annotation);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(ParamStarAnnotation other) {
+    int cmp = 0;
+    cmp = ((Comparable) name).compareTo(other.name);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) annotation).compareTo(other.annotation);
   }
   
   public ParamStarAnnotation withName(hydra.ext.python.syntax.Name name) {
-    java.util.Objects.requireNonNull((name));
     return new ParamStarAnnotation(name, annotation);
   }
   
   public ParamStarAnnotation withAnnotation(hydra.ext.python.syntax.StarAnnotation annotation) {
-    java.util.Objects.requireNonNull((annotation));
     return new ParamStarAnnotation(name, annotation);
   }
 }

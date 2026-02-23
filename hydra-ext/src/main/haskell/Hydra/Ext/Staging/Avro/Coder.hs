@@ -8,12 +8,13 @@ module Hydra.Ext.Staging.Avro.Coder (
 
 import Hydra.Kernel
 import Hydra.Extract.Json
+import qualified Hydra.Lib.Literals as Literals
 import qualified Hydra.Lib.Strings as Strings
 import qualified Hydra.Extract.Core as ExtractCore
 import qualified Hydra.Dsl.Types as Types
 import qualified Hydra.Dsl.Terms as Terms
 import qualified Hydra.Ext.Org.Apache.Avro.Schema as Avro
-import qualified Hydra.Json as Json
+import qualified Hydra.Json.Model as Json
 
 import qualified Text.Read as TR
 import qualified Control.Monad as CM
@@ -90,8 +91,8 @@ avroHydraAdapter schema = case schema of
                   decode (TermUnion (Injection _ (Field fn _))) = return $ Json.ValueString $ unName fn
               Avro.NamedTypeFixed (Avro.Fixed size) -> simpleAdapter Types.binary encode decode
                 where
-                  encode (Json.ValueString s) = pure $ Terms.binary s
-                  decode term = Json.ValueString <$> (withEmptyGraph $ ExtractCore.binary term)
+                  encode (Json.ValueString s) = pure $ Terms.binary (Literals.stringToBinary s)
+                  decode term = Json.ValueString . Literals.binaryToStringBS <$> (withEmptyGraph $ ExtractCore.binary term)
               Avro.NamedTypeRecord r -> do
                   let avroFields = Avro.recordFields r
                   adaptersByFieldName <- M.fromList <$> (CM.mapM prepareField avroFields)
@@ -167,10 +168,10 @@ avroHydraAdapter schema = case schema of
                       return $ TermVariable $ constr s
                 -- Support three special cases of foreign key types: plain, optional, and list
                 case deannotateType (adapterTarget ad) of
-                  TypeOptional (TypeLiteral lit) -> forTypeAndCoder ad (Types.optional elTyp) coder
+                  TypeMaybe (TypeLiteral lit) -> forTypeAndCoder ad (Types.optional elTyp) coder
                     where
                       coder = Coder {
-                        coderEncode = \json -> (TermOptional . Just) <$> encodeValue json,
+                        coderEncode = \json -> (TermMaybe . Just) <$> encodeValue json,
                         coderDecode = decodeTerm}
                   TypeList (TypeLiteral lit) -> forTypeAndCoder ad (Types.list elTyp) coder
                     where
@@ -214,8 +215,8 @@ avroHydraAdapter schema = case schema of
             decode term = Json.ValueNumber <$> withEmptyGraph (ExtractCore.float64 term)
         Avro.PrimitiveBytes -> simpleAdapter Types.binary encode decode
           where
-            encode (Json.ValueString s) = pure $ Terms.binary s
-            decode term = Json.ValueString <$> withEmptyGraph (ExtractCore.binary term)
+            encode (Json.ValueString s) = pure $ Terms.binary (Literals.stringToBinary s)
+            decode term = Json.ValueString . Literals.binaryToStringBS <$> withEmptyGraph (ExtractCore.binary term)
         Avro.PrimitiveString -> simpleAdapter Types.string encode decode
           where
             encode (Json.ValueString s) = pure $ Terms.string s
@@ -247,12 +248,12 @@ avroHydraAdapter schema = case schema of
         forOptional s = do
           ad <- avroHydraAdapter s
           let coder = Coder {
-                coderDecode = \(TermOptional ot) -> case ot of
+                coderDecode = \(TermMaybe ot) -> case ot of
                   Nothing -> pure $ Json.ValueNull
                   Just term -> coderDecode (adapterCoder ad) term,
                 coderEncode = \v -> case v of
-                  Json.ValueNull -> pure $ TermOptional Nothing
-                  _ -> TermOptional . Just <$> coderEncode (adapterCoder ad) v}
+                  Json.ValueNull -> pure $ TermMaybe Nothing
+                  _ -> TermMaybe . Just <$> coderEncode (adapterCoder ad) v}
           return $ Adapter (adapterIsLossy ad) schema (Types.optional $ adapterTarget ad) coder
   where
     simpleAdapter typ encode decode = pure $ Adapter False schema typ $ Coder encode decode
@@ -322,8 +323,9 @@ putAvroHydraAdapter :: AvroQualifiedName -> AvroHydraAdapter -> AvroEnvironment 
 putAvroHydraAdapter qname ad env = env {avroEnvironmentNamedAdapters = M.insert qname ad $ avroEnvironmentNamedAdapters env}
 
 rewriteAvroSchemaM :: ((Avro.Schema -> Flow s Avro.Schema) -> Avro.Schema -> Flow s Avro.Schema) -> Avro.Schema -> Flow s Avro.Schema
-rewriteAvroSchemaM f = rewrite fsub f
+rewriteAvroSchemaM f = recurse
   where
+    recurse = f (fsub recurse) -- TODO: restore global Rewriting.rewrite/fix instead of the local definition
     fsub recurse schema = case schema of
         Avro.SchemaArray (Avro.Array els) -> Avro.SchemaArray <$> (Avro.Array <$> recurse els)
         Avro.SchemaMap (Avro.Map vschema) -> Avro.SchemaMap <$> (Avro.Map <$> recurse vschema)
@@ -388,5 +390,5 @@ termToString term = case deannotateTerm term of
       IntegerValueUint64 i -> show i
     LiteralString s -> pure s
     _ -> unexpected "boolean, integer, or string" $ show l
-  TermOptional (Just term') -> termToString term'
+  TermMaybe (Just term') -> termToString term'
   _ -> unexpected "literal value" $ show term

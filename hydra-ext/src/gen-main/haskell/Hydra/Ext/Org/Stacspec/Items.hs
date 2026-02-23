@@ -1,3 +1,5 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A model for SpatioTemporal Asset Catalog (STAC) Items. See https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md
 
 module Hydra.Ext.Org.Stacspec.Items where
@@ -5,7 +7,8 @@ module Hydra.Ext.Org.Stacspec.Items where
 import qualified Hydra.Core as Core
 import qualified Hydra.Ext.Org.Geojson.Model as Model
 import qualified Hydra.Ext.Org.Iana.Linkrelations as Linkrelations
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M

@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * An import or export specification
  */
-public class ImportExportSpec implements Serializable {
+public class ImportExportSpec implements Serializable, Comparable<ImportExportSpec> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.haskell.ast.ImportExportSpec");
   
   public static final hydra.core.Name FIELD_NAME_MODIFIER = new hydra.core.Name("modifier");
@@ -16,16 +16,22 @@ public class ImportExportSpec implements Serializable {
   
   public static final hydra.core.Name FIELD_NAME_SUBSPEC = new hydra.core.Name("subspec");
   
-  public final hydra.util.Opt<hydra.ext.haskell.ast.ImportModifier> modifier;
+  /**
+   * Optional import modifier
+   */
+  public final hydra.util.Maybe<hydra.ext.haskell.ast.ImportModifier> modifier;
   
+  /**
+   * The name being imported or exported
+   */
   public final hydra.ext.haskell.ast.Name name;
   
-  public final hydra.util.Opt<hydra.ext.haskell.ast.SubspecImportExportSpec> subspec;
+  /**
+   * Optional subspecification
+   */
+  public final hydra.util.Maybe<hydra.ext.haskell.ast.SubspecImportExportSpec> subspec;
   
-  public ImportExportSpec (hydra.util.Opt<hydra.ext.haskell.ast.ImportModifier> modifier, hydra.ext.haskell.ast.Name name, hydra.util.Opt<hydra.ext.haskell.ast.SubspecImportExportSpec> subspec) {
-    java.util.Objects.requireNonNull((modifier));
-    java.util.Objects.requireNonNull((name));
-    java.util.Objects.requireNonNull((subspec));
+  public ImportExportSpec (hydra.util.Maybe<hydra.ext.haskell.ast.ImportModifier> modifier, hydra.ext.haskell.ast.Name name, hydra.util.Maybe<hydra.ext.haskell.ast.SubspecImportExportSpec> subspec) {
     this.modifier = modifier;
     this.name = name;
     this.subspec = subspec;
@@ -36,27 +42,49 @@ public class ImportExportSpec implements Serializable {
     if (!(other instanceof ImportExportSpec)) {
       return false;
     }
-    ImportExportSpec o = (ImportExportSpec) (other);
-    return modifier.equals(o.modifier) && name.equals(o.name) && subspec.equals(o.subspec);
+    ImportExportSpec o = (ImportExportSpec) other;
+    return java.util.Objects.equals(
+      this.modifier,
+      o.modifier) && java.util.Objects.equals(
+      this.name,
+      o.name) && java.util.Objects.equals(
+      this.subspec,
+      o.subspec);
   }
   
   @Override
   public int hashCode() {
-    return 2 * modifier.hashCode() + 3 * name.hashCode() + 5 * subspec.hashCode();
+    return 2 * java.util.Objects.hashCode(modifier) + 3 * java.util.Objects.hashCode(name) + 5 * java.util.Objects.hashCode(subspec);
   }
   
-  public ImportExportSpec withModifier(hydra.util.Opt<hydra.ext.haskell.ast.ImportModifier> modifier) {
-    java.util.Objects.requireNonNull((modifier));
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(ImportExportSpec other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      modifier.hashCode(),
+      other.modifier.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) name).compareTo(other.name);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      subspec.hashCode(),
+      other.subspec.hashCode());
+  }
+  
+  public ImportExportSpec withModifier(hydra.util.Maybe<hydra.ext.haskell.ast.ImportModifier> modifier) {
     return new ImportExportSpec(modifier, name, subspec);
   }
   
   public ImportExportSpec withName(hydra.ext.haskell.ast.Name name) {
-    java.util.Objects.requireNonNull((name));
     return new ImportExportSpec(modifier, name, subspec);
   }
   
-  public ImportExportSpec withSubspec(hydra.util.Opt<hydra.ext.haskell.ast.SubspecImportExportSpec> subspec) {
-    java.util.Objects.requireNonNull((subspec));
+  public ImportExportSpec withSubspec(hydra.util.Maybe<hydra.ext.haskell.ast.SubspecImportExportSpec> subspec) {
     return new ImportExportSpec(modifier, name, subspec);
   }
 }

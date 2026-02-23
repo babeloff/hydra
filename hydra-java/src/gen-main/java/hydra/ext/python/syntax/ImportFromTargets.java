@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class ImportFromTargets implements Serializable {
+public abstract class ImportFromTargets implements Serializable, Comparable<ImportFromTargets> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.ImportFromTargets");
   
   public static final hydra.core.Name FIELD_NAME_SIMPLE = new hydra.core.Name("simple");
@@ -29,19 +29,19 @@ public abstract class ImportFromTargets implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(ImportFromTargets instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Simple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Parens instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Star instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -49,7 +49,6 @@ public abstract class ImportFromTargets implements Serializable {
     public final java.util.List<hydra.ext.python.syntax.ImportFromAsName> value;
     
     public Simple (java.util.List<hydra.ext.python.syntax.ImportFromAsName> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -58,13 +57,28 @@ public abstract class ImportFromTargets implements Serializable {
       if (!(other instanceof Simple)) {
         return false;
       }
-      Simple o = (Simple) (other);
-      return value.equals(o.value);
+      Simple o = (Simple) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ImportFromTargets other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Simple o = (Simple) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override
@@ -77,7 +91,6 @@ public abstract class ImportFromTargets implements Serializable {
     public final java.util.List<hydra.ext.python.syntax.ImportFromAsName> value;
     
     public Parens (java.util.List<hydra.ext.python.syntax.ImportFromAsName> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -86,13 +99,28 @@ public abstract class ImportFromTargets implements Serializable {
       if (!(other instanceof Parens)) {
         return false;
       }
-      Parens o = (Parens) (other);
-      return value.equals(o.value);
+      Parens o = (Parens) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ImportFromTargets other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Parens o = (Parens) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override
@@ -111,12 +139,22 @@ public abstract class ImportFromTargets implements Serializable {
       if (!(other instanceof Star)) {
         return false;
       }
-      Star o = (Star) (other);
+      Star o = (Star) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ImportFromTargets other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

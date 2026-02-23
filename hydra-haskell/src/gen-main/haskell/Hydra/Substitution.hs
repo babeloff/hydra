@@ -1,3 +1,5 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | Variable substitution in type and term expressions.
 
 module Hydra.Substitution where
@@ -6,54 +8,97 @@ import qualified Hydra.Core as Core
 import qualified Hydra.Lib.Lists as Lists
 import qualified Hydra.Lib.Logic as Logic
 import qualified Hydra.Lib.Maps as Maps
-import qualified Hydra.Lib.Optionals as Optionals
+import qualified Hydra.Lib.Maybes as Maybes
+import qualified Hydra.Lib.Pairs as Pairs
 import qualified Hydra.Lib.Sets as Sets
 import qualified Hydra.Rewriting as Rewriting
 import qualified Hydra.Typing as Typing
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Set as S
 
+-- | Compose two type substitutions
 composeTypeSubst :: (Typing.TypeSubst -> Typing.TypeSubst -> Typing.TypeSubst)
-composeTypeSubst s1 s2 =  
-  let isExtra = (\k -> \v -> Optionals.isNothing (Maps.lookup k (Typing.unTypeSubst s1))) 
+composeTypeSubst s1 s2 = (Logic.ifElse (Maps.null (Typing.unTypeSubst s1)) s2 (Logic.ifElse (Maps.null (Typing.unTypeSubst s2)) s1 (composeTypeSubstNonEmpty s1 s2)))
+
+-- | Compose two non-empty type substitutions (internal helper)
+composeTypeSubstNonEmpty :: (Typing.TypeSubst -> Typing.TypeSubst -> Typing.TypeSubst)
+composeTypeSubstNonEmpty s1 s2 =  
+  let isExtra = (\k -> \v -> Maybes.isNothing (Maps.lookup k (Typing.unTypeSubst s1))) 
       withExtra = (Maps.filterWithKey isExtra (Typing.unTypeSubst s2))
   in (Typing.TypeSubst (Maps.union withExtra (Maps.map (substInType s2) (Typing.unTypeSubst s1))))
 
+-- | Compose a list of type substitutions
 composeTypeSubstList :: ([Typing.TypeSubst] -> Typing.TypeSubst)
 composeTypeSubstList = (Lists.foldl composeTypeSubst idTypeSubst)
 
+-- | The identity type substitution
 idTypeSubst :: Typing.TypeSubst
 idTypeSubst = (Typing.TypeSubst Maps.empty)
 
+-- | Create a type substitution with a single variable mapping
 singletonTypeSubst :: (Core.Name -> Core.Type -> Typing.TypeSubst)
 singletonTypeSubst v t = (Typing.TypeSubst (Maps.singleton v t))
 
+-- | Apply a term substitution to a binding
+substituteInBinding :: (Typing.TermSubst -> Core.Binding -> Core.Binding)
+substituteInBinding subst b = Core.Binding {
+  Core.bindingName = (Core.bindingName b),
+  Core.bindingTerm = (substituteInTerm subst (Core.bindingTerm b)),
+  Core.bindingType = (Core.bindingType b)}
+
+-- | Apply a type substitution to a type constraint
 substituteInConstraint :: (Typing.TypeSubst -> Typing.TypeConstraint -> Typing.TypeConstraint)
 substituteInConstraint subst c = Typing.TypeConstraint {
   Typing.typeConstraintLeft = (substInType subst (Typing.typeConstraintLeft c)),
   Typing.typeConstraintRight = (substInType subst (Typing.typeConstraintRight c)),
   Typing.typeConstraintComment = (Typing.typeConstraintComment c)}
 
+-- | Apply a type substitution to a list of type constraints
 substituteInConstraints :: (Typing.TypeSubst -> [Typing.TypeConstraint] -> [Typing.TypeConstraint])
 substituteInConstraints subst cs = (Lists.map (substituteInConstraint subst) cs)
 
-substInContext :: (Typing.TypeSubst -> Typing.InferenceContext -> Typing.InferenceContext)
-substInContext subst cx = Typing.InferenceContext {
-  Typing.inferenceContextSchemaTypes = (Typing.inferenceContextSchemaTypes cx),
-  Typing.inferenceContextPrimitiveTypes = (Typing.inferenceContextPrimitiveTypes cx),
-  Typing.inferenceContextDataTypes = (Maps.map (substInTypeScheme subst) (Typing.inferenceContextDataTypes cx)),
-  Typing.inferenceContextDebug = (Typing.inferenceContextDebug cx)}
+-- | Apply a type substitution to class constraints, propagating to free variables
+substInClassConstraints :: (Typing.TypeSubst -> M.Map Core.Name Core.TypeVariableMetadata -> M.Map Core.Name Core.TypeVariableMetadata)
+substInClassConstraints subst constraints =  
+  let substMap = (Typing.unTypeSubst subst)
+  in  
+    let insertOrMerge = (\varName -> \metadata -> \acc -> Maybes.maybe (Maps.insert varName metadata acc) (\existing ->  
+            let merged = Core.TypeVariableMetadata {
+                    Core.typeVariableMetadataClasses = (Sets.union (Core.typeVariableMetadataClasses existing) (Core.typeVariableMetadataClasses metadata))}
+            in (Maps.insert varName merged acc)) (Maps.lookup varName acc))
+    in (Lists.foldl (\acc -> \pair ->  
+      let varName = (Pairs.first pair)
+      in  
+        let metadata = (Pairs.second pair)
+        in (Maybes.maybe (insertOrMerge varName metadata acc) (\targetType ->  
+          let freeVars = (Sets.toList (Rewriting.freeVariablesInType targetType))
+          in (Lists.foldl (\acc2 -> \freeVar -> insertOrMerge freeVar metadata acc2) acc freeVars)) (Maps.lookup varName substMap))) Maps.empty (Maps.toList constraints))
 
+-- | Apply a type substitution to an inference context
+substInContext :: (Typing.TypeSubst -> Typing.InferenceContext -> Typing.InferenceContext)
+substInContext subst cx =  
+  let newDataTypes = (Maps.map (substInTypeScheme subst) (Typing.inferenceContextDataTypes cx))
+  in  
+    let newClassConstraints = (substInClassConstraints subst (Typing.inferenceContextClassConstraints cx))
+    in Typing.InferenceContext {
+      Typing.inferenceContextSchemaTypes = (Typing.inferenceContextSchemaTypes cx),
+      Typing.inferenceContextPrimitiveTypes = (Typing.inferenceContextPrimitiveTypes cx),
+      Typing.inferenceContextDataTypes = newDataTypes,
+      Typing.inferenceContextClassConstraints = newClassConstraints,
+      Typing.inferenceContextDebug = (Typing.inferenceContextDebug cx)}
+
+-- | Apply a term substitution to a term
 substituteInTerm :: (Typing.TermSubst -> Core.Term -> Core.Term)
-substituteInTerm subst =  
+substituteInTerm subst term0 =  
   let s = (Typing.unTermSubst subst) 
       rewrite = (\recurse -> \term ->  
               let withLambda = (\l ->  
                       let v = (Core.lambdaParameter l) 
-                          subst2 = (Typing.TermSubst (Maps.remove v s))
+                          subst2 = (Typing.TermSubst (Maps.delete v s))
                       in (Core.TermFunction (Core.FunctionLambda (Core.Lambda {
                         Core.lambdaParameter = v,
                         Core.lambdaDomain = (Core.lambdaDomain l),
@@ -68,70 +113,73 @@ substituteInTerm subst =
                                       Core.bindingType = (Core.bindingType b)})
                           in (Core.TermLet (Core.Let {
                             Core.letBindings = (Lists.map rewriteBinding bindings),
-                            Core.letEnvironment = (substituteInTerm subst2 (Core.letEnvironment lt))})))
+                            Core.letBody = (substituteInTerm subst2 (Core.letBody lt))})))
               in ((\x -> case x of
                 Core.TermFunction v1 -> ((\x -> case x of
                   Core.FunctionLambda v2 -> (withLambda v2)
                   _ -> (recurse term)) v1)
                 Core.TermLet v1 -> (withLet v1)
-                Core.TermVariable v1 -> (Optionals.maybe (recurse term) (\sterm -> sterm) (Maps.lookup v1 s))
+                Core.TermVariable v1 -> (Maybes.maybe (recurse term) (\sterm -> sterm) (Maps.lookup v1 s))
                 _ -> (recurse term)) term))
-  in (Rewriting.rewriteTerm rewrite)
+  in (Rewriting.rewriteTerm rewrite term0)
 
+-- | Apply a type substitution to a type
 substInType :: (Typing.TypeSubst -> Core.Type -> Core.Type)
-substInType subst =  
+substInType subst typ0 = (Logic.ifElse (Maps.null (Typing.unTypeSubst subst)) typ0 (substInTypeNonEmpty subst typ0))
+
+-- | Apply a non-empty type substitution to a type (internal helper)
+substInTypeNonEmpty :: (Typing.TypeSubst -> Core.Type -> Core.Type)
+substInTypeNonEmpty subst typ0 =  
   let rewrite = (\recurse -> \typ -> (\x -> case x of
-          Core.TypeForall v1 -> (Optionals.maybe (recurse typ) (\styp -> Core.TypeForall (Core.ForallType {
+          Core.TypeForall v1 -> (Maybes.maybe (recurse typ) (\styp -> Core.TypeForall (Core.ForallType {
             Core.forallTypeParameter = (Core.forallTypeParameter v1),
             Core.forallTypeBody = (substInType (removeVar (Core.forallTypeParameter v1)) (Core.forallTypeBody v1))})) (Maps.lookup (Core.forallTypeParameter v1) (Typing.unTypeSubst subst)))
-          Core.TypeVariable v1 -> (Optionals.maybe typ (\styp -> styp) (Maps.lookup v1 (Typing.unTypeSubst subst)))
+          Core.TypeVariable v1 -> (Maybes.maybe typ (\styp -> styp) (Maps.lookup v1 (Typing.unTypeSubst subst)))
           _ -> (recurse typ)) typ) 
-      removeVar = (\v -> Typing.TypeSubst (Maps.remove v (Typing.unTypeSubst subst)))
-  in (Rewriting.rewriteType rewrite)
+      removeVar = (\v -> Typing.TypeSubst (Maps.delete v (Typing.unTypeSubst subst)))
+  in (Rewriting.rewriteType rewrite typ0)
 
+-- | Apply a type substitution to a type scheme
 substInTypeScheme :: (Typing.TypeSubst -> Core.TypeScheme -> Core.TypeScheme)
 substInTypeScheme subst ts = Core.TypeScheme {
   Core.typeSchemeVariables = (Core.typeSchemeVariables ts),
-  Core.typeSchemeType = (substInType subst (Core.typeSchemeType ts))}
+  Core.typeSchemeType = (substInType subst (Core.typeSchemeType ts)),
+  Core.typeSchemeConstraints = (Maybes.map (substInClassConstraints subst) (Core.typeSchemeConstraints ts))}
 
+-- | Apply a type substitution to the type annotations within a term
 substTypesInTerm :: (Typing.TypeSubst -> Core.Term -> Core.Term)
-substTypesInTerm subst =  
+substTypesInTerm subst term0 =  
   let rewrite = (\recurse -> \term ->  
-          let forElimination = (\elm -> (\x -> case x of
-                  Core.EliminationProduct v1 -> (forTupleProjection v1)
-                  _ -> (recurse term)) elm) 
+          let dflt = (recurse term) 
               forFunction = (\f -> (\x -> case x of
-                      Core.FunctionElimination v1 -> (forElimination v1)
+                      Core.FunctionElimination _ -> dflt
                       Core.FunctionLambda v1 -> (forLambda v1)
-                      _ -> (recurse term)) f)
-              forLambda = (\l -> recurse (Core.TermFunction (Core.FunctionLambda (Core.Lambda {
+                      _ -> dflt) f)
+              forLambda = (\l -> Core.TermFunction (Core.FunctionLambda (Core.Lambda {
                       Core.lambdaParameter = (Core.lambdaParameter l),
-                      Core.lambdaDomain = (Optionals.map (substInType subst) (Core.lambdaDomain l)),
-                      Core.lambdaBody = (Core.lambdaBody l)}))))
+                      Core.lambdaDomain = (Maybes.map (substInType subst) (Core.lambdaDomain l)),
+                      Core.lambdaBody = (substTypesInTerm subst (Core.lambdaBody l))})))
               forLet = (\l ->  
                       let rewriteBinding = (\b -> Core.Binding {
                               Core.bindingName = (Core.bindingName b),
-                              Core.bindingTerm = (Core.bindingTerm b),
-                              Core.bindingType = (Optionals.map (substInTypeScheme subst) (Core.bindingType b))})
-                      in (recurse (Core.TermLet (Core.Let {
+                              Core.bindingTerm = (substTypesInTerm subst (Core.bindingTerm b)),
+                              Core.bindingType = (Maybes.map (substInTypeScheme subst) (Core.bindingType b))})
+                      in (Core.TermLet (Core.Let {
                         Core.letBindings = (Lists.map rewriteBinding (Core.letBindings l)),
-                        Core.letEnvironment = (Core.letEnvironment l)}))))
-              forTupleProjection = (\tp -> recurse (Core.TermFunction (Core.FunctionElimination (Core.EliminationProduct (Core.TupleProjection {
-                      Core.tupleProjectionArity = (Core.tupleProjectionArity tp),
-                      Core.tupleProjectionIndex = (Core.tupleProjectionIndex tp),
-                      Core.tupleProjectionDomain = (Optionals.map (\types -> Lists.map (substInType subst) types) (Core.tupleProjectionDomain tp))})))))
+                        Core.letBody = (substTypesInTerm subst (Core.letBody l))})))
+              forTypeApplication = (\tt -> Core.TermTypeApplication (Core.TypeApplicationTerm {
+                      Core.typeApplicationTermBody = (substTypesInTerm subst (Core.typeApplicationTermBody tt)),
+                      Core.typeApplicationTermType = (substInType subst (Core.typeApplicationTermType tt))}))
               forTypeLambda = (\ta ->  
                       let param = (Core.typeLambdaParameter ta) 
-                          subst2 = (Typing.TypeSubst (Maps.remove param (Typing.unTypeSubst subst)))
+                          subst2 = (Typing.TypeSubst (Maps.delete param (Typing.unTypeSubst subst)))
                       in (Core.TermTypeLambda (Core.TypeLambda {
                         Core.typeLambdaParameter = param,
                         Core.typeLambdaBody = (substTypesInTerm subst2 (Core.typeLambdaBody ta))})))
           in ((\x -> case x of
             Core.TermFunction v1 -> (forFunction v1)
             Core.TermLet v1 -> (forLet v1)
+            Core.TermTypeApplication v1 -> (forTypeApplication v1)
             Core.TermTypeLambda v1 -> (forTypeLambda v1)
-            Core.TermTypeApplication v1 -> (recurse (Core.TermTypeApplication (Core.TypedTerm {
-              Core.typedTermTerm = (Core.typedTermTerm v1),
-              Core.typedTermType = (substInType subst (Core.typedTermType v1))})))
-            _ -> (recurse term)) term))
-  in (Rewriting.rewriteTerm rewrite)
+            _ -> dflt) term))
+  in (Rewriting.rewriteTerm rewrite term0)

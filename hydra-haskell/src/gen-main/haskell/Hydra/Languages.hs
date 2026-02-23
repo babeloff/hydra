@@ -1,3 +1,5 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | Language constraints for Hydra Core
 
 module Hydra.Languages where
@@ -5,8 +7,9 @@ module Hydra.Languages where
 import qualified Hydra.Coders as Coders
 import qualified Hydra.Core as Core
 import qualified Hydra.Lib.Sets as Sets
-import qualified Hydra.Variants as Variants
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import qualified Hydra.Reflect as Reflect
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -26,12 +29,12 @@ hydraLanguage = Coders.Language {
     Coders.languageConstraintsTypeVariants = typeVariants,
     Coders.languageConstraintsTypes = types}} 
   where 
-    eliminationVariants = (Sets.fromList Variants.eliminationVariants)
-    literalVariants = (Sets.fromList Variants.literalVariants)
-    floatTypes = (Sets.fromList Variants.floatTypes)
-    functionVariants = (Sets.fromList Variants.functionVariants)
-    integerTypes = (Sets.fromList Variants.integerTypes)
-    termVariants = (Sets.fromList Variants.termVariants)
-    typeVariants = (Sets.fromList Variants.typeVariants)
+    eliminationVariants = (Sets.fromList Reflect.eliminationVariants)
+    literalVariants = (Sets.fromList Reflect.literalVariants)
+    floatTypes = (Sets.fromList Reflect.floatTypes)
+    functionVariants = (Sets.fromList Reflect.functionVariants)
+    integerTypes = (Sets.fromList Reflect.integerTypes)
+    termVariants = (Sets.fromList Reflect.termVariants)
+    typeVariants = (Sets.fromList Reflect.typeVariants)
     types = (\t -> (\x -> case x of
       _ -> True) t)

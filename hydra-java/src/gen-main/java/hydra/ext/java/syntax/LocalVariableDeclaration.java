@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class LocalVariableDeclaration implements Serializable {
+public class LocalVariableDeclaration implements Serializable, Comparable<LocalVariableDeclaration> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.LocalVariableDeclaration");
   
   public static final hydra.core.Name FIELD_NAME_MODIFIERS = new hydra.core.Name("modifiers");
@@ -20,9 +20,6 @@ public class LocalVariableDeclaration implements Serializable {
   public final java.util.List<hydra.ext.java.syntax.VariableDeclarator> declarators;
   
   public LocalVariableDeclaration (java.util.List<hydra.ext.java.syntax.VariableModifier> modifiers, hydra.ext.java.syntax.LocalVariableType type, java.util.List<hydra.ext.java.syntax.VariableDeclarator> declarators) {
-    java.util.Objects.requireNonNull((modifiers));
-    java.util.Objects.requireNonNull((type));
-    java.util.Objects.requireNonNull((declarators));
     this.modifiers = modifiers;
     this.type = type;
     this.declarators = declarators;
@@ -33,27 +30,49 @@ public class LocalVariableDeclaration implements Serializable {
     if (!(other instanceof LocalVariableDeclaration)) {
       return false;
     }
-    LocalVariableDeclaration o = (LocalVariableDeclaration) (other);
-    return modifiers.equals(o.modifiers) && type.equals(o.type) && declarators.equals(o.declarators);
+    LocalVariableDeclaration o = (LocalVariableDeclaration) other;
+    return java.util.Objects.equals(
+      this.modifiers,
+      o.modifiers) && java.util.Objects.equals(
+      this.type,
+      o.type) && java.util.Objects.equals(
+      this.declarators,
+      o.declarators);
   }
   
   @Override
   public int hashCode() {
-    return 2 * modifiers.hashCode() + 3 * type.hashCode() + 5 * declarators.hashCode();
+    return 2 * java.util.Objects.hashCode(modifiers) + 3 * java.util.Objects.hashCode(type) + 5 * java.util.Objects.hashCode(declarators);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(LocalVariableDeclaration other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      modifiers.hashCode(),
+      other.modifiers.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) type).compareTo(other.type);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      declarators.hashCode(),
+      other.declarators.hashCode());
   }
   
   public LocalVariableDeclaration withModifiers(java.util.List<hydra.ext.java.syntax.VariableModifier> modifiers) {
-    java.util.Objects.requireNonNull((modifiers));
     return new LocalVariableDeclaration(modifiers, type, declarators);
   }
   
   public LocalVariableDeclaration withType(hydra.ext.java.syntax.LocalVariableType type) {
-    java.util.Objects.requireNonNull((type));
     return new LocalVariableDeclaration(modifiers, type, declarators);
   }
   
   public LocalVariableDeclaration withDeclarators(java.util.List<hydra.ext.java.syntax.VariableDeclarator> declarators) {
-    java.util.Objects.requireNonNull((declarators));
     return new LocalVariableDeclaration(modifiers, type, declarators);
   }
 }

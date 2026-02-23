@@ -59,12 +59,12 @@ public abstract class BinaryOperator implements Serializable {
         return false;
       }
       Boolean_ o = (Boolean_) (other);
-      return value.equals(o.value);
+      return other instanceof BinaryOperator;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -87,12 +87,12 @@ public abstract class BinaryOperator implements Serializable {
         return false;
       }
       Comparison o = (Comparison) (other);
-      return value.equals(o.value);
+      return other instanceof BinaryOperator;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -102,22 +102,21 @@ public abstract class BinaryOperator implements Serializable {
   }
   
   public static final class Power extends hydra.pg.query.BinaryOperator implements Serializable {
-    public Power () {
+    public final Boolean value;
     
+    public Power (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Power)) {
-        return false;
-      }
-      Power o = (Power) (other);
-      return true;
+      return other instanceof Power;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override

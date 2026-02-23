@@ -1,9 +1,12 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A common API for BNF-based grammars, specifying context-free languages
 
 module Hydra.Grammar where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -36,7 +39,9 @@ _Label = (Core.Name "hydra.grammar.Label")
 -- | A pattern together with a name (label)
 data LabeledPattern = 
   LabeledPattern {
+    -- | The label for the pattern
     labeledPatternLabel :: Label,
+    -- | The pattern being labeled
     labeledPatternPattern :: Pattern}
   deriving (Eq, Ord, Read, Show)
 
@@ -48,16 +53,27 @@ _LabeledPattern_pattern = (Core.Name "pattern")
 
 -- | A pattern which matches valid expressions in the language
 data Pattern = 
+  -- | A choice between alternative patterns
   PatternAlternatives [Pattern] |
+  -- | A constant (terminal) pattern
   PatternConstant Constant |
+  -- | A pattern to be ignored (not captured)
   PatternIgnored Pattern |
+  -- | A labeled pattern
   PatternLabeled LabeledPattern |
+  -- | An empty pattern
   PatternNil  |
+  -- | A nonterminal symbol reference
   PatternNonterminal Symbol |
+  -- | An optional pattern (zero or one occurrence)
   PatternOption Pattern |
+  -- | One or more occurrences of a pattern
   PatternPlus Pattern |
+  -- | A regular expression pattern
   PatternRegex Regex |
+  -- | A sequence of patterns
   PatternSequence [Pattern] |
+  -- | Zero or more occurrences of a pattern
   PatternStar Pattern
   deriving (Eq, Ord, Read, Show)
 
@@ -88,7 +104,9 @@ _Pattern_star = (Core.Name "star")
 -- | A BNF production
 data Production = 
   Production {
+    -- | The nonterminal symbol being defined
     productionSymbol :: Symbol,
+    -- | The pattern which defines the symbol
     productionPattern :: Pattern}
   deriving (Eq, Ord, Read, Show)
 

@@ -1,10 +1,13 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A SHACL syntax model. See https://www.w3.org/TR/shacl
 
 module Hydra.Ext.Org.W3.Shacl.Model where
 
 import qualified Hydra.Core as Core
 import qualified Hydra.Ext.Org.W3.Rdf.Syntax as Syntax
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M

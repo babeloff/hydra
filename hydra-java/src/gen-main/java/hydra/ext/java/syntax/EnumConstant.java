@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class EnumConstant implements Serializable {
+public class EnumConstant implements Serializable, Comparable<EnumConstant> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.EnumConstant");
   
   public static final hydra.core.Name FIELD_NAME_MODIFIERS = new hydra.core.Name("modifiers");
@@ -21,13 +21,9 @@ public class EnumConstant implements Serializable {
   
   public final java.util.List<java.util.List<hydra.ext.java.syntax.Expression>> arguments;
   
-  public final hydra.util.Opt<hydra.ext.java.syntax.ClassBody> body;
+  public final hydra.util.Maybe<hydra.ext.java.syntax.ClassBody> body;
   
-  public EnumConstant (java.util.List<hydra.ext.java.syntax.EnumConstantModifier> modifiers, hydra.ext.java.syntax.Identifier identifier, java.util.List<java.util.List<hydra.ext.java.syntax.Expression>> arguments, hydra.util.Opt<hydra.ext.java.syntax.ClassBody> body) {
-    java.util.Objects.requireNonNull((modifiers));
-    java.util.Objects.requireNonNull((identifier));
-    java.util.Objects.requireNonNull((arguments));
-    java.util.Objects.requireNonNull((body));
+  public EnumConstant (java.util.List<hydra.ext.java.syntax.EnumConstantModifier> modifiers, hydra.ext.java.syntax.Identifier identifier, java.util.List<java.util.List<hydra.ext.java.syntax.Expression>> arguments, hydra.util.Maybe<hydra.ext.java.syntax.ClassBody> body) {
     this.modifiers = modifiers;
     this.identifier = identifier;
     this.arguments = arguments;
@@ -39,32 +35,61 @@ public class EnumConstant implements Serializable {
     if (!(other instanceof EnumConstant)) {
       return false;
     }
-    EnumConstant o = (EnumConstant) (other);
-    return modifiers.equals(o.modifiers) && identifier.equals(o.identifier) && arguments.equals(o.arguments) && body.equals(o.body);
+    EnumConstant o = (EnumConstant) other;
+    return java.util.Objects.equals(
+      this.modifiers,
+      o.modifiers) && java.util.Objects.equals(
+      this.identifier,
+      o.identifier) && java.util.Objects.equals(
+      this.arguments,
+      o.arguments) && java.util.Objects.equals(
+      this.body,
+      o.body);
   }
   
   @Override
   public int hashCode() {
-    return 2 * modifiers.hashCode() + 3 * identifier.hashCode() + 5 * arguments.hashCode() + 7 * body.hashCode();
+    return 2 * java.util.Objects.hashCode(modifiers) + 3 * java.util.Objects.hashCode(identifier) + 5 * java.util.Objects.hashCode(arguments) + 7 * java.util.Objects.hashCode(body);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(EnumConstant other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      modifiers.hashCode(),
+      other.modifiers.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) identifier).compareTo(other.identifier);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      arguments.hashCode(),
+      other.arguments.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      body.hashCode(),
+      other.body.hashCode());
   }
   
   public EnumConstant withModifiers(java.util.List<hydra.ext.java.syntax.EnumConstantModifier> modifiers) {
-    java.util.Objects.requireNonNull((modifiers));
     return new EnumConstant(modifiers, identifier, arguments, body);
   }
   
   public EnumConstant withIdentifier(hydra.ext.java.syntax.Identifier identifier) {
-    java.util.Objects.requireNonNull((identifier));
     return new EnumConstant(modifiers, identifier, arguments, body);
   }
   
   public EnumConstant withArguments(java.util.List<java.util.List<hydra.ext.java.syntax.Expression>> arguments) {
-    java.util.Objects.requireNonNull((arguments));
     return new EnumConstant(modifiers, identifier, arguments, body);
   }
   
-  public EnumConstant withBody(hydra.util.Opt<hydra.ext.java.syntax.ClassBody> body) {
-    java.util.Objects.requireNonNull((body));
+  public EnumConstant withBody(hydra.util.Maybe<hydra.ext.java.syntax.ClassBody> body) {
     return new EnumConstant(modifiers, identifier, arguments, body);
   }
 }

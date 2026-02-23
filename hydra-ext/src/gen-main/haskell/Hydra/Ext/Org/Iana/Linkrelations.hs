@@ -1,9 +1,12 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | All IANA Link Relation Types, as of 2022-10-11. See https://www.iana.org/assignments/link-relations/link-relations.xhtml
 
 module Hydra.Ext.Org.Iana.Linkrelations where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -147,7 +150,7 @@ data LinkRelationType =
   LinkRelationTypeNext  |
   -- | Refers to the immediately following archive resource. [RFC5005]
   LinkRelationTypeNext_archive  |
-  -- | Indicates that the context’s original author or publisher does not endorse the link target. [HTML]
+  -- | Indicates that the context's original author or publisher does not endorse the link target. [HTML]
   LinkRelationTypeNofollow  |
   -- | Indicates that any newly created top-level browsing context which results from following the link will not be an auxiliary browsing context. [HTML]
   LinkRelationTypeNoopener  |

@@ -1,15 +1,28 @@
 module Hydra.TestUtils (
   module Hydra.TestUtils,
-  module Hydra.Staging.TestGraph,
+  module Hydra.Sources.Libraries,
+  module Hydra.Test.TestGraph,
+  module Hydra.Test.TestTypes,
+  module Hydra.Test.TestTerms,
 ) where
 
 import Hydra.Kernel
 import Hydra.Adapt.Literals
 import Hydra.Adapt.Terms
 import Hydra.Adapt.Utils
-import Hydra.Staging.TestGraph
 import Hydra.ArbitraryCore()
+import Hydra.Dsl.Bootstrap
+import Hydra.Dsl.Terms
+import Hydra.Sources.Kernel.Types.All
+import Hydra.Sources.Kernel.Terms.All (kernelTermsModules)
+import Hydra.Sources.Kernel.Types.Core
+import Hydra.Sources.Libraries
+import Hydra.Test.TestGraph
+import Hydra.Test.TestTypes
+import Hydra.Test.TestTerms
 import qualified Hydra.Dsl.Terms as Terms
+import qualified Hydra.Dsl.Types as Types
+import qualified Hydra.Encode.Core as EncodeCore
 import qualified Hydra.Show.Core as ShowCore
 
 import qualified Test.Hspec as H
@@ -20,6 +33,22 @@ import qualified Data.Set as S
 import qualified Data.Maybe as Y
 import qualified Data.ByteString.Lazy as BS
 
+
+testGraph :: Graph
+testGraph = elementsToGraph hydraCoreGraph (Just testSchemaGraph) (kernelTermBindings ++ dataBindings)
+  where
+    -- Include kernel term definitions (like hydra.monads.pure) for interpreter tests
+    kernelTermBindings = L.concat $ fmap moduleElements kernelTermsModules
+    dataBindings = (\(name, term) -> Binding name term Nothing) <$> M.toList testTerms
+
+testSchemaGraph :: Graph
+testSchemaGraph = elementsToGraph hydraCoreGraph (Just hydraCoreGraph)
+    -- We include all types from the Hydra kernel, as well as some additional types specifically for tests.
+    (kernelElements ++ testElements)
+  where
+    kernelElements = L.concat $ fmap moduleElements kernelTypesModules
+    testElements = fmap
+      (\(n, t) -> Binding n (EncodeCore.type_ t) $ Just $ Types.mono $ TypeVariable _Type) $ M.toList testTypes
 
 baseLanguage :: Language
 baseLanguage = hydraLanguage
@@ -88,8 +117,8 @@ checkDataAdapter :: [TypeVariant] -> Type -> Type -> Bool -> Term -> Term -> H.E
 checkDataAdapter = checkAdapter deannotateTerm termAdapter termTestContext
 
 checkSerdeRoundTrip :: (Type -> Flow Graph (Coder Graph Graph Term BS.ByteString))
-  -> TypedTerm -> H.Expectation
-checkSerdeRoundTrip mkSerde (TypedTerm term typ) = do
+  -> TypeApplicationTerm -> H.Expectation
+checkSerdeRoundTrip mkSerde (TypeApplicationTerm term typ) = do
     case mserde of
       Nothing -> HL.assertFailure (traceSummary trace)
       Just serde -> shouldSucceedWith
@@ -99,8 +128,8 @@ checkSerdeRoundTrip mkSerde (TypedTerm term typ) = do
     FlowState mserde _ trace = unFlow (mkSerde typ) testGraph emptyTrace
 
 checkSerialization :: (Type -> Flow Graph (Coder Graph Graph Term String))
-  -> TypedTerm -> String -> H.Expectation
-checkSerialization mkSerdeStr (TypedTerm term typ) expected = do
+  -> TypeApplicationTerm -> String -> H.Expectation
+checkSerialization mkSerdeStr (TypeApplicationTerm term typ) expected = do
     case mserde of
       Nothing -> HL.assertFailure (traceSummary trace)
       Just serde -> shouldSucceedWith
@@ -112,6 +141,14 @@ checkSerialization mkSerdeStr (TypedTerm term typ) expected = do
 
 eval :: Term -> Flow Graph Term
 eval = reduceTerm True
+
+expectEtaExpansionResult :: String -> Term -> Term -> H.SpecWith ()
+expectEtaExpansionResult desc input output = H.it "eta expansion" $ do
+  tx <- fromTestFlow desc $ graphToTypeContext testGraph
+  -- Use the original etaExpandTypedTerm (monadic) instead of etaExpandTermNew (pure)
+  -- to test the production code path
+  result <- fromTestFlow desc $ etaExpandTypedTerm tx input
+  result `H.shouldBe` output
 
 expectFailure :: (a -> String) -> String -> Flow () a -> H.Expectation
 expectFailure print desc f = case my of
@@ -128,37 +165,60 @@ expectInferenceFailure desc term = expectFailure (ShowCore.typeScheme . snd) des
   cx <- graphToInferenceContext testGraph
   inferTypeOf cx term
 
-expectInferenceResult :: String -> Term -> TypeScheme -> H.Expectation
+expectInferenceResult :: String -> Term -> TypeScheme -> H.SpecWith ()
 expectInferenceResult desc term expected = do
-    expectSuccess desc (ShowCore.typeScheme . snd <$> result) (ShowCore.typeScheme expected)
-    expectSuccess desc (ShowCore.term . removeTypesFromTerm . fst <$> result) (ShowCore.term $ removeTypesFromTerm term)
-  where
-    result = do
-      cx <- graphToInferenceContext testGraph
-      inferTypeOf cx term
+  (iterm, its) <- H.runIO $ fromTestFlow desc $ do
+    cx <- graphToInferenceContext testGraph
+    inferTypeOf cx term
+
+  H.it "inferred type" $
+    H.shouldBe (ShowCore.typeScheme its) (ShowCore.typeScheme expected)
+  H.it "inferred term" $
+    H.shouldBe (ShowCore.term $ removeTypesFromTerm iterm) (ShowCore.term $ removeTypesFromTerm term)
 
 expectSuccess :: (Eq a, Show a) => String -> Flow () a -> a -> H.Expectation
-expectSuccess desc f x = case my of
+expectSuccess desc flow x = case my of
     Nothing -> HL.assertFailure $ traceSummary trace
     Just y -> y `H.shouldBe` x
   where
-    FlowState my _ trace = unFlow f2 () emptyTrace
-    f2 = do
+    FlowState my _ trace = unFlow flow2 () emptyTrace
+    flow2 = do
       putAttr key_debugId $ Terms.string desc
-      f
+      flow
 
-expectTypeOfResult :: String -> M.Map Name Type -> Term -> Type -> H.Expectation
-expectTypeOfResult desc types term expected = do
-    expectSuccess desc (ShowCore.type_ <$> result) (ShowCore.type_ expected)
+expectTypeCheckingResult :: String -> Term -> Term -> Type -> H.SpecWith ()
+expectTypeCheckingResult desc input outputTerm outputType = do
+  (iterm, itype, rtype) <- H.runIO $ fromTestFlow desc $ do
+    cx <- graphToInferenceContext testGraph
+    let tx = TypeContext M.empty M.empty S.empty S.empty S.empty cx
+
+    -- typeOf is always called on System F terms
+    (iterm, ts) <- inferTypeOf cx input
+    let itype = typeSchemeToFType ts
+
+    rtype <- typeOf tx [] iterm
+    return (iterm, itype, rtype)
+
+  -- Three labeled assertions as per the type checking specification
+  H.it "inferred term" $
+    H.shouldBe (ShowCore.term iterm) (ShowCore.term outputTerm)
+  H.it "inferred type" $
+    H.shouldBe (ShowCore.type_ itype) (ShowCore.type_ outputType)
+  H.it "reconstructed type" $
+    H.shouldBe (ShowCore.type_ rtype) (ShowCore.type_ outputType)
+
+fromTestFlow :: String -> Flow () a -> IO a
+fromTestFlow desc flow = case my of
+    Nothing -> fail $ traceSummary trace
+    Just y -> return y
   where
-    result = do
-      cx <- graphToInferenceContext testGraph
+    FlowState my _ trace = unFlow flow2 () emptyTrace
+    flow2 = do
+      putAttr key_debugId $ Terms.string desc
+      flow
 
-      -- typeOf is always called on System F terms
-      (iterm, ts) <- inferTypeOf cx term
-      let vars = S.fromList $ typeSchemeVariables ts
-
-      typeOfInternal cx vars types [] iterm
+makeMap :: [(String, Int)] -> Term
+makeMap keyvals = Terms.map $ M.fromList $ ((\(k, v) -> (Terms.string k, Terms.int32 v)) <$> keyvals)
 
 shouldFail :: Flow Graph a -> H.Expectation
 shouldFail f = H.shouldBe True (Y.isNothing $ flowStateValue $ unFlow f testGraph emptyTrace)

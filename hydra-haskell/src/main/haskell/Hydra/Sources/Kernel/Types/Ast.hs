@@ -1,106 +1,190 @@
 module Hydra.Sources.Kernel.Types.Ast where
 
 -- Standard type-level kernel imports
-import           Hydra.Kernel
-import           Hydra.Dsl.Annotations
+import           Hydra.Kernel hiding (op, brackets)
+import           Hydra.Dsl.Annotations (doc)
 import           Hydra.Dsl.Bootstrap
-import qualified Hydra.Dsl.Terms                 as Terms
-import           Hydra.Dsl.Types                 as Types
+import           Hydra.Dsl.Types ((>:), (@@), (~>))
+import qualified Hydra.Dsl.Types as T
 import qualified Hydra.Sources.Kernel.Types.Core as Core
-import qualified Data.List                       as L
-import qualified Data.Map                        as M
-import qualified Data.Set                        as S
-import qualified Data.Maybe                      as Y
 
+
+ns :: Namespace
+ns = Namespace "hydra.ast"
+
+define :: String -> Type -> Binding
+define = defineType ns
 
 module_ :: Module
-module_ = Module ns elements [] [Core.module_] $
+module_ = Module ns elements [] [Core.ns] $
     Just "A model which provides a common syntax tree for Hydra serializers"
   where
-    ns = Namespace "hydra.ast"
-    def = datatype ns
-    ast = typeref ns
-
     elements = [
+      associativity,
+      blockStyle,
+      bracketExpr,
+      brackets,
+      expr,
+      indentedExpression,
+      indentStyle,
+      op,
+      opExpr,
+      padding,
+      precedence,
+      symbol,
+      ws]
 
-      def "Associativity" $
-        doc "Operator associativity" $
-        enum ["none", "left", "right", "both"],
+associativity :: Binding
+associativity = define "Associativity" $
+  doc "Operator associativity" $
+  T.enum ["none", "left", "right", "both"]
 
-      def "BlockStyle" $
-        doc "Formatting option for code blocks" $
-        record [
-          "indent">: optional string,
-          "newlineBeforeContent">: boolean,
-          "newlineAfterContent">: boolean],
+blockStyle :: Binding
+blockStyle = define "BlockStyle" $
+  doc "Formatting option for code blocks" $
+  T.record [
+    "indent">:
+      doc "An optional indentation string" $
+      T.maybe T.string,
+    "newlineBeforeContent">:
+      doc "Whether to place a newline before the content" $
+      T.boolean,
+    "newlineAfterContent">:
+      doc "Whether to place a newline after the content" $
+      T.boolean]
 
-      def "BracketExpr" $
-        doc "An expression enclosed by brackets" $
-        record [
-          "brackets">: ast "Brackets",
-          "enclosed">: ast "Expr",
-          "style">: ast "BlockStyle"],
+bracketExpr :: Binding
+bracketExpr = define "BracketExpr" $
+  doc "An expression enclosed by brackets" $
+  T.record [
+    "brackets">:
+      doc "The bracket pair enclosing the expression"
+      brackets,
+    "enclosed">:
+      doc "The expression within the brackets"
+      expr,
+    "style">:
+      doc "The formatting style for the bracketed block"
+      blockStyle]
 
-      def "Brackets" $
-        doc "Matching open and close bracket symbols" $
-        record [
-          "open">: ast "Symbol",
-          "close">: ast "Symbol"],
+brackets :: Binding
+brackets = define "Brackets" $
+  doc "Matching open and close bracket symbols" $
+  T.record [
+    "open">:
+      doc "The opening bracket symbol"
+      symbol,
+    "close">:
+      doc "The closing bracket symbol"
+      symbol]
 
-      def "Expr" $
-        doc "An abstract expression" $
-        union [
-          "const">: ast "Symbol",
-          "indent">: ast "IndentedExpression",
-          "op">: ast "OpExpr",
-          "brackets">: ast "BracketExpr"],
+expr :: Binding
+expr = define "Expr" $
+  doc "An abstract expression" $
+  T.union [
+    "const">:
+      doc "A constant symbol"
+      symbol,
+    "indent">:
+      doc "An indented expression"
+      indentedExpression,
+    "op">:
+      doc "An operator expression"
+      opExpr,
+    "brackets">:
+      doc "A bracketed expression"
+      bracketExpr]
 
-      def "IndentedExpression" $
-        doc "An expression indented in a certain style" $
-        record [
-          "style">: ast "IndentStyle",
-          "expr">: ast "Expr"],
+indentedExpression :: Binding
+indentedExpression = define "IndentedExpression" $
+  doc "An expression indented in a certain style" $
+  T.record [
+    "style">:
+      doc "The indentation style"
+      indentStyle,
+    "expr">:
+      doc "The expression to be indented"
+      expr]
 
-      def "IndentStyle" $
-        doc "Any of several indentation styles" $
-        union [
-          "allLines">: string,
-          "subsequentLines">: string],
+indentStyle :: Binding
+indentStyle = define "IndentStyle" $
+  doc "Any of several indentation styles" $
+  T.union [
+    "allLines">:
+      doc "Indent all lines with the given string" $
+      T.string,
+    "subsequentLines">:
+      doc "Indent only lines after the first with the given string" $
+      T.string]
 
-      def "Op" $
-        doc "An operator symbol" $
-        record [
-          "symbol">: ast "Symbol",
-          "padding">: ast "Padding",
-          "precedence">: ast "Precedence",
-          "associativity">: ast "Associativity"],
+op :: Binding
+op = define "Op" $
+  doc "An operator symbol" $
+  T.record [
+    "symbol">:
+      doc "The operator symbol"
+      symbol,
+    "padding">:
+      doc "The padding around the operator"
+      padding,
+    "precedence">:
+      doc "The precedence of the operator"
+      precedence,
+    "associativity">:
+      doc "The associativity of the operator"
+      associativity]
 
-      def "OpExpr" $
-        doc "An operator expression" $
-        record [
-          "op">: ast "Op",
-          "lhs">: ast "Expr",
-          "rhs">: ast "Expr"],
+opExpr :: Binding
+opExpr = define "OpExpr" $
+  doc "An operator expression" $
+  T.record [
+    "op">:
+      doc "The operator"
+      op,
+    "lhs">:
+      doc "The left-hand side operand"
+      expr,
+    "rhs">:
+      doc "The right-hand side operand"
+      expr]
 
-      def "Padding" $
-        doc "Left and right padding for an operator" $
-        record [
-          "left">: ast "Ws",
-          "right">: ast "Ws"],
+padding :: Binding
+padding = define "Padding" $
+  doc "Left and right padding for an operator" $
+  T.record [
+    "left">:
+      doc "Padding to the left of the operator"
+      ws,
+    "right">:
+      doc "Padding to the right of the operator"
+      ws]
 
-      def "Precedence" $
-        doc "Operator precedence" $
-        wrap int32,
+precedence :: Binding
+precedence = define "Precedence" $
+  doc "Operator precedence" $
+  T.wrap T.int32
 
-      def "Symbol" $
-        doc "Any symbol" $
-        wrap string,
+symbol :: Binding
+symbol = define "Symbol" $
+  doc "Any symbol" $
+  T.wrap T.string
 
-      def "Ws" $
-        doc "One of several classes of whitespace" $
-        union [
-          "none">: unit,
-          "space">: unit,
-          "break">: unit,
-          "breakAndIndent">: string,
-          "doubleBreak">: unit]]
+ws :: Binding
+ws = define "Ws" $
+  doc "One of several classes of whitespace" $
+  T.union [
+    "none">:
+      doc "No whitespace" $
+      T.unit,
+    "space">:
+      doc "A single space" $
+      T.unit,
+    "break">:
+      doc "A line break" $
+      T.unit,
+    "breakAndIndent">:
+      doc "A line break followed by indentation" $
+      T.string,
+    "doubleBreak">:
+      doc "Two line breaks" $
+      T.unit]

@@ -7,6 +7,7 @@ import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Expect;
 import hydra.dsl.Terms;
+import hydra.dsl.Types;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -18,6 +19,9 @@ import static hydra.dsl.Types.function;
 import static hydra.dsl.Types.list;
 import static hydra.dsl.Types.scheme;
 
+/**
+ * Returns all elements except the first.
+ */
 public class Tail extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.lists.tail");
@@ -34,6 +38,12 @@ public class Tail extends PrimitiveFunction {
                 (Function<List<Term>, Term>) terms -> Terms.list(apply(terms)));
     }
 
+    /**
+     * Returns the tail of the list.
+     * @param <X> the element type
+     * @param list the list to get the tail from
+     * @return the tail (all elements except the first)
+     */
     public static <X> List<X> apply(List<X> list) {
         return list.subList(1, list.size());
     }

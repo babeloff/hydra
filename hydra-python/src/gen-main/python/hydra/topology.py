@@ -1,19 +1,22 @@
-"""A model for simple graphs as adjacency lists."""
+# Note: this is an automatically generated file. Do not edit.
+
+r"""A model for simple graphs as adjacency lists."""
 
 from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from hydra.dsl.python import FrozenDict, frozenlist
-from typing import Annotated, Generic, TypeVar
+from typing import Annotated, Generic, TypeAlias, TypeVar
 import hydra.core
 
 A = TypeVar("A")
 
-type Graph = FrozenDict[Vertex, frozenlist[Vertex]]
+# A directed graph represented as an adjacency list mapping vertices to their outgoing neighbors.
+Graph: TypeAlias = "FrozenDict[Vertex, frozenlist[Vertex]]"
 
 GRAPH__NAME = hydra.core.Name("hydra.topology.Graph")
 
-@dataclass
+@dataclass(frozen=True)
 class OrderingIsomorphism(Generic[A]):
     encode: Annotated[Callable[[frozenlist[A]], frozenlist[A]], "Mapping from source ordering to target ordering"]
     decode: Annotated[Callable[[frozenlist[A]], frozenlist[A]], "Mapping from target ordering to source ordering"]
@@ -22,7 +25,7 @@ ORDERING_ISOMORPHISM__NAME = hydra.core.Name("hydra.topology.OrderingIsomorphism
 ORDERING_ISOMORPHISM__ENCODE__NAME = hydra.core.Name("encode")
 ORDERING_ISOMORPHISM__DECODE__NAME = hydra.core.Name("decode")
 
-@dataclass
+@dataclass(frozen=True)
 class TarjanState:
     counter: Annotated[int, "Next available index for vertices in the DFS traversal"]
     indices: Annotated[FrozenDict[Vertex, int], "Mapping from vertices to their indices in the DFS traversal"]
@@ -39,6 +42,7 @@ TARJAN_STATE__STACK__NAME = hydra.core.Name("stack")
 TARJAN_STATE__ON_STACK__NAME = hydra.core.Name("onStack")
 TARJAN_STATE__SCCS__NAME = hydra.core.Name("sccs")
 
-type Vertex = int
+# A graph vertex, represented as a 32-bit integer identifier.
+Vertex: TypeAlias = "int"
 
 VERTEX__NAME = hydra.core.Name("hydra.topology.Vertex")

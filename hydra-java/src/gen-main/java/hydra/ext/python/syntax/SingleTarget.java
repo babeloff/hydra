@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class SingleTarget implements Serializable {
+public abstract class SingleTarget implements Serializable, Comparable<SingleTarget> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.SingleTarget");
   
   public static final hydra.core.Name FIELD_NAME_SUBSCRIPT_ATTRIBUTE_TARGET = new hydra.core.Name("subscriptAttributeTarget");
@@ -29,19 +29,19 @@ public abstract class SingleTarget implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(SingleTarget instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(SubscriptAttributeTarget instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Name instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Parens instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -49,7 +49,6 @@ public abstract class SingleTarget implements Serializable {
     public final hydra.ext.python.syntax.SingleSubscriptAttributeTarget value;
     
     public SubscriptAttributeTarget (hydra.ext.python.syntax.SingleSubscriptAttributeTarget value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -58,13 +57,26 @@ public abstract class SingleTarget implements Serializable {
       if (!(other instanceof SubscriptAttributeTarget)) {
         return false;
       }
-      SubscriptAttributeTarget o = (SubscriptAttributeTarget) (other);
-      return value.equals(o.value);
+      SubscriptAttributeTarget o = (SubscriptAttributeTarget) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SingleTarget other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      SubscriptAttributeTarget o = (SubscriptAttributeTarget) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -77,7 +89,6 @@ public abstract class SingleTarget implements Serializable {
     public final hydra.ext.python.syntax.Name value;
     
     public Name (hydra.ext.python.syntax.Name value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -86,13 +97,26 @@ public abstract class SingleTarget implements Serializable {
       if (!(other instanceof Name)) {
         return false;
       }
-      Name o = (Name) (other);
-      return value.equals(o.value);
+      Name o = (Name) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SingleTarget other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Name o = (Name) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -105,7 +129,6 @@ public abstract class SingleTarget implements Serializable {
     public final hydra.ext.python.syntax.SingleTarget value;
     
     public Parens (hydra.ext.python.syntax.SingleTarget value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -114,13 +137,26 @@ public abstract class SingleTarget implements Serializable {
       if (!(other instanceof Parens)) {
         return false;
       }
-      Parens o = (Parens) (other);
-      return value.equals(o.value);
+      Parens o = (Parens) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SingleTarget other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Parens o = (Parens) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

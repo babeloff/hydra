@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class AssertStatement implements Serializable {
+public abstract class AssertStatement implements Serializable, Comparable<AssertStatement> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.AssertStatement");
   
   public static final hydra.core.Name FIELD_NAME_SINGLE = new hydra.core.Name("single");
@@ -25,15 +25,15 @@ public abstract class AssertStatement implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(AssertStatement instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Single instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Pair instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -41,7 +41,6 @@ public abstract class AssertStatement implements Serializable {
     public final hydra.ext.java.syntax.Expression value;
     
     public Single (hydra.ext.java.syntax.Expression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -50,13 +49,26 @@ public abstract class AssertStatement implements Serializable {
       if (!(other instanceof Single)) {
         return false;
       }
-      Single o = (Single) (other);
-      return value.equals(o.value);
+      Single o = (Single) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssertStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Single o = (Single) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -69,7 +81,6 @@ public abstract class AssertStatement implements Serializable {
     public final hydra.ext.java.syntax.AssertStatement_Pair value;
     
     public Pair (hydra.ext.java.syntax.AssertStatement_Pair value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -78,13 +89,26 @@ public abstract class AssertStatement implements Serializable {
       if (!(other instanceof Pair)) {
         return false;
       }
-      Pair o = (Pair) (other);
-      return value.equals(o.value);
+      Pair o = (Pair) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssertStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Pair o = (Pair) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

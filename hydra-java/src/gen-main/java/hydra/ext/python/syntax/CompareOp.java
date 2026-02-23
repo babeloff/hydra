@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class CompareOp implements Serializable {
+public abstract class CompareOp implements Serializable, Comparable<CompareOp> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.CompareOp");
   
   public static final hydra.core.Name FIELD_NAME_EQ = new hydra.core.Name("eq");
@@ -57,47 +57,47 @@ public abstract class CompareOp implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(CompareOp instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Eq instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Noteq instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Lte instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Lt instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Gte instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Gt instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Notin instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(In instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Isnot instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Is instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -111,12 +111,22 @@ public abstract class CompareOp implements Serializable {
       if (!(other instanceof Eq)) {
         return false;
       }
-      Eq o = (Eq) (other);
+      Eq o = (Eq) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CompareOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -136,12 +146,22 @@ public abstract class CompareOp implements Serializable {
       if (!(other instanceof Noteq)) {
         return false;
       }
-      Noteq o = (Noteq) (other);
+      Noteq o = (Noteq) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CompareOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -161,12 +181,22 @@ public abstract class CompareOp implements Serializable {
       if (!(other instanceof Lte)) {
         return false;
       }
-      Lte o = (Lte) (other);
+      Lte o = (Lte) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CompareOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -186,12 +216,22 @@ public abstract class CompareOp implements Serializable {
       if (!(other instanceof Lt)) {
         return false;
       }
-      Lt o = (Lt) (other);
+      Lt o = (Lt) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CompareOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -211,12 +251,22 @@ public abstract class CompareOp implements Serializable {
       if (!(other instanceof Gte)) {
         return false;
       }
-      Gte o = (Gte) (other);
+      Gte o = (Gte) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CompareOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -236,12 +286,22 @@ public abstract class CompareOp implements Serializable {
       if (!(other instanceof Gt)) {
         return false;
       }
-      Gt o = (Gt) (other);
+      Gt o = (Gt) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CompareOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -261,12 +321,22 @@ public abstract class CompareOp implements Serializable {
       if (!(other instanceof Notin)) {
         return false;
       }
-      Notin o = (Notin) (other);
+      Notin o = (Notin) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CompareOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -286,12 +356,22 @@ public abstract class CompareOp implements Serializable {
       if (!(other instanceof In)) {
         return false;
       }
-      In o = (In) (other);
+      In o = (In) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CompareOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -311,12 +391,22 @@ public abstract class CompareOp implements Serializable {
       if (!(other instanceof Isnot)) {
         return false;
       }
-      Isnot o = (Isnot) (other);
+      Isnot o = (Isnot) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CompareOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -336,12 +426,22 @@ public abstract class CompareOp implements Serializable {
       if (!(other instanceof Is)) {
         return false;
       }
-      Is o = (Is) (other);
+      Is o = (Is) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CompareOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

@@ -1,10 +1,12 @@
-"""A model for Hydra transformation workflows."""
+# Note: this is an automatically generated file. Do not edit.
+
+r"""A model for Hydra transformation workflows."""
 
 from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
-from hydra.dsl.python import frozenlist, Node
-from typing import Annotated, Generic, TypeVar
+from hydra.dsl.python import Node, frozenlist
+from typing import Annotated, Generic, TypeAlias, TypeVar
 import hydra.compute
 import hydra.core
 import hydra.graph
@@ -13,9 +15,9 @@ import hydra.module
 A = TypeVar("A")
 S = TypeVar("S")
 
-@dataclass
+@dataclass(frozen=True)
 class HydraSchemaSpec:
-    """The specification of a Hydra schema, provided as a set of modules and a distinguished type."""
+    r"""The specification of a Hydra schema, provided as a set of modules and a distinguished type."""
     
     modules: Annotated[frozenlist[hydra.module.Module], "The modules to include in the schema graph"]
     type_name: Annotated[hydra.core.Name, "The name of the top-level type; all data which passes through the workflow will be instances of this type"]
@@ -24,9 +26,9 @@ HYDRA_SCHEMA_SPEC__NAME = hydra.core.Name("hydra.workflow.HydraSchemaSpec")
 HYDRA_SCHEMA_SPEC__MODULES__NAME = hydra.core.Name("modules")
 HYDRA_SCHEMA_SPEC__TYPE_NAME__NAME = hydra.core.Name("typeName")
 
-@dataclass
+@dataclass(frozen=True)
 class LastMile(Generic[S, A]):
-    """The last mile of a transformation, which encodes and serializes terms to a file."""
+    r"""The last mile of a transformation, which encodes and serializes terms to a file."""
     
     encoder: Annotated[Callable[[hydra.core.Type], hydra.compute.Flow[S, Callable[[hydra.core.Term, hydra.graph.Graph], hydra.compute.Flow[S, frozenlist[A]]]]], "An encoder for terms to a list of output objects"]
     serializer: Annotated[Callable[[frozenlist[A]], hydra.compute.Flow[S, str]], "A function which serializes a list of output objects to a string representation"]
@@ -38,25 +40,38 @@ LAST_MILE__SERIALIZER__NAME = hydra.core.Name("serializer")
 LAST_MILE__FILE_EXTENSION__NAME = hydra.core.Name("fileExtension")
 
 class SchemaSpecHydra(Node["HydraSchemaSpec"]):
-    """A native Hydra schema."""
+    r"""A native Hydra schema"""
 
 class SchemaSpecFile(Node[str]):
-    """A schema provided as a file, available at the given file path."""
+    r"""A schema provided as a file, available at the given file path"""
 
-class SchemaSpecProvided(Node[None]):
-    """A schema which will be provided within the workflow."""
+class SchemaSpecProvided:
+    r"""A schema which will be provided within the workflow"""
+    
+    __slots__ = ()
+    def __eq__(self, other):
+        return isinstance(other, SchemaSpecProvided)
+    def __hash__(self):
+        return hash("SchemaSpecProvided")
+
+class _SchemaSpecMeta(type):
+    def __getitem__(cls, item):
+        return object
 
 # The specification of a schema at the source end of a workflow.
-type SchemaSpec = SchemaSpecHydra | SchemaSpecFile | SchemaSpecProvided
+class SchemaSpec(metaclass=_SchemaSpecMeta):
+    r"""SchemaSpecHydra | SchemaSpecFile | SchemaSpecProvided"""
+    
+    pass
 
 SCHEMA_SPEC__NAME = hydra.core.Name("hydra.workflow.SchemaSpec")
 SCHEMA_SPEC__HYDRA__NAME = hydra.core.Name("hydra")
 SCHEMA_SPEC__FILE__NAME = hydra.core.Name("file")
 SCHEMA_SPEC__PROVIDED__NAME = hydra.core.Name("provided")
 
-@dataclass
+@dataclass(frozen=True)
 class TransformWorkflow:
-    """The specification of a workflow which takes a schema specification, reads data from a directory, and writes data to another directory."""
+    r"""The specification of a workflow which takes a schema specification, reads data from a directory, and writes data to another directory."""
     
     name: Annotated[str, "A descriptive name for the workflow"]
     schema_spec: Annotated[SchemaSpec, "The schema specification"]

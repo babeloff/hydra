@@ -7,7 +7,7 @@ import hydra.core.Name;
 import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Types;
-import hydra.dsl.prims.Optionals;
+import hydra.dsl.prims.Maybes;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -20,8 +20,12 @@ import static hydra.dsl.Terms.lambda;
 import static hydra.dsl.Terms.project;
 import static hydra.dsl.Terms.unwrap;
 import static hydra.dsl.Terms.variable;
+import static hydra.dsl.Terms.wrap;
 
 
+/**
+ * Maps a function over a flow.
+ */
 public class Map extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.flows.map");
@@ -38,20 +42,38 @@ public class Map extends PrimitiveFunction {
         return args -> {
             Term mapping = args.get(0);
             Term input = args.get(1);
-            Term output = lambda("s", "t",
+            Term output = wrap(Flow.TYPE_NAME, lambda("s", "t",
                     app(lambda("q", flowState(
-                                    app(Optionals.map(), mapping, app(project(FlowState.TYPE_NAME, "value"), variable("q"))),
+                                    app(Maybes.map(), mapping, app(project(FlowState.TYPE_NAME, "value"),
+                                            variable("q"))),
                                     app(project(FlowState.TYPE_NAME, "state"), variable("q")),
                                     app(project(FlowState.TYPE_NAME, "trace"), variable("q")))),
-                            (app(unwrap(Flow.TYPE_NAME), input, variable("s"), variable("t")))));
+                            (app(unwrap(Flow.TYPE_NAME), input, variable("s"), variable("t"))))));
             return Flows.pure(output);
         };
     }
 
+    /**
+     * Transforms a flow value.
+     * @param <S> the state type
+     * @param <X> the input type
+     * @param <Y> the output type
+     * @param mapping the function
+     * @return the transformed flow
+     */
     public static <S, X, Y> Function<Flow<S, X>, Flow<S, Y>> apply(Function<X, Y> mapping) {
         return input -> apply(mapping, input);
     }
 
+    /**
+     * Transforms a flow value.
+     * @param <S> the state type
+     * @param <X> the input type
+     * @param <Y> the output type
+     * @param mapping the function
+     * @param input the flowValue
+     * @return the transformed flow
+     */
     public static <S, X, Y> Flow<S, Y> apply(Function<X, Y> mapping, Flow<S, X> input) {
         return Flows.map(mapping, input);
     }

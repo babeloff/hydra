@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class StarNamedExpression implements Serializable {
+public abstract class StarNamedExpression implements Serializable, Comparable<StarNamedExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.StarNamedExpression");
   
   public static final hydra.core.Name FIELD_NAME_STAR = new hydra.core.Name("star");
@@ -25,15 +25,15 @@ public abstract class StarNamedExpression implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(StarNamedExpression instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Star instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Simple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -41,7 +41,6 @@ public abstract class StarNamedExpression implements Serializable {
     public final hydra.ext.python.syntax.BitwiseOr value;
     
     public Star (hydra.ext.python.syntax.BitwiseOr value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -50,13 +49,26 @@ public abstract class StarNamedExpression implements Serializable {
       if (!(other instanceof Star)) {
         return false;
       }
-      Star o = (Star) (other);
-      return value.equals(o.value);
+      Star o = (Star) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarNamedExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Star o = (Star) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -69,7 +81,6 @@ public abstract class StarNamedExpression implements Serializable {
     public final hydra.ext.python.syntax.NamedExpression value;
     
     public Simple (hydra.ext.python.syntax.NamedExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -78,13 +89,26 @@ public abstract class StarNamedExpression implements Serializable {
       if (!(other instanceof Simple)) {
         return false;
       }
-      Simple o = (Simple) (other);
-      return value.equals(o.value);
+      Simple o = (Simple) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarNamedExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Simple o = (Simple) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

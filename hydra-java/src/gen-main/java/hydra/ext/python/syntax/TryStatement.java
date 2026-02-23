@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class TryStatement implements Serializable {
+public abstract class TryStatement implements Serializable, Comparable<TryStatement> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.TryStatement");
   
   public static final hydra.core.Name FIELD_NAME_FINALLY = new hydra.core.Name("finally");
@@ -29,19 +29,19 @@ public abstract class TryStatement implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(TryStatement instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Finally instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Except instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ExceptStar instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -49,7 +49,6 @@ public abstract class TryStatement implements Serializable {
     public final hydra.ext.python.syntax.TryFinallyStatement value;
     
     public Finally (hydra.ext.python.syntax.TryFinallyStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -58,13 +57,26 @@ public abstract class TryStatement implements Serializable {
       if (!(other instanceof Finally)) {
         return false;
       }
-      Finally o = (Finally) (other);
-      return value.equals(o.value);
+      Finally o = (Finally) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TryStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Finally o = (Finally) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -77,7 +89,6 @@ public abstract class TryStatement implements Serializable {
     public final hydra.ext.python.syntax.TryExceptStatement value;
     
     public Except (hydra.ext.python.syntax.TryExceptStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -86,13 +97,26 @@ public abstract class TryStatement implements Serializable {
       if (!(other instanceof Except)) {
         return false;
       }
-      Except o = (Except) (other);
-      return value.equals(o.value);
+      Except o = (Except) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TryStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Except o = (Except) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -105,7 +129,6 @@ public abstract class TryStatement implements Serializable {
     public final hydra.ext.python.syntax.TryExceptStarStatement value;
     
     public ExceptStar (hydra.ext.python.syntax.TryExceptStarStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -114,13 +137,26 @@ public abstract class TryStatement implements Serializable {
       if (!(other instanceof ExceptStar)) {
         return false;
       }
-      ExceptStar o = (ExceptStar) (other);
-      return value.equals(o.value);
+      ExceptStar o = (ExceptStar) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TryStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ExceptStar o = (ExceptStar) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

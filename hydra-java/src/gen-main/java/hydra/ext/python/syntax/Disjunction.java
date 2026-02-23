@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class Disjunction implements Serializable {
+public class Disjunction implements Serializable, Comparable<Disjunction> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Disjunction");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class Disjunction implements Serializable {
   public final java.util.List<hydra.ext.python.syntax.Conjunction> value;
   
   public Disjunction (java.util.List<hydra.ext.python.syntax.Conjunction> value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,22 @@ public class Disjunction implements Serializable {
     if (!(other instanceof Disjunction)) {
       return false;
     }
-    Disjunction o = (Disjunction) (other);
-    return value.equals(o.value);
+    Disjunction o = (Disjunction) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Disjunction other) {
+    return Integer.compare(
+      value.hashCode(),
+      other.value.hashCode());
   }
 }

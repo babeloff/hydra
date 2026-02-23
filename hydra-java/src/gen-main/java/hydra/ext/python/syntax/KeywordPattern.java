@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class KeywordPattern implements Serializable {
+public class KeywordPattern implements Serializable, Comparable<KeywordPattern> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.KeywordPattern");
   
   public static final hydra.core.Name FIELD_NAME_NAME = new hydra.core.Name("name");
@@ -16,8 +16,6 @@ public class KeywordPattern implements Serializable {
   public final hydra.ext.python.syntax.Pattern pattern;
   
   public KeywordPattern (hydra.ext.python.syntax.Name name, hydra.ext.python.syntax.Pattern pattern) {
-    java.util.Objects.requireNonNull((name));
-    java.util.Objects.requireNonNull((pattern));
     this.name = name;
     this.pattern = pattern;
   }
@@ -27,22 +25,35 @@ public class KeywordPattern implements Serializable {
     if (!(other instanceof KeywordPattern)) {
       return false;
     }
-    KeywordPattern o = (KeywordPattern) (other);
-    return name.equals(o.name) && pattern.equals(o.pattern);
+    KeywordPattern o = (KeywordPattern) other;
+    return java.util.Objects.equals(
+      this.name,
+      o.name) && java.util.Objects.equals(
+      this.pattern,
+      o.pattern);
   }
   
   @Override
   public int hashCode() {
-    return 2 * name.hashCode() + 3 * pattern.hashCode();
+    return 2 * java.util.Objects.hashCode(name) + 3 * java.util.Objects.hashCode(pattern);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(KeywordPattern other) {
+    int cmp = 0;
+    cmp = ((Comparable) name).compareTo(other.name);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) pattern).compareTo(other.pattern);
   }
   
   public KeywordPattern withName(hydra.ext.python.syntax.Name name) {
-    java.util.Objects.requireNonNull((name));
     return new KeywordPattern(name, pattern);
   }
   
   public KeywordPattern withPattern(hydra.ext.python.syntax.Pattern pattern) {
-    java.util.Objects.requireNonNull((pattern));
     return new KeywordPattern(name, pattern);
   }
 }

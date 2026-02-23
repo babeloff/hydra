@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class TypeNameArray implements Serializable {
+public abstract class TypeNameArray implements Serializable, Comparable<TypeNameArray> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.TypeNameArray");
   
   public static final hydra.core.Name FIELD_NAME_SIMPLE = new hydra.core.Name("simple");
@@ -25,15 +25,15 @@ public abstract class TypeNameArray implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(TypeNameArray instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Simple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Array instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -41,7 +41,6 @@ public abstract class TypeNameArray implements Serializable {
     public final hydra.ext.java.syntax.TypeName value;
     
     public Simple (hydra.ext.java.syntax.TypeName value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -50,13 +49,26 @@ public abstract class TypeNameArray implements Serializable {
       if (!(other instanceof Simple)) {
         return false;
       }
-      Simple o = (Simple) (other);
-      return value.equals(o.value);
+      Simple o = (Simple) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TypeNameArray other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Simple o = (Simple) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -69,7 +81,6 @@ public abstract class TypeNameArray implements Serializable {
     public final hydra.ext.java.syntax.TypeNameArray value;
     
     public Array (hydra.ext.java.syntax.TypeNameArray value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -78,13 +89,26 @@ public abstract class TypeNameArray implements Serializable {
       if (!(other instanceof Array)) {
         return false;
       }
-      Array o = (Array) (other);
-      return value.equals(o.value);
+      Array o = (Array) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TypeNameArray other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Array o = (Array) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

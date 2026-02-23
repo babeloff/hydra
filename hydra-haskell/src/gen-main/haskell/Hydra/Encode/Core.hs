@@ -1,73 +1,119 @@
--- | Mapping of hydra.core constructs in a host language like Haskell or Java  to their native Hydra counterparts as terms.  This includes an implementation of LambdaGraph's epsilon encoding (types to terms).
+-- Note: this is an automatically generated file. Do not edit.
+
+-- | Term encoders for hydra.core
 
 module Hydra.Encode.Core where
 
 import qualified Hydra.Core as Core
-import qualified Hydra.Lib.Equality as Equality
+import qualified Hydra.Lib.Eithers as Eithers
 import qualified Hydra.Lib.Lists as Lists
 import qualified Hydra.Lib.Maps as Maps
-import qualified Hydra.Lib.Optionals as Optionals
+import qualified Hydra.Lib.Maybes as Maybes
+import qualified Hydra.Lib.Pairs as Pairs
 import qualified Hydra.Lib.Sets as Sets
-import qualified Hydra.Rewriting as Rewriting
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Set as S
 
 annotatedTerm :: (Core.AnnotatedTerm -> Core.Term)
-annotatedTerm a = (Core.TermAnnotated (Core.AnnotatedTerm {
-  Core.annotatedTermSubject = (term (Core.annotatedTermSubject a)),
-  Core.annotatedTermAnnotation = (Core.annotatedTermAnnotation a)}))
+annotatedTerm x = (Core.TermRecord (Core.Record {
+  Core.recordTypeName = (Core.Name "hydra.core.AnnotatedTerm"),
+  Core.recordFields = [
+    Core.Field {
+      Core.fieldName = (Core.Name "body"),
+      Core.fieldTerm = (term (Core.annotatedTermBody x))},
+    Core.Field {
+      Core.fieldName = (Core.Name "annotation"),
+      Core.fieldTerm = ((\m -> Core.TermMap (Maps.bimap name term m)) (Core.annotatedTermAnnotation x))}]}))
 
 annotatedType :: (Core.AnnotatedType -> Core.Term)
-annotatedType at = (Core.TermAnnotated (Core.AnnotatedTerm {
-  Core.annotatedTermSubject = (type_ (Core.annotatedTypeSubject at)),
-  Core.annotatedTermAnnotation = (Core.annotatedTypeAnnotation at)}))
+annotatedType x = (Core.TermRecord (Core.Record {
+  Core.recordTypeName = (Core.Name "hydra.core.AnnotatedType"),
+  Core.recordFields = [
+    Core.Field {
+      Core.fieldName = (Core.Name "body"),
+      Core.fieldTerm = (type_ (Core.annotatedTypeBody x))},
+    Core.Field {
+      Core.fieldName = (Core.Name "annotation"),
+      Core.fieldTerm = ((\m -> Core.TermMap (Maps.bimap name term m)) (Core.annotatedTypeAnnotation x))}]}))
 
 application :: (Core.Application -> Core.Term)
-application app = (Core.TermRecord (Core.Record {
+application x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.Application"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "function"),
-      Core.fieldTerm = (term (Core.applicationFunction app))},
+      Core.fieldTerm = (term (Core.applicationFunction x))},
     Core.Field {
       Core.fieldName = (Core.Name "argument"),
-      Core.fieldTerm = (term (Core.applicationArgument app))}]}))
+      Core.fieldTerm = (term (Core.applicationArgument x))}]}))
 
 applicationType :: (Core.ApplicationType -> Core.Term)
-applicationType at = (Core.TermRecord (Core.Record {
+applicationType x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.ApplicationType"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "function"),
-      Core.fieldTerm = (type_ (Core.applicationTypeFunction at))},
+      Core.fieldTerm = (type_ (Core.applicationTypeFunction x))},
     Core.Field {
       Core.fieldName = (Core.Name "argument"),
-      Core.fieldTerm = (type_ (Core.applicationTypeArgument at))}]}))
+      Core.fieldTerm = (type_ (Core.applicationTypeArgument x))}]}))
+
+binding :: (Core.Binding -> Core.Term)
+binding x = (Core.TermRecord (Core.Record {
+  Core.recordTypeName = (Core.Name "hydra.core.Binding"),
+  Core.recordFields = [
+    Core.Field {
+      Core.fieldName = (Core.Name "name"),
+      Core.fieldTerm = (name (Core.bindingName x))},
+    Core.Field {
+      Core.fieldName = (Core.Name "term"),
+      Core.fieldTerm = (term (Core.bindingTerm x))},
+    Core.Field {
+      Core.fieldName = (Core.Name "type"),
+      Core.fieldTerm = ((\opt -> Core.TermMaybe (Maybes.map typeScheme opt)) (Core.bindingType x))}]}))
 
 caseStatement :: (Core.CaseStatement -> Core.Term)
-caseStatement cs = (Core.TermRecord (Core.Record {
+caseStatement x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.CaseStatement"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "typeName"),
-      Core.fieldTerm = (name (Core.caseStatementTypeName cs))},
+      Core.fieldTerm = (name (Core.caseStatementTypeName x))},
     Core.Field {
       Core.fieldName = (Core.Name "default"),
-      Core.fieldTerm = (Core.TermOptional (Optionals.map term (Core.caseStatementDefault cs)))},
+      Core.fieldTerm = ((\opt -> Core.TermMaybe (Maybes.map term opt)) (Core.caseStatementDefault x))},
     Core.Field {
       Core.fieldName = (Core.Name "cases"),
-      Core.fieldTerm = (Core.TermList (Lists.map field (Core.caseStatementCases cs)))}]}))
+      Core.fieldTerm = ((\xs -> Core.TermList (Lists.map field xs)) (Core.caseStatementCases x))}]}))
+
+eitherType :: (Core.EitherType -> Core.Term)
+eitherType x = (Core.TermRecord (Core.Record {
+  Core.recordTypeName = (Core.Name "hydra.core.EitherType"),
+  Core.recordFields = [
+    Core.Field {
+      Core.fieldName = (Core.Name "left"),
+      Core.fieldTerm = (type_ (Core.eitherTypeLeft x))},
+    Core.Field {
+      Core.fieldName = (Core.Name "right"),
+      Core.fieldTerm = (type_ (Core.eitherTypeRight x))}]}))
+
+pairType :: (Core.PairType -> Core.Term)
+pairType x = (Core.TermRecord (Core.Record {
+  Core.recordTypeName = (Core.Name "hydra.core.PairType"),
+  Core.recordFields = [
+    Core.Field {
+      Core.fieldName = (Core.Name "first"),
+      Core.fieldTerm = (type_ (Core.pairTypeFirst x))},
+    Core.Field {
+      Core.fieldName = (Core.Name "second"),
+      Core.fieldTerm = (type_ (Core.pairTypeSecond x))}]}))
 
 elimination :: (Core.Elimination -> Core.Term)
 elimination x = case x of
-  Core.EliminationProduct v1 -> (Core.TermUnion (Core.Injection {
-    Core.injectionTypeName = (Core.Name "hydra.core.Elimination"),
-    Core.injectionField = Core.Field {
-      Core.fieldName = (Core.Name "product"),
-      Core.fieldTerm = (tupleProjection v1)}}))
   Core.EliminationRecord v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Elimination"),
     Core.injectionField = Core.Field {
@@ -85,28 +131,26 @@ elimination x = case x of
       Core.fieldTerm = (name v1)}}))
 
 field :: (Core.Field -> Core.Term)
-field f = (Core.TermRecord (Core.Record {
+field x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.Field"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "name"),
-      Core.fieldTerm = (Core.TermWrap (Core.WrappedTerm {
-        Core.wrappedTermTypeName = (Core.Name "hydra.core.Name"),
-        Core.wrappedTermObject = (Core.TermLiteral (Core.LiteralString (Core.unName (Core.fieldName f))))}))},
+      Core.fieldTerm = (name (Core.fieldName x))},
     Core.Field {
       Core.fieldName = (Core.Name "term"),
-      Core.fieldTerm = (term (Core.fieldTerm f))}]}))
+      Core.fieldTerm = (term (Core.fieldTerm x))}]}))
 
 fieldType :: (Core.FieldType -> Core.Term)
-fieldType ft = (Core.TermRecord (Core.Record {
+fieldType x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.FieldType"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "name"),
-      Core.fieldTerm = (name (Core.fieldTypeName ft))},
+      Core.fieldTerm = (name (Core.fieldTypeName x))},
     Core.Field {
       Core.fieldName = (Core.Name "type"),
-      Core.fieldTerm = (type_ (Core.fieldTypeType ft))}]}))
+      Core.fieldTerm = (type_ (Core.fieldTypeType x))}]}))
 
 floatType :: (Core.FloatType -> Core.Term)
 floatType x = case x of
@@ -144,6 +188,17 @@ floatValue x = case x of
       Core.fieldName = (Core.Name "float64"),
       Core.fieldTerm = (Core.TermLiteral (Core.LiteralFloat (Core.FloatValueFloat64 v1)))}}))
 
+forallType :: (Core.ForallType -> Core.Term)
+forallType x = (Core.TermRecord (Core.Record {
+  Core.recordTypeName = (Core.Name "hydra.core.ForallType"),
+  Core.recordFields = [
+    Core.Field {
+      Core.fieldName = (Core.Name "parameter"),
+      Core.fieldTerm = (name (Core.forallTypeParameter x))},
+    Core.Field {
+      Core.fieldName = (Core.Name "body"),
+      Core.fieldTerm = (type_ (Core.forallTypeBody x))}]}))
+
 function :: (Core.Function -> Core.Term)
 function x = case x of
   Core.FunctionElimination v1 -> (Core.TermUnion (Core.Injection {
@@ -163,26 +218,26 @@ function x = case x of
       Core.fieldTerm = (name v1)}}))
 
 functionType :: (Core.FunctionType -> Core.Term)
-functionType ft = (Core.TermRecord (Core.Record {
+functionType x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.FunctionType"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "domain"),
-      Core.fieldTerm = (type_ (Core.functionTypeDomain ft))},
+      Core.fieldTerm = (type_ (Core.functionTypeDomain x))},
     Core.Field {
       Core.fieldName = (Core.Name "codomain"),
-      Core.fieldTerm = (type_ (Core.functionTypeCodomain ft))}]}))
+      Core.fieldTerm = (type_ (Core.functionTypeCodomain x))}]}))
 
 injection :: (Core.Injection -> Core.Term)
-injection i = (Core.TermRecord (Core.Record {
+injection x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.Injection"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "typeName"),
-      Core.fieldTerm = (name (Core.injectionTypeName i))},
+      Core.fieldTerm = (name (Core.injectionTypeName x))},
     Core.Field {
       Core.fieldName = (Core.Name "field"),
-      Core.fieldTerm = (field (Core.injectionField i))}]}))
+      Core.fieldTerm = (field (Core.injectionField x))}]}))
 
 integerType :: (Core.IntegerType -> Core.Term)
 integerType x = case x of
@@ -281,54 +336,29 @@ integerValue x = case x of
       Core.fieldTerm = (Core.TermLiteral (Core.LiteralInteger (Core.IntegerValueUint64 v1)))}}))
 
 lambda :: (Core.Lambda -> Core.Term)
-lambda l = (Core.TermRecord (Core.Record {
+lambda x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.Lambda"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "parameter"),
-      Core.fieldTerm = (name (Core.lambdaParameter l))},
+      Core.fieldTerm = (name (Core.lambdaParameter x))},
     Core.Field {
       Core.fieldName = (Core.Name "domain"),
-      Core.fieldTerm = (Core.TermOptional (Optionals.map type_ (Core.lambdaDomain l)))},
+      Core.fieldTerm = ((\opt -> Core.TermMaybe (Maybes.map type_ opt)) (Core.lambdaDomain x))},
     Core.Field {
       Core.fieldName = (Core.Name "body"),
-      Core.fieldTerm = (term (Core.lambdaBody l))}]}))
-
-forallType :: (Core.ForallType -> Core.Term)
-forallType lt = (Core.TermRecord (Core.Record {
-  Core.recordTypeName = (Core.Name "hydra.core.ForallType"),
-  Core.recordFields = [
-    Core.Field {
-      Core.fieldName = (Core.Name "parameter"),
-      Core.fieldTerm = (name (Core.forallTypeParameter lt))},
-    Core.Field {
-      Core.fieldName = (Core.Name "body"),
-      Core.fieldTerm = (type_ (Core.forallTypeBody lt))}]}))
+      Core.fieldTerm = (term (Core.lambdaBody x))}]}))
 
 let_ :: (Core.Let -> Core.Term)
-let_ l = (Core.TermRecord (Core.Record {
+let_ x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.Let"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "bindings"),
-      Core.fieldTerm = (Core.TermList (Lists.map binding (Core.letBindings l)))},
+      Core.fieldTerm = ((\xs -> Core.TermList (Lists.map binding xs)) (Core.letBindings x))},
     Core.Field {
-      Core.fieldName = (Core.Name "environment"),
-      Core.fieldTerm = (term (Core.letEnvironment l))}]}))
-
-binding :: (Core.Binding -> Core.Term)
-binding b = (Core.TermRecord (Core.Record {
-  Core.recordTypeName = (Core.Name "hydra.core.Binding"),
-  Core.recordFields = [
-    Core.Field {
-      Core.fieldName = (Core.Name "name"),
-      Core.fieldTerm = (name (Core.bindingName b))},
-    Core.Field {
-      Core.fieldName = (Core.Name "term"),
-      Core.fieldTerm = (term (Core.bindingTerm b))},
-    Core.Field {
-      Core.fieldName = (Core.Name "type"),
-      Core.fieldTerm = (Core.TermOptional (Optionals.map typeScheme (Core.bindingType b)))}]}))
+      Core.fieldName = (Core.Name "body"),
+      Core.fieldTerm = (term (Core.letBody x))}]}))
 
 literal :: (Core.Literal -> Core.Term)
 literal x = case x of
@@ -387,67 +417,53 @@ literalType x = case x of
       Core.fieldTerm = Core.TermUnit}}))
 
 mapType :: (Core.MapType -> Core.Term)
-mapType mt = (Core.TermRecord (Core.Record {
+mapType x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.MapType"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "keys"),
-      Core.fieldTerm = (type_ (Core.mapTypeKeys mt))},
+      Core.fieldTerm = (type_ (Core.mapTypeKeys x))},
     Core.Field {
       Core.fieldName = (Core.Name "values"),
-      Core.fieldTerm = (type_ (Core.mapTypeValues mt))}]}))
+      Core.fieldTerm = (type_ (Core.mapTypeValues x))}]}))
 
 name :: (Core.Name -> Core.Term)
-name fn = (Core.TermWrap (Core.WrappedTerm {
+name x = (Core.TermWrap (Core.WrappedTerm {
   Core.wrappedTermTypeName = (Core.Name "hydra.core.Name"),
-  Core.wrappedTermObject = (Core.TermLiteral (Core.LiteralString (Core.unName fn)))}))
+  Core.wrappedTermBody = ((\x -> Core.TermLiteral (Core.LiteralString x)) (Core.unName x))}))
 
 projection :: (Core.Projection -> Core.Term)
-projection p = (Core.TermRecord (Core.Record {
+projection x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.Projection"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "typeName"),
-      Core.fieldTerm = (name (Core.projectionTypeName p))},
+      Core.fieldTerm = (name (Core.projectionTypeName x))},
     Core.Field {
       Core.fieldName = (Core.Name "field"),
-      Core.fieldTerm = (name (Core.projectionField p))}]}))
+      Core.fieldTerm = (name (Core.projectionField x))}]}))
 
 record :: (Core.Record -> Core.Term)
-record r = (Core.TermRecord (Core.Record {
+record x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.Record"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "typeName"),
-      Core.fieldTerm = (name (Core.recordTypeName r))},
+      Core.fieldTerm = (name (Core.recordTypeName x))},
     Core.Field {
       Core.fieldName = (Core.Name "fields"),
-      Core.fieldTerm = (Core.TermList (Lists.map field (Core.recordFields r)))}]}))
+      Core.fieldTerm = ((\xs -> Core.TermList (Lists.map field xs)) (Core.recordFields x))}]}))
 
 rowType :: (Core.RowType -> Core.Term)
-rowType rt = (Core.TermRecord (Core.Record {
+rowType x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.RowType"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "typeName"),
-      Core.fieldTerm = (name (Core.rowTypeTypeName rt))},
+      Core.fieldTerm = (name (Core.rowTypeTypeName x))},
     Core.Field {
       Core.fieldName = (Core.Name "fields"),
-      Core.fieldTerm = (Core.TermList (Lists.map fieldType (Core.rowTypeFields rt)))}]}))
-
-sum :: (Core.Sum -> Core.Term)
-sum s = (Core.TermRecord (Core.Record {
-  Core.recordTypeName = (Core.Name "hydra.core.Sum"),
-  Core.recordFields = [
-    Core.Field {
-      Core.fieldName = (Core.Name "index"),
-      Core.fieldTerm = (Core.TermLiteral (Core.LiteralInteger (Core.IntegerValueInt32 (Core.sumIndex s))))},
-    Core.Field {
-      Core.fieldName = (Core.Name "size"),
-      Core.fieldTerm = (Core.TermLiteral (Core.LiteralInteger (Core.IntegerValueInt32 (Core.sumSize s))))},
-    Core.Field {
-      Core.fieldName = (Core.Name "term"),
-      Core.fieldTerm = (term (Core.sumTerm s))}]}))
+      Core.fieldTerm = ((\xs -> Core.TermList (Lists.map fieldType xs)) (Core.rowTypeFields x))}]}))
 
 term :: (Core.Term -> Core.Term)
 term x = case x of
@@ -461,6 +477,11 @@ term x = case x of
     Core.injectionField = Core.Field {
       Core.fieldName = (Core.Name "application"),
       Core.fieldTerm = (application v1)}}))
+  Core.TermEither v1 -> (Core.TermUnion (Core.Injection {
+    Core.injectionTypeName = (Core.Name "hydra.core.Term"),
+    Core.injectionField = Core.Field {
+      Core.fieldName = (Core.Name "either"),
+      Core.fieldTerm = (Core.TermEither (Eithers.bimap term term v1))}}))
   Core.TermFunction v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Term"),
     Core.injectionField = Core.Field {
@@ -471,31 +492,31 @@ term x = case x of
     Core.injectionField = Core.Field {
       Core.fieldName = (Core.Name "let"),
       Core.fieldTerm = (let_ v1)}}))
-  Core.TermLiteral v1 -> (Core.TermUnion (Core.Injection {
-    Core.injectionTypeName = (Core.Name "hydra.core.Term"),
-    Core.injectionField = Core.Field {
-      Core.fieldName = (Core.Name "literal"),
-      Core.fieldTerm = (literal v1)}}))
   Core.TermList v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Term"),
     Core.injectionField = Core.Field {
       Core.fieldName = (Core.Name "list"),
       Core.fieldTerm = (Core.TermList (Lists.map term v1))}}))
+  Core.TermLiteral v1 -> (Core.TermUnion (Core.Injection {
+    Core.injectionTypeName = (Core.Name "hydra.core.Term"),
+    Core.injectionField = Core.Field {
+      Core.fieldName = (Core.Name "literal"),
+      Core.fieldTerm = (literal v1)}}))
   Core.TermMap v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Term"),
     Core.injectionField = Core.Field {
       Core.fieldName = (Core.Name "map"),
       Core.fieldTerm = (Core.TermMap (Maps.bimap term term v1))}}))
-  Core.TermOptional v1 -> (Core.TermUnion (Core.Injection {
+  Core.TermMaybe v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Term"),
     Core.injectionField = Core.Field {
-      Core.fieldName = (Core.Name "optional"),
-      Core.fieldTerm = (Core.TermOptional (Optionals.map term v1))}}))
-  Core.TermProduct v1 -> (Core.TermUnion (Core.Injection {
+      Core.fieldName = (Core.Name "maybe"),
+      Core.fieldTerm = (Core.TermMaybe (Maybes.map term v1))}}))
+  Core.TermPair v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Term"),
     Core.injectionField = Core.Field {
-      Core.fieldName = (Core.Name "product"),
-      Core.fieldTerm = (Core.TermList (Lists.map term v1))}}))
+      Core.fieldName = (Core.Name "pair"),
+      Core.fieldTerm = (Core.TermPair (Pairs.bimap term term v1))}}))
   Core.TermRecord v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Term"),
     Core.injectionField = Core.Field {
@@ -506,21 +527,16 @@ term x = case x of
     Core.injectionField = Core.Field {
       Core.fieldName = (Core.Name "set"),
       Core.fieldTerm = (Core.TermSet (Sets.map term v1))}}))
-  Core.TermSum v1 -> (Core.TermUnion (Core.Injection {
+  Core.TermTypeApplication v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Term"),
     Core.injectionField = Core.Field {
-      Core.fieldName = (Core.Name "sum"),
-      Core.fieldTerm = (sum v1)}}))
+      Core.fieldName = (Core.Name "typeApplication"),
+      Core.fieldTerm = (typeApplicationTerm v1)}}))
   Core.TermTypeLambda v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Term"),
     Core.injectionField = Core.Field {
       Core.fieldName = (Core.Name "typeLambda"),
       Core.fieldTerm = (typeLambda v1)}}))
-  Core.TermTypeApplication v1 -> (Core.TermUnion (Core.Injection {
-    Core.injectionTypeName = (Core.Name "hydra.core.Term"),
-    Core.injectionField = Core.Field {
-      Core.fieldName = (Core.Name "typeApplication"),
-      Core.fieldTerm = (typedTerm v1)}}))
   Core.TermUnion v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Term"),
     Core.injectionField = Core.Field {
@@ -542,42 +558,33 @@ term x = case x of
       Core.fieldName = (Core.Name "wrap"),
       Core.fieldTerm = (wrappedTerm v1)}}))
 
-tupleProjection :: (Core.TupleProjection -> Core.Term)
-tupleProjection tp = (Core.TermRecord (Core.Record {
-  Core.recordTypeName = (Core.Name "hydra.core.TupleProjection"),
-  Core.recordFields = [
-    Core.Field {
-      Core.fieldName = (Core.Name "arity"),
-      Core.fieldTerm = (Core.TermLiteral (Core.LiteralInteger (Core.IntegerValueInt32 (Core.tupleProjectionArity tp))))},
-    Core.Field {
-      Core.fieldName = (Core.Name "index"),
-      Core.fieldTerm = (Core.TermLiteral (Core.LiteralInteger (Core.IntegerValueInt32 (Core.tupleProjectionIndex tp))))},
-    Core.Field {
-      Core.fieldName = (Core.Name "domain"),
-      Core.fieldTerm = (Core.TermOptional (Optionals.map encodeTypes (Core.tupleProjectionDomain tp)))}]})) 
-  where 
-    encodeTypes = (\types -> Core.TermList (Lists.map type_ types))
-
 type_ :: (Core.Type -> Core.Term)
 type_ x = case x of
-  Core.TypeAnnotated v1 -> (Core.TermAnnotated (Core.AnnotatedTerm {
-    Core.annotatedTermSubject = (type_ (Core.annotatedTypeSubject v1)),
-    Core.annotatedTermAnnotation = (Core.annotatedTypeAnnotation v1)}))
+  Core.TypeAnnotated v1 -> (Core.TermUnion (Core.Injection {
+    Core.injectionTypeName = (Core.Name "hydra.core.Type"),
+    Core.injectionField = Core.Field {
+      Core.fieldName = (Core.Name "annotated"),
+      Core.fieldTerm = (annotatedType v1)}}))
   Core.TypeApplication v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Type"),
     Core.injectionField = Core.Field {
       Core.fieldName = (Core.Name "application"),
       Core.fieldTerm = (applicationType v1)}}))
-  Core.TypeFunction v1 -> (Core.TermUnion (Core.Injection {
+  Core.TypeEither v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Type"),
     Core.injectionField = Core.Field {
-      Core.fieldName = (Core.Name "function"),
-      Core.fieldTerm = (functionType v1)}}))
+      Core.fieldName = (Core.Name "either"),
+      Core.fieldTerm = (eitherType v1)}}))
   Core.TypeForall v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Type"),
     Core.injectionField = Core.Field {
       Core.fieldName = (Core.Name "forall"),
       Core.fieldTerm = (forallType v1)}}))
+  Core.TypeFunction v1 -> (Core.TermUnion (Core.Injection {
+    Core.injectionTypeName = (Core.Name "hydra.core.Type"),
+    Core.injectionField = Core.Field {
+      Core.fieldName = (Core.Name "function"),
+      Core.fieldTerm = (functionType v1)}}))
   Core.TypeList v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Type"),
     Core.injectionField = Core.Field {
@@ -593,16 +600,16 @@ type_ x = case x of
     Core.injectionField = Core.Field {
       Core.fieldName = (Core.Name "map"),
       Core.fieldTerm = (mapType v1)}}))
-  Core.TypeOptional v1 -> (Core.TermUnion (Core.Injection {
+  Core.TypeMaybe v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Type"),
     Core.injectionField = Core.Field {
-      Core.fieldName = (Core.Name "optional"),
+      Core.fieldName = (Core.Name "maybe"),
       Core.fieldTerm = (type_ v1)}}))
-  Core.TypeProduct v1 -> (Core.TermUnion (Core.Injection {
+  Core.TypePair v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Type"),
     Core.injectionField = Core.Field {
-      Core.fieldName = (Core.Name "product"),
-      Core.fieldTerm = (Core.TermList (Lists.map type_ v1))}}))
+      Core.fieldName = (Core.Name "pair"),
+      Core.fieldTerm = (pairType v1)}}))
   Core.TypeRecord v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Type"),
     Core.injectionField = Core.Field {
@@ -613,11 +620,6 @@ type_ x = case x of
     Core.injectionField = Core.Field {
       Core.fieldName = (Core.Name "set"),
       Core.fieldTerm = (type_ v1)}}))
-  Core.TypeSum v1 -> (Core.TermUnion (Core.Injection {
-    Core.injectionTypeName = (Core.Name "hydra.core.Type"),
-    Core.injectionField = Core.Field {
-      Core.fieldName = (Core.Name "sum"),
-      Core.fieldTerm = (Core.TermList (Lists.map type_ v1))}}))
   Core.TypeUnion v1 -> (Core.TermUnion (Core.Injection {
     Core.injectionTypeName = (Core.Name "hydra.core.Type"),
     Core.injectionField = Core.Field {
@@ -639,82 +641,68 @@ type_ x = case x of
       Core.fieldName = (Core.Name "wrap"),
       Core.fieldTerm = (wrappedType v1)}}))
 
+typeApplicationTerm :: (Core.TypeApplicationTerm -> Core.Term)
+typeApplicationTerm x = (Core.TermRecord (Core.Record {
+  Core.recordTypeName = (Core.Name "hydra.core.TypeApplicationTerm"),
+  Core.recordFields = [
+    Core.Field {
+      Core.fieldName = (Core.Name "body"),
+      Core.fieldTerm = (term (Core.typeApplicationTermBody x))},
+    Core.Field {
+      Core.fieldName = (Core.Name "type"),
+      Core.fieldTerm = (type_ (Core.typeApplicationTermType x))}]}))
+
 typeLambda :: (Core.TypeLambda -> Core.Term)
-typeLambda l = (Core.TermRecord (Core.Record {
+typeLambda x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.TypeLambda"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "parameter"),
-      Core.fieldTerm = (name (Core.typeLambdaParameter l))},
+      Core.fieldTerm = (name (Core.typeLambdaParameter x))},
     Core.Field {
       Core.fieldName = (Core.Name "body"),
-      Core.fieldTerm = (term (Core.typeLambdaBody l))}]}))
+      Core.fieldTerm = (term (Core.typeLambdaBody x))}]}))
 
 typeScheme :: (Core.TypeScheme -> Core.Term)
-typeScheme ts = (Core.TermRecord (Core.Record {
+typeScheme x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.TypeScheme"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "variables"),
-      Core.fieldTerm = (Core.TermList (Lists.map name (Core.typeSchemeVariables ts)))},
+      Core.fieldTerm = ((\xs -> Core.TermList (Lists.map name xs)) (Core.typeSchemeVariables x))},
     Core.Field {
       Core.fieldName = (Core.Name "type"),
-      Core.fieldTerm = (type_ (Core.typeSchemeType ts))}]}))
+      Core.fieldTerm = (type_ (Core.typeSchemeType x))},
+    Core.Field {
+      Core.fieldName = (Core.Name "constraints"),
+      Core.fieldTerm = ((\opt -> Core.TermMaybe (Maybes.map (\m -> Core.TermMap (Maps.bimap name typeVariableMetadata m)) opt)) (Core.typeSchemeConstraints x))}]}))
 
-typedTerm :: (Core.TypedTerm -> Core.Term)
-typedTerm tt = (Core.TermRecord (Core.Record {
-  Core.recordTypeName = (Core.Name "hydra.core.TypedTerm"),
+typeVariableMetadata :: (Core.TypeVariableMetadata -> Core.Term)
+typeVariableMetadata x = (Core.TermRecord (Core.Record {
+  Core.recordTypeName = (Core.Name "hydra.core.TypeVariableMetadata"),
   Core.recordFields = [
     Core.Field {
-      Core.fieldName = (Core.Name "term"),
-      Core.fieldTerm = (term (Core.typedTermTerm tt))},
-    Core.Field {
-      Core.fieldName = (Core.Name "type"),
-      Core.fieldTerm = (type_ (Core.typedTermType tt))}]}))
+      Core.fieldName = (Core.Name "classes"),
+      Core.fieldTerm = ((\s -> Core.TermSet (Sets.map name s)) (Core.typeVariableMetadataClasses x))}]}))
 
 wrappedTerm :: (Core.WrappedTerm -> Core.Term)
-wrappedTerm n = (Core.TermRecord (Core.Record {
+wrappedTerm x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.WrappedTerm"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "typeName"),
-      Core.fieldTerm = (name (Core.wrappedTermTypeName n))},
+      Core.fieldTerm = (name (Core.wrappedTermTypeName x))},
     Core.Field {
-      Core.fieldName = (Core.Name "object"),
-      Core.fieldTerm = (term (Core.wrappedTermObject n))}]}))
+      Core.fieldName = (Core.Name "body"),
+      Core.fieldTerm = (term (Core.wrappedTermBody x))}]}))
 
 wrappedType :: (Core.WrappedType -> Core.Term)
-wrappedType nt = (Core.TermRecord (Core.Record {
+wrappedType x = (Core.TermRecord (Core.Record {
   Core.recordTypeName = (Core.Name "hydra.core.WrappedType"),
   Core.recordFields = [
     Core.Field {
       Core.fieldName = (Core.Name "typeName"),
-      Core.fieldTerm = (name (Core.wrappedTypeTypeName nt))},
+      Core.fieldTerm = (name (Core.wrappedTypeTypeName x))},
     Core.Field {
-      Core.fieldName = (Core.Name "object"),
-      Core.fieldTerm = (type_ (Core.wrappedTypeObject nt))}]}))
-
--- | Determines whether a given term is an encoded type
-isEncodedType :: (Core.Term -> Bool)
-isEncodedType t = ((\x -> case x of
-  Core.TermApplication v1 -> (isEncodedType (Core.applicationFunction v1))
-  Core.TermUnion v1 -> (Equality.equal "hydra.core.Type" (Core.unName (Core.injectionTypeName v1)))
-  _ -> False) (Rewriting.deannotateTerm t))
-
-isType :: (Core.Type -> Bool)
-isType t = ((\x -> case x of
-  Core.TypeApplication v1 -> (isType (Core.applicationTypeFunction v1))
-  Core.TypeForall v1 -> (isType (Core.forallTypeBody v1))
-  Core.TypeUnion v1 -> (Equality.equal "hydra.core.Type" (Core.unName (Core.rowTypeTypeName v1)))
-  Core.TypeVariable v1 -> (Equality.equal v1 (Core.Name "hydra.core.Type"))
-  _ -> False) (Rewriting.deannotateType t))
-
-isUnitTerm :: (Core.Term -> Bool)
-isUnitTerm x = case x of
-  Core.TermUnit -> True
-  _ -> False
-
-isUnitType :: (Core.Type -> Bool)
-isUnitType x = case x of
-  Core.TypeUnit -> True
-  _ -> False
+      Core.fieldName = (Core.Name "body"),
+      Core.fieldTerm = (type_ (Core.wrappedTypeBody x))}]}))

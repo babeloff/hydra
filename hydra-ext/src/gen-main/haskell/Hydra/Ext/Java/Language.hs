@@ -1,14 +1,16 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | Language constraints and reserved words for Java
 
 module Hydra.Ext.Java.Language where
 
 import qualified Hydra.Coders as Coders
 import qualified Hydra.Core as Core
-import qualified Hydra.Lib.Equality as Equality
 import qualified Hydra.Lib.Lists as Lists
 import qualified Hydra.Lib.Sets as Sets
-import qualified Hydra.Mantle as Mantle
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import qualified Hydra.Variants as Variants
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -33,22 +35,23 @@ javaLanguage = Coders.Language {
     Coders.languageConstraintsTypes = typePredicate}} 
   where 
     eliminationVariants = (Sets.fromList [
-      Mantle.EliminationVariantProduct,
-      Mantle.EliminationVariantRecord,
-      Mantle.EliminationVariantUnion,
-      Mantle.EliminationVariantWrap])
+      Variants.EliminationVariantRecord,
+      Variants.EliminationVariantUnion,
+      Variants.EliminationVariantWrap])
     literalVariants = (Sets.fromList [
-      Mantle.LiteralVariantBoolean,
-      Mantle.LiteralVariantFloat,
-      Mantle.LiteralVariantInteger,
-      Mantle.LiteralVariantString])
+      Variants.LiteralVariantBinary,
+      Variants.LiteralVariantBoolean,
+      Variants.LiteralVariantFloat,
+      Variants.LiteralVariantInteger,
+      Variants.LiteralVariantString])
     floatTypes = (Sets.fromList [
+      Core.FloatTypeBigfloat,
       Core.FloatTypeFloat32,
       Core.FloatTypeFloat64])
     functionVariants = (Sets.fromList [
-      Mantle.FunctionVariantElimination,
-      Mantle.FunctionVariantLambda,
-      Mantle.FunctionVariantPrimitive])
+      Variants.FunctionVariantElimination,
+      Variants.FunctionVariantLambda,
+      Variants.FunctionVariantPrimitive])
     integerTypes = (Sets.fromList [
       Core.IntegerTypeBigint,
       Core.IntegerTypeInt8,
@@ -57,37 +60,39 @@ javaLanguage = Coders.Language {
       Core.IntegerTypeInt64,
       Core.IntegerTypeUint16])
     termVariants = (Sets.fromList [
-      Mantle.TermVariantApplication,
-      Mantle.TermVariantFunction,
-      Mantle.TermVariantLet,
-      Mantle.TermVariantList,
-      Mantle.TermVariantLiteral,
-      Mantle.TermVariantMap,
-      Mantle.TermVariantOptional,
-      Mantle.TermVariantProduct,
-      Mantle.TermVariantRecord,
-      Mantle.TermVariantSet,
-      Mantle.TermVariantUnion,
-      Mantle.TermVariantVariable,
-      Mantle.TermVariantWrap])
+      Variants.TermVariantApplication,
+      Variants.TermVariantEither,
+      Variants.TermVariantFunction,
+      Variants.TermVariantLet,
+      Variants.TermVariantList,
+      Variants.TermVariantLiteral,
+      Variants.TermVariantMap,
+      Variants.TermVariantMaybe,
+      Variants.TermVariantPair,
+      Variants.TermVariantRecord,
+      Variants.TermVariantSet,
+      Variants.TermVariantUnion,
+      Variants.TermVariantUnit,
+      Variants.TermVariantVariable,
+      Variants.TermVariantWrap])
     typeVariants = (Sets.fromList [
-      Mantle.TypeVariantAnnotated,
-      Mantle.TypeVariantApplication,
-      Mantle.TypeVariantFunction,
-      Mantle.TypeVariantForall,
-      Mantle.TypeVariantList,
-      Mantle.TypeVariantLiteral,
-      Mantle.TypeVariantMap,
-      Mantle.TypeVariantOptional,
-      Mantle.TypeVariantProduct,
-      Mantle.TypeVariantRecord,
-      Mantle.TypeVariantSet,
-      Mantle.TypeVariantUnion,
-      Mantle.TypeVariantVariable,
-      Mantle.TypeVariantWrap])
-    typePredicate = (\typ -> (\x -> case x of
-      Core.TypeProduct v1 -> (Equality.lt (Lists.length v1) javaMaxTupleLength)
-      _ -> True) typ)
+      Variants.TypeVariantAnnotated,
+      Variants.TypeVariantApplication,
+      Variants.TypeVariantEither,
+      Variants.TypeVariantFunction,
+      Variants.TypeVariantForall,
+      Variants.TypeVariantList,
+      Variants.TypeVariantLiteral,
+      Variants.TypeVariantMap,
+      Variants.TypeVariantMaybe,
+      Variants.TypeVariantPair,
+      Variants.TypeVariantRecord,
+      Variants.TypeVariantSet,
+      Variants.TypeVariantUnion,
+      Variants.TypeVariantUnit,
+      Variants.TypeVariantVariable,
+      Variants.TypeVariantWrap])
+    typePredicate = (\_ -> True)
 
 -- | A set of reserved words in Java
 reservedWords :: (S.Set String)

@@ -1,14 +1,18 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A model for simple graphs as adjacency lists
 
 module Hydra.Topology where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Set as S
 
+-- | A directed graph represented as an adjacency list mapping vertices to their outgoing neighbors
 type Graph = (M.Map Vertex [Vertex])
 
 _Graph = (Core.Name "hydra.topology.Graph")
@@ -56,6 +60,7 @@ _TarjanState_onStack = (Core.Name "onStack")
 
 _TarjanState_sccs = (Core.Name "sccs")
 
+-- | A graph vertex, represented as a 32-bit integer identifier
 type Vertex = Int
 
 _Vertex = (Core.Name "hydra.topology.Vertex")

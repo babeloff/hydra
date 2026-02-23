@@ -1,9 +1,12 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A partial Delta Parquet model, based on DataType and its subclasses as specified in the 3.0.0 Java API: https://docs.delta.io/3.0.0/api/java/kernel/io/delta/kernel/types/DataType.html
 
 module Hydra.Ext.Io.Delta.Parquet where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M

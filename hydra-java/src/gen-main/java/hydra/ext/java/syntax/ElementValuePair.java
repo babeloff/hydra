@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class ElementValuePair implements Serializable {
+public class ElementValuePair implements Serializable, Comparable<ElementValuePair> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ElementValuePair");
   
   public static final hydra.core.Name FIELD_NAME_KEY = new hydra.core.Name("key");
@@ -16,8 +16,6 @@ public class ElementValuePair implements Serializable {
   public final hydra.ext.java.syntax.ElementValue value;
   
   public ElementValuePair (hydra.ext.java.syntax.Identifier key, hydra.ext.java.syntax.ElementValue value) {
-    java.util.Objects.requireNonNull((key));
-    java.util.Objects.requireNonNull((value));
     this.key = key;
     this.value = value;
   }
@@ -27,22 +25,35 @@ public class ElementValuePair implements Serializable {
     if (!(other instanceof ElementValuePair)) {
       return false;
     }
-    ElementValuePair o = (ElementValuePair) (other);
-    return key.equals(o.key) && value.equals(o.value);
+    ElementValuePair o = (ElementValuePair) other;
+    return java.util.Objects.equals(
+      this.key,
+      o.key) && java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * key.hashCode() + 3 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(key) + 3 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(ElementValuePair other) {
+    int cmp = 0;
+    cmp = ((Comparable) key).compareTo(other.key);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) value).compareTo(other.value);
   }
   
   public ElementValuePair withKey(hydra.ext.java.syntax.Identifier key) {
-    java.util.Objects.requireNonNull((key));
     return new ElementValuePair(key, value);
   }
   
   public ElementValuePair withValue(hydra.ext.java.syntax.ElementValue value) {
-    java.util.Objects.requireNonNull((value));
     return new ElementValuePair(key, value);
   }
 }

@@ -46,22 +46,21 @@ public abstract class StringPredicateOperator implements Serializable {
   }
   
   public static final class StartsWith extends hydra.ext.cypher.openCypher.StringPredicateOperator implements Serializable {
-    public StartsWith () {
+    public final Boolean value;
     
+    public StartsWith (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof StartsWith)) {
-        return false;
-      }
-      StartsWith o = (StartsWith) (other);
-      return true;
+      return other instanceof StartsWith;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -71,22 +70,21 @@ public abstract class StringPredicateOperator implements Serializable {
   }
   
   public static final class EndsWith extends hydra.ext.cypher.openCypher.StringPredicateOperator implements Serializable {
-    public EndsWith () {
+    public final Boolean value;
     
+    public EndsWith (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof EndsWith)) {
-        return false;
-      }
-      EndsWith o = (EndsWith) (other);
-      return true;
+      return other instanceof EndsWith;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -96,22 +94,21 @@ public abstract class StringPredicateOperator implements Serializable {
   }
   
   public static final class Contains extends hydra.ext.cypher.openCypher.StringPredicateOperator implements Serializable {
-    public Contains () {
+    public final Boolean value;
     
+    public Contains (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Contains)) {
-        return false;
-      }
-      Contains o = (Contains) (other);
-      return true;
+      return other instanceof Contains;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override

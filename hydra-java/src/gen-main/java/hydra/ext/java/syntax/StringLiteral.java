@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * Note: this is an approximation which ignores encoding
  */
-public class StringLiteral implements Serializable {
+public class StringLiteral implements Serializable, Comparable<StringLiteral> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.StringLiteral");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -15,7 +15,6 @@ public class StringLiteral implements Serializable {
   public final String value;
   
   public StringLiteral (String value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -24,12 +23,20 @@ public class StringLiteral implements Serializable {
     if (!(other instanceof StringLiteral)) {
       return false;
     }
-    StringLiteral o = (StringLiteral) (other);
-    return value.equals(o.value);
+    StringLiteral o = (StringLiteral) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(StringLiteral other) {
+    return ((Comparable) value).compareTo(other.value);
   }
 }

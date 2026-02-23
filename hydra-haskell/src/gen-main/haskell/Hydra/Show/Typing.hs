@@ -1,3 +1,5 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | String representations of hydra.typing types
 
 module Hydra.Show.Typing where
@@ -5,10 +7,12 @@ module Hydra.Show.Typing where
 import qualified Hydra.Core as Core
 import qualified Hydra.Lib.Lists as Lists
 import qualified Hydra.Lib.Maps as Maps
+import qualified Hydra.Lib.Pairs as Pairs
 import qualified Hydra.Lib.Strings as Strings
 import qualified Hydra.Show.Core as Core_
 import qualified Hydra.Typing as Typing
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -30,8 +34,8 @@ typeSubst ts =
   let subst = (Typing.unTypeSubst ts) 
       pairs = (Maps.toList subst)
       showPair = (\pair ->  
-              let name = (Core.unName (fst pair)) 
-                  typ = (snd pair)
+              let name = (Core.unName (Pairs.first pair)) 
+                  typ = (Pairs.second pair)
               in (Strings.cat [
                 name,
                 "\8614",
@@ -39,5 +43,5 @@ typeSubst ts =
       pairStrs = (Lists.map showPair pairs)
   in (Strings.cat [
     "{",
-    Strings.intercalate "," pairStrs,
+    (Strings.intercalate "," pairStrs),
     "}"])

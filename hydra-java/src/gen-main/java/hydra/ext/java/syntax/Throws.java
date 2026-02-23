@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class Throws implements Serializable {
+public class Throws implements Serializable, Comparable<Throws> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.Throws");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class Throws implements Serializable {
   public final java.util.List<hydra.ext.java.syntax.ExceptionType> value;
   
   public Throws (java.util.List<hydra.ext.java.syntax.ExceptionType> value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,22 @@ public class Throws implements Serializable {
     if (!(other instanceof Throws)) {
       return false;
     }
-    Throws o = (Throws) (other);
-    return value.equals(o.value);
+    Throws o = (Throws) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Throws other) {
+    return Integer.compare(
+      value.hashCode(),
+      other.value.hashCode());
   }
 }

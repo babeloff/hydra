@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * One of two evaluation styles: eager or lazy
  */
-public abstract class EvaluationStyle implements Serializable {
+public abstract class EvaluationStyle implements Serializable, Comparable<EvaluationStyle> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.testing.EvaluationStyle");
   
   public static final hydra.core.Name FIELD_NAME_EAGER = new hydra.core.Name("eager");
@@ -28,15 +28,15 @@ public abstract class EvaluationStyle implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(EvaluationStyle instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Eager instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Lazy instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -50,12 +50,22 @@ public abstract class EvaluationStyle implements Serializable {
       if (!(other instanceof Eager)) {
         return false;
       }
-      Eager o = (Eager) (other);
+      Eager o = (Eager) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(EvaluationStyle other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -75,12 +85,22 @@ public abstract class EvaluationStyle implements Serializable {
       if (!(other instanceof Lazy)) {
         return false;
       }
-      Lazy o = (Lazy) (other);
+      Lazy o = (Lazy) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(EvaluationStyle other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

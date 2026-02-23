@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * One of several comparison operators
  */
-public abstract class ComparisonConstraint implements Serializable {
+public abstract class ComparisonConstraint implements Serializable, Comparable<ComparisonConstraint> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.query.ComparisonConstraint");
   
   public static final hydra.core.Name FIELD_NAME_EQUAL = new hydra.core.Name("equal");
@@ -44,31 +44,31 @@ public abstract class ComparisonConstraint implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(ComparisonConstraint instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Equal instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(NotEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(LessThan instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(GreaterThan instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(LessThanOrEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(GreaterThanOrEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -82,12 +82,22 @@ public abstract class ComparisonConstraint implements Serializable {
       if (!(other instanceof Equal)) {
         return false;
       }
-      Equal o = (Equal) (other);
+      Equal o = (Equal) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ComparisonConstraint other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -107,12 +117,22 @@ public abstract class ComparisonConstraint implements Serializable {
       if (!(other instanceof NotEqual)) {
         return false;
       }
-      NotEqual o = (NotEqual) (other);
+      NotEqual o = (NotEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ComparisonConstraint other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -132,12 +152,22 @@ public abstract class ComparisonConstraint implements Serializable {
       if (!(other instanceof LessThan)) {
         return false;
       }
-      LessThan o = (LessThan) (other);
+      LessThan o = (LessThan) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ComparisonConstraint other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -157,12 +187,22 @@ public abstract class ComparisonConstraint implements Serializable {
       if (!(other instanceof GreaterThan)) {
         return false;
       }
-      GreaterThan o = (GreaterThan) (other);
+      GreaterThan o = (GreaterThan) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ComparisonConstraint other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -182,12 +222,22 @@ public abstract class ComparisonConstraint implements Serializable {
       if (!(other instanceof LessThanOrEqual)) {
         return false;
       }
-      LessThanOrEqual o = (LessThanOrEqual) (other);
+      LessThanOrEqual o = (LessThanOrEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ComparisonConstraint other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -207,12 +257,22 @@ public abstract class ComparisonConstraint implements Serializable {
       if (!(other instanceof GreaterThanOrEqual)) {
         return false;
       }
-      GreaterThanOrEqual o = (GreaterThanOrEqual) (other);
+      GreaterThanOrEqual o = (GreaterThanOrEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ComparisonConstraint other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

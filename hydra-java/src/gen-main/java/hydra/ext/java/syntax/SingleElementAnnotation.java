@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class SingleElementAnnotation implements Serializable {
+public class SingleElementAnnotation implements Serializable, Comparable<SingleElementAnnotation> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.SingleElementAnnotation");
   
   public static final hydra.core.Name FIELD_NAME_NAME = new hydra.core.Name("name");
@@ -13,11 +13,9 @@ public class SingleElementAnnotation implements Serializable {
   
   public final hydra.ext.java.syntax.TypeName name;
   
-  public final hydra.util.Opt<hydra.ext.java.syntax.ElementValue> value;
+  public final hydra.util.Maybe<hydra.ext.java.syntax.ElementValue> value;
   
-  public SingleElementAnnotation (hydra.ext.java.syntax.TypeName name, hydra.util.Opt<hydra.ext.java.syntax.ElementValue> value) {
-    java.util.Objects.requireNonNull((name));
-    java.util.Objects.requireNonNull((value));
+  public SingleElementAnnotation (hydra.ext.java.syntax.TypeName name, hydra.util.Maybe<hydra.ext.java.syntax.ElementValue> value) {
     this.name = name;
     this.value = value;
   }
@@ -27,22 +25,37 @@ public class SingleElementAnnotation implements Serializable {
     if (!(other instanceof SingleElementAnnotation)) {
       return false;
     }
-    SingleElementAnnotation o = (SingleElementAnnotation) (other);
-    return name.equals(o.name) && value.equals(o.value);
+    SingleElementAnnotation o = (SingleElementAnnotation) other;
+    return java.util.Objects.equals(
+      this.name,
+      o.name) && java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * name.hashCode() + 3 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(name) + 3 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(SingleElementAnnotation other) {
+    int cmp = 0;
+    cmp = ((Comparable) name).compareTo(other.name);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      value.hashCode(),
+      other.value.hashCode());
   }
   
   public SingleElementAnnotation withName(hydra.ext.java.syntax.TypeName name) {
-    java.util.Objects.requireNonNull((name));
     return new SingleElementAnnotation(name, value);
   }
   
-  public SingleElementAnnotation withValue(hydra.util.Opt<hydra.ext.java.syntax.ElementValue> value) {
-    java.util.Objects.requireNonNull((value));
+  public SingleElementAnnotation withValue(hydra.util.Maybe<hydra.ext.java.syntax.ElementValue> value) {
     return new SingleElementAnnotation(name, value);
   }
 }

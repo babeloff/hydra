@@ -3,22 +3,22 @@
 module Hydra.Ext.Staging.Cpp.Coder (moduleToCpp) where
 
 import Hydra.Kernel
-import Hydra.Dsl.ShorthandTypes
 import Hydra.Dsl.Terms
 import Hydra.Ext.Cpp.Language
 import Hydra.Ext.Staging.Cpp.Names
 import Hydra.Ext.Staging.Cpp.Utils
 import qualified Hydra.Decode.Core as DecodeCore
 import qualified Hydra.Encode.Core as EncodeCore
+import qualified Hydra.Monads as Monads
+import qualified Hydra.Schemas as Schemas
 import qualified Hydra.Ext.Staging.Cpp.Serde as CppSer
 import qualified Hydra.Ext.Cpp.Syntax as Cpp
 import qualified Hydra.Show.Core as ShowCore
 import qualified Hydra.Lib.Strings as Strings
-import Hydra.Adapt.Modules
+import qualified Hydra.Util as Util
 import Hydra.Formatting
 
 import qualified Control.Monad as CM
-import qualified Data.Either as E
 import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Maybe as Y
@@ -33,34 +33,31 @@ data CppModuleMetadata = CppModuleMetadata {
   cppModuleMetadataTypeVariables :: S.Set Name,
   cppModuleMetadataUsesMap :: Bool,
   cppModuleMetadataUsesOptional :: Bool,
+  cppModuleMetadataUsesPair :: Bool,
   cppModuleMetadataUsesSet :: Bool,
   cppModuleMetadataUsesString :: Bool,
   cppModuleMetadataUsesTuple :: Bool,
   cppModuleMetadataUsesTypeinfo :: Bool,
+  cppModuleMetadataUsesVariant :: Bool,
   cppModuleMetadataUsesVector :: Bool}
 
 --------------------------------------------------------------------------------
 -- Entry point
 
 -- | Convert a module to C++ code files
-moduleToCpp :: Module -> Flow Graph (M.Map FilePath String)
-moduleToCpp mod = do
-    defs <- adaptedModuleDefinitions cppLanguage mod
-    let namespaces = namespacesForDefinitions encodeNamespace (moduleNamespace mod) defs
+moduleToCpp :: Module -> [Definition] -> Flow Graph (M.Map FilePath String)
+moduleToCpp mod defs = do
+    let (typeDefs, _termDefs) = partitionDefinitions defs
+    let namespaces = namespacesForDefinitions encodeNamespace ns (DefinitionType <$> typeDefs)
     let env = CppEnvironment {
       cppEnvironmentNamespaces = namespaces,
       cppEnvironmentBoundTypeVariables = ([], M.empty)}
-
-    let (typeDefs, termDefs) = E.partitionEithers $ fmap toEither defs
 
     typeFiles <- generateTypeFiles env ns typeDefs
 
     return $ M.fromList typeFiles -- TODO: also generate a term-level *.cpp file if nonempty
   where
     ns = moduleNamespace mod
-    toEither d = case d of
-      DefinitionType t -> Left t
-      DefinitionTerm t -> Right t
 
 generateTypeFile :: CppEnvironment -> TypeDefinition -> Flow Graph (FilePath, String)
 generateTypeFile env def@(TypeDefinition name typ) = withTrace ("type definition " ++ show (unName name)) $ do
@@ -258,21 +255,27 @@ encodeRecordType env name (RowType _ tfields) _comment = do
 encodeType :: CppEnvironment -> Type -> Flow Graph Cpp.TypeExpression
 encodeType env typ = case deannotateType typ of
     TypeApplication at -> encodeApplicationType env at
+    TypeEither (EitherType lt rt) -> toConstType <$> (createTemplateType "std::variant" <$> sequence [encode lt, encode rt])
     TypeFunction ft -> encodeFunctionType env ft
     TypeForall lt -> encodeForallType env lt
     TypeList et -> toConstType <$> (createTemplateType "std::vector" <$> ((:[]) <$> encode et))
     TypeMap (MapType kt vt) -> toConstType <$> (createTemplateType "std::map" <$> sequence [encode kt, encode vt])
     TypeLiteral lt -> encodeLiteralType lt
-    TypeOptional et -> toConstType <$> (createTemplateType "std::optional" <$> ((:[]) <$> encode et))
+    TypeMaybe et -> toConstType <$> (createTemplateType "std::optional" <$> ((:[]) <$> encode et))
+    TypePair (PairType ft st) -> toConstType <$> (createTemplateType "std::pair" <$> sequence [encode ft, encode st])
     TypeRecord rt -> typeref typ (rowTypeTypeName rt)
     TypeSet et -> toConstType <$> (createTemplateType "std::set" <$> ((:[]) <$> encode et))
     TypeUnion rt -> typeref typ (rowTypeTypeName rt)
-    TypeVariable name -> (bindingTerm <$> requireElement name) >>= DecodeCore.type_ >>= \t -> typeref t name
+    TypeVariable name -> do
+      g <- Monads.getState
+      term <- bindingTerm <$> requireElement name
+      t <- Monads.eitherToFlow Util.unDecodingError $ DecodeCore.type_ g term
+      typeref t name
     TypeWrap (WrappedType name _) -> typeref typ name
     _ -> fail $ "Unsupported type: " ++ show (deannotateType typ)
   where
     encode = encodeType env
-    typeref t name = pure $ if EncodeCore.isUnitType t
+    typeref t name = pure $ if Schemas.isUnitType t
       then createTemplateType "std::tuple" []
       else createTypeReference (isStructType t) env name
 
@@ -502,7 +505,7 @@ createVariantClass env tname parentClass (FieldType fname variantType) = do
       [baseClass]
       (Just $ Cpp.ClassBody ([memberSpecificationPublic] ++ valueField ++ [constructor]))
   where
-    hasValue = not (EncodeCore.isUnitType variantType)
+    hasValue = not (Schemas.isUnitType variantType)
 
 createVisitorInterface :: CppEnvironment -> Name -> [FieldType] -> Cpp.Declaration
 createVisitorInterface env tname variants = Cpp.DeclarationTemplate $
@@ -554,6 +557,8 @@ findIncludes withFwd ns defs = systemIncludes ++ domainIncludes
       if cppModuleMetadataUsesString meta then Just (Cpp.IncludeDirective "string" True) else Nothing,
       if cppModuleMetadataUsesTuple meta then Just (Cpp.IncludeDirective "tuple" True) else Nothing,
       if cppModuleMetadataUsesTypeinfo meta then Just (Cpp.IncludeDirective "typeinfo" True) else Nothing,
+      if cppModuleMetadataUsesPair meta then Just (Cpp.IncludeDirective "utility" True) else Nothing,  -- for std::pair
+      if cppModuleMetadataUsesVariant meta then Just (Cpp.IncludeDirective "variant" True) else Nothing,
       if cppModuleMetadataUsesVector meta then Just (Cpp.IncludeDirective "vector" True) else Nothing,
       -- TODO: consider making these conditional as well
       Just (Cpp.IncludeDirective "memory" True),
@@ -577,15 +582,17 @@ gatherMetadata defs = L.foldl addDef start defs
       cppModuleMetadataTypeVariables = S.empty,
       cppModuleMetadataUsesMap = False,
       cppModuleMetadataUsesOptional = False,
+      cppModuleMetadataUsesPair = False,
       cppModuleMetadataUsesSet = False,
       cppModuleMetadataUsesString = False,
       cppModuleMetadataUsesTuple = False,
       cppModuleMetadataUsesTypeinfo = False,
+      cppModuleMetadataUsesVariant = False,
       cppModuleMetadataUsesVector = False}
 
     addDef meta def = case def of
       DefinitionTerm (TermDefinition _ term typ) ->
-        foldOverTerm TraversalOrderPre extendMetaForTerm (extendMetaForType meta typ) term
+        foldOverTerm TraversalOrderPre extendMetaForTerm (extendMetaForType meta (typeSchemeType typ)) term
       DefinitionType (TypeDefinition _ typ) ->
         foldOverType TraversalOrderPre extendMetaForType meta typ
 
@@ -599,10 +606,11 @@ gatherMetadata defs = L.foldl addDef start defs
       TermList _ -> meta {cppModuleMetadataUsesVector = True}
       TermSet _ -> meta {cppModuleMetadataUsesSet = True}
       TermLiteral (LiteralString _) -> meta {cppModuleMetadataUsesString = True}
-      TermOptional _ -> meta {cppModuleMetadataUsesOptional = True}
+      TermMaybe _ -> meta {cppModuleMetadataUsesOptional = True}
       _ -> meta
 
     extendMetaForType meta typ = case deannotateType typ of
+      TypeEither _ -> meta {cppModuleMetadataUsesVariant = True}
       TypeForall (ForallType _ body) ->
         meta {cppModuleMetadataTypeVariables = S.union (cppModuleMetadataTypeVariables meta) (freeVariablesInType body)}
       TypeList _ -> meta {cppModuleMetadataUsesVector = True}
@@ -610,8 +618,9 @@ gatherMetadata defs = L.foldl addDef start defs
       TypeLiteral lt -> case lt of
         LiteralTypeString -> meta {cppModuleMetadataUsesString = True}
         _ -> meta
-      TypeOptional _ -> meta {cppModuleMetadataUsesOptional = True}
-      TypeRecord rt -> meta
+      TypeMaybe _ -> meta {cppModuleMetadataUsesOptional = True}
+      TypePair _ -> meta {cppModuleMetadataUsesPair = True}
+      TypeRecord _ -> meta
       TypeSet _ -> meta {cppModuleMetadataUsesSet = True}
       TypeUnion _ -> meta {cppModuleMetadataUsesTypeinfo = True}
       TypeUnit -> meta {cppModuleMetadataUsesTuple = True}
@@ -630,7 +639,7 @@ isStdContainerType typ = case deannotateType typ of
   TypeApplication (ApplicationType lhs _) -> isStdContainerType lhs
   TypeList _ -> True
   TypeMap _ -> True
-  TypeOptional _ -> True
+  TypeMaybe _ -> True
   TypeSet _ -> True
   _ -> False
 

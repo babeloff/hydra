@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class ArrayType_Variant implements Serializable {
+public abstract class ArrayType_Variant implements Serializable, Comparable<ArrayType_Variant> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ArrayType_Variant");
   
   public static final hydra.core.Name FIELD_NAME_PRIMITIVE = new hydra.core.Name("primitive");
@@ -29,19 +29,19 @@ public abstract class ArrayType_Variant implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(ArrayType_Variant instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Primitive instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ClassOrInterface instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Variable instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -49,7 +49,6 @@ public abstract class ArrayType_Variant implements Serializable {
     public final hydra.ext.java.syntax.PrimitiveTypeWithAnnotations value;
     
     public Primitive (hydra.ext.java.syntax.PrimitiveTypeWithAnnotations value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -58,13 +57,26 @@ public abstract class ArrayType_Variant implements Serializable {
       if (!(other instanceof Primitive)) {
         return false;
       }
-      Primitive o = (Primitive) (other);
-      return value.equals(o.value);
+      Primitive o = (Primitive) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ArrayType_Variant other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Primitive o = (Primitive) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -77,7 +89,6 @@ public abstract class ArrayType_Variant implements Serializable {
     public final hydra.ext.java.syntax.ClassOrInterfaceType value;
     
     public ClassOrInterface (hydra.ext.java.syntax.ClassOrInterfaceType value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -86,13 +97,26 @@ public abstract class ArrayType_Variant implements Serializable {
       if (!(other instanceof ClassOrInterface)) {
         return false;
       }
-      ClassOrInterface o = (ClassOrInterface) (other);
-      return value.equals(o.value);
+      ClassOrInterface o = (ClassOrInterface) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ArrayType_Variant other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ClassOrInterface o = (ClassOrInterface) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -105,7 +129,6 @@ public abstract class ArrayType_Variant implements Serializable {
     public final hydra.ext.java.syntax.TypeVariable value;
     
     public Variable (hydra.ext.java.syntax.TypeVariable value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -114,13 +137,26 @@ public abstract class ArrayType_Variant implements Serializable {
       if (!(other instanceof Variable)) {
         return false;
       }
-      Variable o = (Variable) (other);
-      return value.equals(o.value);
+      Variable o = (Variable) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ArrayType_Variant other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Variable o = (Variable) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

@@ -6,6 +6,7 @@ import hydra.core.Name;
 import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Terms;
+import hydra.dsl.Types;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -17,6 +18,9 @@ import static hydra.dsl.Types.function;
 import static hydra.dsl.Types.scheme;
 
 
+/**
+ * Tests equality.
+ */
 public class Equal extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.equality.equal");
@@ -24,7 +28,7 @@ public class Equal extends PrimitiveFunction {
 
     @Override
     public TypeScheme type() {
-        return scheme("x", function("x", "x", boolean_()));
+        return scheme("x", function(Types.var("x"), Types.var("x"), boolean_()));
     }
 
     @Override
@@ -33,11 +37,29 @@ public class Equal extends PrimitiveFunction {
         return args -> Flows.pure(Terms.boolean_(args.get(0).equals(args.get(1))));
     }
 
+    /**
+     * Checks if two values are equal.
+     * @param <A> the type
+     * @param left the value1
+     * @return true if equal, false otherwise
+     */
     public static <A> Function<A, Boolean> apply(A left) {
         return right -> apply(left, right);
     }
 
+    /**
+     * Checks if two values are equal.
+     * @param <A> the type
+     * @param left the value1
+     * @param right the value2
+     * @return true if equal, false otherwise
+     */
     public static <A> boolean apply(A left, A right) {
+        // Special handling for BigDecimal: use compareTo for scale-insensitive comparison
+        // (e.g., 42.0 and 42 should be equal)
+        if (left instanceof java.math.BigDecimal && right instanceof java.math.BigDecimal) {
+            return ((java.math.BigDecimal) left).compareTo((java.math.BigDecimal) right) == 0;
+        }
         return left.equals(right);
     }
 }

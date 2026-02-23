@@ -6,14 +6,14 @@ module Hydra.Ext.Tools.AvroWorkflows (
   TermEncoder(..),
   LastMile(..),
   defaultTinkerpopAnnotations,
-  exampleGraphsonContext,
+  encodeStringValue,
   examplePgSchema,
   executeAvroTransformWorkflow,
   propertyGraphGraphsonLastMile,
   propertyGraphJsonLastMile,
   rdfDescriptionsToNtriples,
   shaclRdfLastMile,
-  typedTermToShaclRdf,
+  typeApplicationTermToShaclRdf,
   transformAvroJsonDirectory,
 ) where
 
@@ -21,13 +21,14 @@ import Hydra.Kernel
 import Hydra.Tools.Monads
 import Hydra.Dsl.Annotations
 import qualified Hydra.Ext.Org.Apache.Avro.Schema as Avro
-import qualified Hydra.Json as Json
+import qualified Hydra.Json.Model as Json
 import Hydra.Ext.Org.Json.Coder
 import Hydra.Extract.Json
-import Hydra.Staging.Json.Serde
+import Hydra.Parsing (ParseResult(..), ParseSuccess(..), ParseError(..))
+import qualified Hydra.Json.Parser as JsonParser
 import Hydra.Ext.Staging.Avro.Coder
 import Hydra.Ext.Staging.Avro.SchemaJson
-import Hydra.Ext.Staging.Pg.Graphson.Utils
+import Hydra.Pg.Graphson.Utils
 import Hydra.Ext.Staging.Pg.Coder
 import qualified Hydra.Ext.Staging.Shacl.Coder as Shacl
 import qualified Hydra.Ext.Org.W3.Rdf.Syntax as Rdf
@@ -36,7 +37,7 @@ import qualified Hydra.Pg.Model as PG
 import qualified Hydra.Pg.Mapping as PGM
 import Hydra.Ext.Staging.Rdf.Serde
 import Hydra.Sources.Kernel.Types.Core
-import Hydra.Ext.Staging.Pg.Graphson.Coder
+import Hydra.Pg.Graphson.Coder
 import Hydra.Pg.Graphson.Syntax as G
 import Hydra.Ext.Staging.Pg.Utils
 
@@ -51,6 +52,12 @@ import System.FilePath
 import System.FilePath.Posix
 import System.Directory
 
+
+-- | Parse a JSON string, returning Either for compatibility
+parseJsonEither :: String -> Either String Json.Value
+parseJsonEither s = case JsonParser.parseJson s of
+  ParseResultSuccess success -> Right (parseSuccessValue success)
+  ParseResultFailure err -> Left (parseErrorMessage err)
 
 data JsonPayloadFormat = Json | Jsonl
 
@@ -80,13 +87,13 @@ rdfDescriptionsToNtriples :: [Rdf.Description] -> String
 rdfDescriptionsToNtriples = rdfGraphToNtriples . RdfUt.descriptionsToGraph
 
 shaclRdfLastMile :: LastMile Graph Rdf.Description
-shaclRdfLastMile = LastMile typedTermToShaclRdf (pure . rdfDescriptionsToNtriples) "nt"
+shaclRdfLastMile = LastMile typeApplicationTermToShaclRdf (pure . rdfDescriptionsToNtriples) "nt"
 
-typedTermToShaclRdf :: Type -> Flow Graph (Term -> Graph -> Flow Graph [Rdf.Description])
-typedTermToShaclRdf _ = pure encode
+typeApplicationTermToShaclRdf :: Type -> Flow Graph (Term -> Graph -> Flow Graph [Rdf.Description])
+typeApplicationTermToShaclRdf _ = pure encode
   where
     encode term graph = do
-        elDescs <- CM.mapM encodeElement $ M.elems $ graphElements graph
+        elDescs <- CM.mapM encodeElement $ graphElements graph
         termDescs <- encodeBlankTerm
         return $ L.concat (termDescs:elDescs)
       where
@@ -98,7 +105,7 @@ typedTermToShaclRdf _ = pure encode
             subject <- RdfUt.nextBlankNode
             Shacl.encodeTerm subject $ listsToSets term
           else pure []
-        notInGraph = L.null $ L.filter (\e -> bindingTerm e == term) $ M.elems $ graphElements graph
+        notInGraph = L.null $ L.filter (\e -> bindingTerm e == term) $ graphElements graph
 
 transformAvroJson :: JsonPayloadFormat -> AvroHydraAdapter -> LastMile Graph x -> FilePath -> FilePath -> IO ()
 transformAvroJson format adapter lastMile inFile outFile = do
@@ -115,7 +122,7 @@ transformAvroJson format adapter lastMile inFile outFile = do
   where
     descEntities entities = if L.length entities == 1 then "1 entity" else show (L.length entities) ++ " entities"
 
-    jsonToTarget inFile adapter lmEncoder index payload = case stringToJsonValue payload of
+    jsonToTarget inFile adapter lmEncoder index payload = case parseJsonEither payload of
         Left msg -> fail $ "Failed to read JSON payload #" ++ show index ++ " in file " ++ inFile ++ ": " ++ msg
         Right json -> withState emptyAvroEnvironment $ do
           -- TODO; the core graph is neither the data nor the schema graph

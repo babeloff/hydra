@@ -8,6 +8,8 @@ import qualified Hydra.Decode.Core as DecodeCore
 import qualified Hydra.Dsl.Literals as Literals
 import qualified Hydra.Extract.Core as ExtractCore
 import qualified Hydra.Dsl.Terms as Terms
+import qualified Hydra.Monads as Monads
+import qualified Hydra.Util as Util
 
 import qualified Control.Monad as CM
 import qualified Data.List as L
@@ -21,14 +23,14 @@ shaclCoder mod = do
     g <- getState
     -- Note: untested since deprecation of element schemas
     let typeEls = L.filter isNativeType $ moduleElements mod
-    shapes <- CM.mapM toShape typeEls
+    shapes <- CM.mapM (toShape g) typeEls
     let sg = Shacl.ShapesGraph $ S.fromList shapes
     let termFlow = \g -> do
           fail "not implemented"
     return (sg, termFlow)
   where
-    toShape el = do
-      typ <- DecodeCore.type_ $ bindingTerm el
+    toShape g el = do
+      typ <- Monads.eitherToFlow Util.unDecodingError $ DecodeCore.type_ g $ bindingTerm el
       common <- encodeType typ
       return $ Shacl.Definition (elementIri el) $ Shacl.ShapeNode $ Shacl.NodeShape common
 
@@ -64,7 +66,7 @@ encodeFieldType rname order (FieldType fname ft) = do
   where
     iri = propertyIri rname fname
     forType mn mx t = case deannotateType t of
-      TypeOptional ot -> forType (Just 0) mx ot
+      TypeMaybe ot -> forType (Just 0) mx ot
       TypeSet st -> forType mn Nothing st
       _ -> do
         cp <- encodeType t
@@ -134,7 +136,7 @@ encodeTerm subject term = case term of
   TermWrap (WrappedTerm name inner) -> do
     descs <- encodeTerm subject inner
     return $ (withType name $ L.head descs):(L.tail descs)
-  TermOptional mterm -> case mterm of
+  TermMaybe mterm -> case mterm of
     Nothing -> pure []
     Just inner -> encodeTerm subject inner
   TermRecord (Record rname fields) -> do

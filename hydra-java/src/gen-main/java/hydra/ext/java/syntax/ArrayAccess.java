@@ -4,20 +4,18 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class ArrayAccess implements Serializable {
+public class ArrayAccess implements Serializable, Comparable<ArrayAccess> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ArrayAccess");
   
   public static final hydra.core.Name FIELD_NAME_EXPRESSION = new hydra.core.Name("expression");
   
   public static final hydra.core.Name FIELD_NAME_VARIANT = new hydra.core.Name("variant");
   
-  public final hydra.util.Opt<hydra.ext.java.syntax.Expression> expression;
+  public final hydra.util.Maybe<hydra.ext.java.syntax.Expression> expression;
   
   public final hydra.ext.java.syntax.ArrayAccess_Variant variant;
   
-  public ArrayAccess (hydra.util.Opt<hydra.ext.java.syntax.Expression> expression, hydra.ext.java.syntax.ArrayAccess_Variant variant) {
-    java.util.Objects.requireNonNull((expression));
-    java.util.Objects.requireNonNull((variant));
+  public ArrayAccess (hydra.util.Maybe<hydra.ext.java.syntax.Expression> expression, hydra.ext.java.syntax.ArrayAccess_Variant variant) {
     this.expression = expression;
     this.variant = variant;
   }
@@ -27,22 +25,37 @@ public class ArrayAccess implements Serializable {
     if (!(other instanceof ArrayAccess)) {
       return false;
     }
-    ArrayAccess o = (ArrayAccess) (other);
-    return expression.equals(o.expression) && variant.equals(o.variant);
+    ArrayAccess o = (ArrayAccess) other;
+    return java.util.Objects.equals(
+      this.expression,
+      o.expression) && java.util.Objects.equals(
+      this.variant,
+      o.variant);
   }
   
   @Override
   public int hashCode() {
-    return 2 * expression.hashCode() + 3 * variant.hashCode();
+    return 2 * java.util.Objects.hashCode(expression) + 3 * java.util.Objects.hashCode(variant);
   }
   
-  public ArrayAccess withExpression(hydra.util.Opt<hydra.ext.java.syntax.Expression> expression) {
-    java.util.Objects.requireNonNull((expression));
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(ArrayAccess other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      expression.hashCode(),
+      other.expression.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) variant).compareTo(other.variant);
+  }
+  
+  public ArrayAccess withExpression(hydra.util.Maybe<hydra.ext.java.syntax.Expression> expression) {
     return new ArrayAccess(expression, variant);
   }
   
   public ArrayAccess withVariant(hydra.ext.java.syntax.ArrayAccess_Variant variant) {
-    java.util.Objects.requireNonNull((variant));
     return new ArrayAccess(expression, variant);
   }
 }

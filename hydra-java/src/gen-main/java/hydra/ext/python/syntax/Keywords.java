@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class Keywords implements Serializable {
+public class Keywords implements Serializable, Comparable<Keywords> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Keywords");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class Keywords implements Serializable {
   public final hydra.ext.python.syntax.ParamNoDefault value;
   
   public Keywords (hydra.ext.python.syntax.ParamNoDefault value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,20 @@ public class Keywords implements Serializable {
     if (!(other instanceof Keywords)) {
       return false;
     }
-    Keywords o = (Keywords) (other);
-    return value.equals(o.value);
+    Keywords o = (Keywords) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Keywords other) {
+    return ((Comparable) value).compareTo(other.value);
   }
 }

@@ -7,6 +7,7 @@ import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Expect;
 import hydra.dsl.Terms;
+import hydra.dsl.Types;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -19,6 +20,9 @@ import static hydra.dsl.Types.list;
 import static hydra.dsl.Types.scheme;
 
 
+/**
+ * Joins lists with a separator.
+ */
 public class Intercalate extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.lists.intercalate");
@@ -38,12 +42,22 @@ public class Intercalate extends PrimitiveFunction {
             (delim1, sublists1) -> Terms.list(apply(delim1, sublists1)));
     }
 
+    /**
+     * Joins lists with a separator.
+     * @param <X> the element type
+     * @param delim the separator list to insert between lists
+     * @return a function that joins lists with the separator
+     */
     public static <X> Function<List<List<X>>, List<X>> apply(List<X> delim) {
         return (sublists) -> apply(delim, sublists);
     }
 
     /**
      * Apply the function to both arguments.
+     * @param <X> the element type
+     * @param delim the separator list to insert between lists
+     * @param sublists the list of lists to join
+     * @return the joined list
      */
     public static <X> List<X> apply(List<X> delim, List<List<X>> sublists) {
         List<X> result = new ArrayList<>();

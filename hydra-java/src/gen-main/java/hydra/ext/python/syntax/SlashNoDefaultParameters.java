@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class SlashNoDefaultParameters implements Serializable {
+public class SlashNoDefaultParameters implements Serializable, Comparable<SlashNoDefaultParameters> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.SlashNoDefaultParameters");
   
   public static final hydra.core.Name FIELD_NAME_SLASH = new hydra.core.Name("slash");
@@ -21,13 +21,9 @@ public class SlashNoDefaultParameters implements Serializable {
   
   public final java.util.List<hydra.ext.python.syntax.ParamWithDefault> paramWithDefault;
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.StarEtc> starEtc;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.StarEtc> starEtc;
   
-  public SlashNoDefaultParameters (hydra.ext.python.syntax.SlashNoDefault slash, java.util.List<hydra.ext.python.syntax.ParamNoDefault> paramNoDefault, java.util.List<hydra.ext.python.syntax.ParamWithDefault> paramWithDefault, hydra.util.Opt<hydra.ext.python.syntax.StarEtc> starEtc) {
-    java.util.Objects.requireNonNull((slash));
-    java.util.Objects.requireNonNull((paramNoDefault));
-    java.util.Objects.requireNonNull((paramWithDefault));
-    java.util.Objects.requireNonNull((starEtc));
+  public SlashNoDefaultParameters (hydra.ext.python.syntax.SlashNoDefault slash, java.util.List<hydra.ext.python.syntax.ParamNoDefault> paramNoDefault, java.util.List<hydra.ext.python.syntax.ParamWithDefault> paramWithDefault, hydra.util.Maybe<hydra.ext.python.syntax.StarEtc> starEtc) {
     this.slash = slash;
     this.paramNoDefault = paramNoDefault;
     this.paramWithDefault = paramWithDefault;
@@ -39,32 +35,61 @@ public class SlashNoDefaultParameters implements Serializable {
     if (!(other instanceof SlashNoDefaultParameters)) {
       return false;
     }
-    SlashNoDefaultParameters o = (SlashNoDefaultParameters) (other);
-    return slash.equals(o.slash) && paramNoDefault.equals(o.paramNoDefault) && paramWithDefault.equals(o.paramWithDefault) && starEtc.equals(o.starEtc);
+    SlashNoDefaultParameters o = (SlashNoDefaultParameters) other;
+    return java.util.Objects.equals(
+      this.slash,
+      o.slash) && java.util.Objects.equals(
+      this.paramNoDefault,
+      o.paramNoDefault) && java.util.Objects.equals(
+      this.paramWithDefault,
+      o.paramWithDefault) && java.util.Objects.equals(
+      this.starEtc,
+      o.starEtc);
   }
   
   @Override
   public int hashCode() {
-    return 2 * slash.hashCode() + 3 * paramNoDefault.hashCode() + 5 * paramWithDefault.hashCode() + 7 * starEtc.hashCode();
+    return 2 * java.util.Objects.hashCode(slash) + 3 * java.util.Objects.hashCode(paramNoDefault) + 5 * java.util.Objects.hashCode(paramWithDefault) + 7 * java.util.Objects.hashCode(starEtc);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(SlashNoDefaultParameters other) {
+    int cmp = 0;
+    cmp = ((Comparable) slash).compareTo(other.slash);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      paramNoDefault.hashCode(),
+      other.paramNoDefault.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      paramWithDefault.hashCode(),
+      other.paramWithDefault.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      starEtc.hashCode(),
+      other.starEtc.hashCode());
   }
   
   public SlashNoDefaultParameters withSlash(hydra.ext.python.syntax.SlashNoDefault slash) {
-    java.util.Objects.requireNonNull((slash));
     return new SlashNoDefaultParameters(slash, paramNoDefault, paramWithDefault, starEtc);
   }
   
   public SlashNoDefaultParameters withParamNoDefault(java.util.List<hydra.ext.python.syntax.ParamNoDefault> paramNoDefault) {
-    java.util.Objects.requireNonNull((paramNoDefault));
     return new SlashNoDefaultParameters(slash, paramNoDefault, paramWithDefault, starEtc);
   }
   
   public SlashNoDefaultParameters withParamWithDefault(java.util.List<hydra.ext.python.syntax.ParamWithDefault> paramWithDefault) {
-    java.util.Objects.requireNonNull((paramWithDefault));
     return new SlashNoDefaultParameters(slash, paramNoDefault, paramWithDefault, starEtc);
   }
   
-  public SlashNoDefaultParameters withStarEtc(hydra.util.Opt<hydra.ext.python.syntax.StarEtc> starEtc) {
-    java.util.Objects.requireNonNull((starEtc));
+  public SlashNoDefaultParameters withStarEtc(hydra.util.Maybe<hydra.ext.python.syntax.StarEtc> starEtc) {
     return new SlashNoDefaultParameters(slash, paramNoDefault, paramWithDefault, starEtc);
   }
 }

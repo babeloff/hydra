@@ -50,12 +50,11 @@ hydraTermToStlc context term = case term of
       sels <- CM.mapM toStlc els
       return $ foldr (\el acc -> App (App (Const Cons) el) acc) (Const Nil) sels
     Core.TermLiteral lit -> pure $ Const $ PrimLiteral lit
-    Core.TermProduct els -> toPairs <$> CM.mapM toStlc els
-      where
-        toPairs sels = case sels of
-          [] -> Const TT
-          [h] -> h
-          (h:r) -> pair h (toPairs r)
+    Core.TermPair (t1, t2) -> pair <$> toStlc t1 <*> toStlc t2
+    Core.TermEither et -> case et of
+      Left l -> App (Const Inl) <$> toStlc l
+      Right r -> App (Const Inr) <$> toStlc r
+    Core.TermUnit -> pure $ Const TT
     Core.TermVariable (Core.Name v) -> pure $ Var v
     _ -> Left $ "Unsupported term: " ++ show term
   where
@@ -64,7 +63,7 @@ hydraTermToStlc context term = case term of
     pair a b = App (App (Const Pair) a) b
 
 hydraTypeSchemeToStlc :: Core.TypeScheme -> Either String TypSch
-hydraTypeSchemeToStlc (Core.TypeScheme vars body) = do
+hydraTypeSchemeToStlc (Core.TypeScheme vars body _) = do
     sbody <- toStlc body
     return $ Forall (Core.unName <$> vars) sbody
   where
@@ -73,22 +72,11 @@ hydraTypeSchemeToStlc (Core.TypeScheme vars body) = do
       Core.TypeList et -> TyList <$> toStlc et
       Core.TypeLiteral lt -> pure $ TyLit lt
 --      TypeMap MapType |
---      TypeOptional Type |
-      Core.TypeProduct types -> toProd <$> (CM.mapM toStlc types)
-        where
-          toProd ts = case ts of
-            [h] -> h
-            (h:r) -> TyProd h (toProd r)
+--      TypeMaybe Type |
+      Core.TypePair (Core.PairType first second) -> TyProd <$> toStlc first <*> toStlc second
 --      TypeRecord RowType |
 --      TypeSet Type |
-      Core.TypeSum types -> if L.length types == 0
-        then pure TyVoid
-        else if L.length types == 1
-          then Left $ "unary sums are not yet supported"
-          else do
-            stypes <- CM.mapM toStlc types
-            let rev = L.reverse stypes
-            return $ L.foldl (\a e -> TySum e a) (TySum (rev !! 1) (rev !! 0)) $ L.drop 2 rev
+      Core.TypeEither (Core.EitherType left right) -> TyEither <$> toStlc left <*> toStlc right
 --      TypeUnion RowType |
       Core.TypeVariable name -> pure $ TyVar $ Core.unName name
 --      TypeWrap (Nominal Type)
@@ -114,21 +102,23 @@ toTerm expr = case expr of
         gather e = case e of
           FTyApp (FConst Nil) _ -> []
           FApp (FApp (FTyApp (FConst Cons) _) hd) tl -> hd:(gather tl)
-    FApp (FTyApp (FConst Pair) _) lhs -> Core.TermProduct [toTerm lhs, toTerm e2]
+    FApp (FTyApp (FConst Pair) _) lhs -> Core.TermPair (toTerm lhs, toTerm e2)
+    FTyApp (FConst Inl) _ -> Core.TermEither $ Left $ toTerm e2
+    FTyApp (FConst Inr) _ -> Core.TermEither $ Right $ toTerm e2
     _ -> Core.TermApplication $ Core.Application (toTerm e1) (toTerm e2)
   FConst prim -> case prim of
     PrimLiteral lit -> Core.TermLiteral lit
     PrimTyped (TypedPrimitive name _) -> Core.TermFunction $ Core.FunctionPrimitive name
     Nil -> Core.TermList []
     Pair -> Terms.lambdas ["a", "b"] $ Terms.pair (Terms.var "a") (Terms.var "b")
-    TT -> Terms.tuple []
+    TT -> Core.TermUnit
     _ -> Terms.string $ "unexpected primitive: " ++ show prim
     -- Note: other prims are unsupported; they can be added here as needed
   FLetrec bindings env -> Core.TermLet $ Core.Let (fmap bindingToHydra bindings) (toTerm env)
     where
       bindingToHydra (v, ty, term) = Core.Binding (Core.Name v) (toTerm term) $ Just $ toTypeScheme ty
   FTyAbs params body -> L.foldl (\t v -> Core.TermTypeLambda $ Core.TypeLambda (Core.Name v) t) (toTerm body) $ L.reverse params
-  FTyApp fun args -> L.foldl (\t a -> Core.TermTypeApplication $ Core.TypedTerm t a) (toTerm fun) $ L.reverse hargs
+  FTyApp fun args -> L.foldl (\t a -> Core.TermTypeApplication $ Core.TypeApplicationTerm t a) (toTerm fun) $ L.reverse hargs
     where
       hargs = fmap (\t -> Core.typeSchemeType $ toTypeScheme t) args
   FVar v -> Core.TermVariable $ Core.Name v
@@ -139,24 +129,17 @@ toType ty = case ty of
   FTyLit lt -> Core.TypeLiteral lt
   FTyList lt -> Core.TypeList $ toType lt
   FTyFn dom cod -> Core.TypeFunction $ Core.FunctionType (toType dom) (toType cod)
-  FTyProd t1 t2 -> Core.TypeProduct (toType <$> (t1:(componentsTypesOf t2)))
-    where
-      componentsTypesOf t = case t of
-        FTyProd t1 t2 -> t1:(componentsTypesOf t2)
-        _ -> [t]
-  FTySum t1 t2 -> Core.TypeSum (toType <$> (t1:(componentsTypesOf t2)))
-    where
-      componentsTypesOf t = case t of
-        FTySum t1 t2 -> t1:(componentsTypesOf t2)
-        _ -> [t]
-  FTyUnit -> Core.TypeProduct []
-  FTyVoid -> Core.TypeSum []
+  FTyProd t1 t2 -> Core.TypePair $ Core.PairType (toType t1) (toType t2)
+  FTySum t1 t2 -> Core.TypeEither $ Core.EitherType (toType t1) (toType t2)
+  FTyEither t1 t2 -> Core.TypeEither $ Core.EitherType (toType t1) (toType t2)
+  FTyUnit -> Core.TypeUnit
+  FTyVoid -> Core.TypeUnit
 
 -- | Convert a System F type expression to a Hydra type scheme
 toTypeScheme :: FTy -> Core.TypeScheme
 toTypeScheme ty = case ty of
-  FForall vars body -> Core.TypeScheme (Core.Name <$> vars) $ toType body
-  _ -> Core.TypeScheme [] $ toType ty
+  FForall vars body -> Core.TypeScheme (Core.Name <$> vars) (toType body) Nothing
+  _ -> Core.TypeScheme [] (toType ty) Nothing
 
 termToInferredFExpr :: HydraContext -> Core.Term -> IO (FExpr, FTy)
 termToInferredFExpr context term = do

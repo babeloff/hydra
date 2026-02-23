@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class PosArg implements Serializable {
+public abstract class PosArg implements Serializable, Comparable<PosArg> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.PosArg");
   
   public static final hydra.core.Name FIELD_NAME_STARRED = new hydra.core.Name("starred");
@@ -29,19 +29,19 @@ public abstract class PosArg implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(PosArg instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Starred instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Assignment instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Expression instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -49,7 +49,6 @@ public abstract class PosArg implements Serializable {
     public final hydra.ext.python.syntax.StarredExpression value;
     
     public Starred (hydra.ext.python.syntax.StarredExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -58,13 +57,26 @@ public abstract class PosArg implements Serializable {
       if (!(other instanceof Starred)) {
         return false;
       }
-      Starred o = (Starred) (other);
-      return value.equals(o.value);
+      Starred o = (Starred) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(PosArg other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Starred o = (Starred) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -77,7 +89,6 @@ public abstract class PosArg implements Serializable {
     public final hydra.ext.python.syntax.AssignmentExpression value;
     
     public Assignment (hydra.ext.python.syntax.AssignmentExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -86,13 +97,26 @@ public abstract class PosArg implements Serializable {
       if (!(other instanceof Assignment)) {
         return false;
       }
-      Assignment o = (Assignment) (other);
-      return value.equals(o.value);
+      Assignment o = (Assignment) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(PosArg other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Assignment o = (Assignment) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -105,7 +129,6 @@ public abstract class PosArg implements Serializable {
     public final hydra.ext.python.syntax.Expression value;
     
     public Expression (hydra.ext.python.syntax.Expression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -114,13 +137,26 @@ public abstract class PosArg implements Serializable {
       if (!(other instanceof Expression)) {
         return false;
       }
-      Expression o = (Expression) (other);
-      return value.equals(o.value);
+      Expression o = (Expression) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(PosArg other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Expression o = (Expression) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

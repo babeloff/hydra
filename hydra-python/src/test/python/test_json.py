@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
-from hydra.json import (
+from hydra.json.model import (
     Value,
     ValueArray,
     ValueBoolean,
@@ -38,7 +38,7 @@ def test_json():
             "a": ValueArray([ValueNumber(5), ValueNumber(6)]),
             "c": ValueString("hello"),
             "d": ValueBoolean(True),
-            "e": ValueNull(None),
+            "e": ValueNull(),
         }
     )
     assert from_hydra_json(v0) == {"a": [5, 6], "c": "hello", "d": True, "e": None}

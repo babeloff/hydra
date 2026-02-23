@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * An import specification
  */
-public abstract class SpecImport implements Serializable {
+public abstract class SpecImport implements Serializable, Comparable<SpecImport> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.haskell.ast.SpecImport");
   
   public static final hydra.core.Name FIELD_NAME_LIST = new hydra.core.Name("list");
@@ -28,23 +28,25 @@ public abstract class SpecImport implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(SpecImport instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(List instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Hiding instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
+  /**
+   * A list of imports to include
+   */
   public static final class List extends hydra.ext.haskell.ast.SpecImport implements Serializable {
     public final java.util.List<hydra.ext.haskell.ast.ImportExportSpec> value;
     
     public List (java.util.List<hydra.ext.haskell.ast.ImportExportSpec> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -53,13 +55,28 @@ public abstract class SpecImport implements Serializable {
       if (!(other instanceof List)) {
         return false;
       }
-      List o = (List) (other);
-      return value.equals(o.value);
+      List o = (List) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SpecImport other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      List o = (List) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override
@@ -68,11 +85,13 @@ public abstract class SpecImport implements Serializable {
     }
   }
   
+  /**
+   * A list of imports to exclude
+   */
   public static final class Hiding extends hydra.ext.haskell.ast.SpecImport implements Serializable {
     public final java.util.List<hydra.ext.haskell.ast.ImportExportSpec> value;
     
     public Hiding (java.util.List<hydra.ext.haskell.ast.ImportExportSpec> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -81,13 +100,28 @@ public abstract class SpecImport implements Serializable {
       if (!(other instanceof Hiding)) {
         return false;
       }
-      Hiding o = (Hiding) (other);
-      return value.equals(o.value);
+      Hiding o = (Hiding) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SpecImport other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Hiding o = (Hiding) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override

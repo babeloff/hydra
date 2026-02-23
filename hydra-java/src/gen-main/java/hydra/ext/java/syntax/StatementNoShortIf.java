@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class StatementNoShortIf implements Serializable {
+public abstract class StatementNoShortIf implements Serializable, Comparable<StatementNoShortIf> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.StatementNoShortIf");
   
   public static final hydra.core.Name FIELD_NAME_WITHOUT_TRAILING = new hydra.core.Name("withoutTrailing");
@@ -37,27 +37,27 @@ public abstract class StatementNoShortIf implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(StatementNoShortIf instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(WithoutTrailing instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Labeled instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(IfThenElse instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(While instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(For instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -65,7 +65,6 @@ public abstract class StatementNoShortIf implements Serializable {
     public final hydra.ext.java.syntax.StatementWithoutTrailingSubstatement value;
     
     public WithoutTrailing (hydra.ext.java.syntax.StatementWithoutTrailingSubstatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -74,13 +73,26 @@ public abstract class StatementNoShortIf implements Serializable {
       if (!(other instanceof WithoutTrailing)) {
         return false;
       }
-      WithoutTrailing o = (WithoutTrailing) (other);
-      return value.equals(o.value);
+      WithoutTrailing o = (WithoutTrailing) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementNoShortIf other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      WithoutTrailing o = (WithoutTrailing) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -93,7 +105,6 @@ public abstract class StatementNoShortIf implements Serializable {
     public final hydra.ext.java.syntax.LabeledStatementNoShortIf value;
     
     public Labeled (hydra.ext.java.syntax.LabeledStatementNoShortIf value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -102,13 +113,26 @@ public abstract class StatementNoShortIf implements Serializable {
       if (!(other instanceof Labeled)) {
         return false;
       }
-      Labeled o = (Labeled) (other);
-      return value.equals(o.value);
+      Labeled o = (Labeled) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementNoShortIf other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Labeled o = (Labeled) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -121,7 +145,6 @@ public abstract class StatementNoShortIf implements Serializable {
     public final hydra.ext.java.syntax.IfThenElseStatementNoShortIf value;
     
     public IfThenElse (hydra.ext.java.syntax.IfThenElseStatementNoShortIf value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -130,13 +153,26 @@ public abstract class StatementNoShortIf implements Serializable {
       if (!(other instanceof IfThenElse)) {
         return false;
       }
-      IfThenElse o = (IfThenElse) (other);
-      return value.equals(o.value);
+      IfThenElse o = (IfThenElse) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementNoShortIf other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      IfThenElse o = (IfThenElse) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -149,7 +185,6 @@ public abstract class StatementNoShortIf implements Serializable {
     public final hydra.ext.java.syntax.WhileStatementNoShortIf value;
     
     public While (hydra.ext.java.syntax.WhileStatementNoShortIf value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -158,13 +193,26 @@ public abstract class StatementNoShortIf implements Serializable {
       if (!(other instanceof While)) {
         return false;
       }
-      While o = (While) (other);
-      return value.equals(o.value);
+      While o = (While) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementNoShortIf other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      While o = (While) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -177,7 +225,6 @@ public abstract class StatementNoShortIf implements Serializable {
     public final hydra.ext.java.syntax.ForStatementNoShortIf value;
     
     public For (hydra.ext.java.syntax.ForStatementNoShortIf value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -186,13 +233,26 @@ public abstract class StatementNoShortIf implements Serializable {
       if (!(other instanceof For)) {
         return false;
       }
-      For o = (For) (other);
-      return value.equals(o.value);
+      For o = (For) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StatementNoShortIf other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      For o = (For) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

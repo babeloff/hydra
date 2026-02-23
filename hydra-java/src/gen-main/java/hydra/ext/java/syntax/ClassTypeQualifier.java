@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class ClassTypeQualifier implements Serializable {
+public abstract class ClassTypeQualifier implements Serializable, Comparable<ClassTypeQualifier> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ClassTypeQualifier");
   
   public static final hydra.core.Name FIELD_NAME_NONE = new hydra.core.Name("none");
@@ -29,19 +29,19 @@ public abstract class ClassTypeQualifier implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(ClassTypeQualifier instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(None instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Package_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Parent instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -55,12 +55,22 @@ public abstract class ClassTypeQualifier implements Serializable {
       if (!(other instanceof None)) {
         return false;
       }
-      None o = (None) (other);
+      None o = (None) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ClassTypeQualifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -74,7 +84,6 @@ public abstract class ClassTypeQualifier implements Serializable {
     public final hydra.ext.java.syntax.PackageName value;
     
     public Package_ (hydra.ext.java.syntax.PackageName value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -83,13 +92,26 @@ public abstract class ClassTypeQualifier implements Serializable {
       if (!(other instanceof Package_)) {
         return false;
       }
-      Package_ o = (Package_) (other);
-      return value.equals(o.value);
+      Package_ o = (Package_) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ClassTypeQualifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Package_ o = (Package_) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -102,7 +124,6 @@ public abstract class ClassTypeQualifier implements Serializable {
     public final hydra.ext.java.syntax.ClassOrInterfaceType value;
     
     public Parent (hydra.ext.java.syntax.ClassOrInterfaceType value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -111,13 +132,26 @@ public abstract class ClassTypeQualifier implements Serializable {
       if (!(other instanceof Parent)) {
         return false;
       }
-      Parent o = (Parent) (other);
-      return value.equals(o.value);
+      Parent o = (Parent) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ClassTypeQualifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Parent o = (Parent) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

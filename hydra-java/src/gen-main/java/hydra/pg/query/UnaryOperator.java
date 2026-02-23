@@ -30,22 +30,21 @@ public abstract class UnaryOperator implements Serializable {
   }
   
   public static final class Negate extends hydra.pg.query.UnaryOperator implements Serializable {
-    public Negate () {
+    public final Boolean value;
     
+    public Negate (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Negate)) {
-        return false;
-      }
-      Negate o = (Negate) (other);
-      return true;
+      return other instanceof Negate;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override

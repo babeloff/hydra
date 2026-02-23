@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class FieldDeclaration implements Serializable {
+public class FieldDeclaration implements Serializable, Comparable<FieldDeclaration> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.FieldDeclaration");
   
   public static final hydra.core.Name FIELD_NAME_MODIFIERS = new hydra.core.Name("modifiers");
@@ -20,9 +20,6 @@ public class FieldDeclaration implements Serializable {
   public final java.util.List<hydra.ext.java.syntax.VariableDeclarator> variableDeclarators;
   
   public FieldDeclaration (java.util.List<hydra.ext.java.syntax.FieldModifier> modifiers, hydra.ext.java.syntax.UnannType unannType, java.util.List<hydra.ext.java.syntax.VariableDeclarator> variableDeclarators) {
-    java.util.Objects.requireNonNull((modifiers));
-    java.util.Objects.requireNonNull((unannType));
-    java.util.Objects.requireNonNull((variableDeclarators));
     this.modifiers = modifiers;
     this.unannType = unannType;
     this.variableDeclarators = variableDeclarators;
@@ -33,27 +30,49 @@ public class FieldDeclaration implements Serializable {
     if (!(other instanceof FieldDeclaration)) {
       return false;
     }
-    FieldDeclaration o = (FieldDeclaration) (other);
-    return modifiers.equals(o.modifiers) && unannType.equals(o.unannType) && variableDeclarators.equals(o.variableDeclarators);
+    FieldDeclaration o = (FieldDeclaration) other;
+    return java.util.Objects.equals(
+      this.modifiers,
+      o.modifiers) && java.util.Objects.equals(
+      this.unannType,
+      o.unannType) && java.util.Objects.equals(
+      this.variableDeclarators,
+      o.variableDeclarators);
   }
   
   @Override
   public int hashCode() {
-    return 2 * modifiers.hashCode() + 3 * unannType.hashCode() + 5 * variableDeclarators.hashCode();
+    return 2 * java.util.Objects.hashCode(modifiers) + 3 * java.util.Objects.hashCode(unannType) + 5 * java.util.Objects.hashCode(variableDeclarators);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(FieldDeclaration other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      modifiers.hashCode(),
+      other.modifiers.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) unannType).compareTo(other.unannType);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      variableDeclarators.hashCode(),
+      other.variableDeclarators.hashCode());
   }
   
   public FieldDeclaration withModifiers(java.util.List<hydra.ext.java.syntax.FieldModifier> modifiers) {
-    java.util.Objects.requireNonNull((modifiers));
     return new FieldDeclaration(modifiers, unannType, variableDeclarators);
   }
   
   public FieldDeclaration withUnannType(hydra.ext.java.syntax.UnannType unannType) {
-    java.util.Objects.requireNonNull((unannType));
     return new FieldDeclaration(modifiers, unannType, variableDeclarators);
   }
   
   public FieldDeclaration withVariableDeclarators(java.util.List<hydra.ext.java.syntax.VariableDeclarator> variableDeclarators) {
-    java.util.Objects.requireNonNull((variableDeclarators));
     return new FieldDeclaration(modifiers, unannType, variableDeclarators);
   }
 }

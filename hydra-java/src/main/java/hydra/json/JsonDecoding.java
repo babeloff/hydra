@@ -1,12 +1,14 @@
-package hydra.ext.json;
+package hydra.json;
 
 import hydra.core.Name;
-import hydra.json.Value;
+import hydra.json.model.Value;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import hydra.util.Opt;
+
+import hydra.util.Maybe;
+
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -19,6 +21,11 @@ import java.util.stream.Collectors;
 public abstract class JsonDecoding {
     /**
      * Decode a list from JSON.
+     *
+     * @param <A> the element type
+     * @param mapping the function to map each JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded list
      */
     public static <A> List<A> decodeList(Function<Value, A> mapping, Value json) {
         return json.accept(new Value.PartialVisitor<>() {
@@ -41,6 +48,9 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a boolean value from JSON.
+     *
+     * @param json the JSON value to decode
+     * @return the decoded boolean value
      */
     public static boolean decodeBoolean(Value json) {
         return json.accept(new Value.PartialVisitor<>() {
@@ -58,6 +68,9 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a double value from JSON.
+     *
+     * @param json the JSON value to decode
+     * @return the decoded double value
      */
     public static double decodeDouble(Value json) {
         Number num = decodeNumber(json);
@@ -66,6 +79,11 @@ public abstract class JsonDecoding {
 
     /**
      * Decode an enumerated value from JSON.
+     *
+     * @param <A> the element type
+     * @param values the map of enum keys to values
+     * @param json the JSON value to decode
+     * @return the decoded enum value
      */
     public static <A> A decodeEnum(Map<String, A> values, Value json) {
         String key = decodeString(json);
@@ -79,6 +97,9 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a float value from JSON.
+     *
+     * @param json the JSON value to decode
+     * @return the decoded float value
      */
     public static float decodeFloat(Value json) {
         Number num = decodeNumber(json);
@@ -87,6 +108,9 @@ public abstract class JsonDecoding {
 
     /**
      * Decode an integer value from JSON.
+     *
+     * @param json the JSON value to decode
+     * @return the decoded integer value
      */
     public static int decodeInteger(Value json) {
         Number num = decodeNumber(json);
@@ -95,15 +119,27 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a list field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map each JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded list
      */
     public static <A> List<A> decodeListField(String name, Function<Value, A> mapping, Value json) {
         // Note: this allows the field to be omitted, and also allows a null value, both resulting in an empty list
-        Opt<List<A>> opt = decodeOptionalField(name, v -> decodeList(mapping, v), json, Collections.emptyList());
+        Maybe<List<A>> opt = decodeOptionalField(name, v -> decodeList(mapping, v), json, Collections.emptyList());
         return opt.orElse(Collections.emptyList());
     }
 
     /**
      * Decode a list field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map each JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded list
      */
     public static <A> List<A> decodeListField(Name name, Function<Value, A> mapping, Value json) {
         return decodeListField(name.value, mapping, json);
@@ -111,6 +147,9 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a number from JSON.
+     *
+     * @param json the JSON value to decode
+     * @return the decoded number
      */
     public static double decodeNumber(Value json) {
         return json.accept(new Value.PartialVisitor<>() {
@@ -121,13 +160,16 @@ public abstract class JsonDecoding {
 
             @Override
             public Double visit(Value.Number_ instance) {
-                return instance.value;
+                return instance.value.doubleValue();
             }
         });
     }
 
     /**
      * Decode an object (key/value map) from JSON.
+     *
+     * @param json the JSON value to decode
+     * @return the decoded map
      */
     public static Map<String, Value> decodeObject(Value json) {
         return json.accept(new Value.PartialVisitor<>() {
@@ -145,53 +187,76 @@ public abstract class JsonDecoding {
 
     /**
      * Decode an optional boolean-valued field from JSON.
+     *
+     * @param name the field name
+     * @param json the JSON value to decode
+     * @return the decoded optional boolean
      */
-    public static Opt<Boolean> decodeOptionalBooleanField(String name, Value json) {
+    public static Maybe<Boolean> decodeOptionalBooleanField(String name, Value json) {
         return decodeOptionalField(name, JsonDecoding::decodeBoolean, json, null);
     }
 
     /**
      * Decode an optional boolean-valued field from JSON.
+     *
+     * @param name the field name
+     * @param json the JSON value to decode
+     * @return the decoded optional boolean
      */
-    public static Opt<Boolean> decodeOptionalBooleanField(Name name, Value json) {
+    public static Maybe<Boolean> decodeOptionalBooleanField(Name name, Value json) {
         return decodeOptionalField(name.value, JsonDecoding::decodeBoolean, json, null);
     }
 
     /**
      * Decode an optional double-valued field from JSON.
+     *
+     * @param name the field name
+     * @param json the JSON value to decode
+     * @return the decoded optional double
      */
-    public static Opt<Double> decodeOptionalDoubleField(String name, Value json) {
+    public static Maybe<Double> decodeOptionalDoubleField(String name, Value json) {
         return decodeOptionalField(name, JsonDecoding::decodeDouble, json, null);
     }
 
     /**
      * Decode an optional double-valued field from JSON.
+     *
+     * @param name the field name
+     * @param json the JSON value to decode
+     * @return the decoded optional double
      */
-    public static Opt<Double> decodeOptionalDoubleField(Name name, Value json) {
+    public static Maybe<Double> decodeOptionalDoubleField(Name name, Value json) {
         return decodeOptionalField(name.value, JsonDecoding::decodeDouble, json, null);
     }
 
     /**
      * Decode an optional field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map the JSON value to an element
+     * @param json the JSON value to decode
+     * @param defaultValue the default value if the field is missing or null
+     * @return the decoded optional value
      */
-    public static <A> Opt<A> decodeOptionalField(String name,
-                                                 Function<Value, A> mapping,
-                                                 Value json,
-                                                 A defaultValue) {
+    public static <A> Maybe<A> decodeOptionalField(String name,
+                                                   Function<Value, A> mapping,
+                                                   Value json,
+                                                   A defaultValue) {
         Map<String, Value> map = decodeObject(json);
         Value fieldValue = map.get(name);
         if (fieldValue == null) {
-            return defaultValue == null ? Opt.empty() : Opt.of(defaultValue);
+            return defaultValue == null ? Maybe.nothing() : Maybe.just(defaultValue);
         } else {
             return fieldValue.accept(new Value.PartialVisitor<>() {
                 @Override
-                public Opt<A> otherwise(Value instance) {
-                    return Opt.of(mapping.apply(fieldValue));
+                public Maybe<A> otherwise(Value instance) {
+                    return Maybe.just(mapping.apply(fieldValue));
                 }
 
                 @Override
-                public Opt<A> visit(Value.Null instance) {
-                    return defaultValue == null ? Opt.empty() : Opt.of(defaultValue);
+                public Maybe<A> visit(Value.Null instance) {
+                    return defaultValue == null ? Maybe.nothing() : Maybe.just(defaultValue);
                 }
             });
         }
@@ -199,58 +264,101 @@ public abstract class JsonDecoding {
 
     /**
      * Decode an optional field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map the JSON value to an element
+     * @param json the JSON value to decode
+     * @param defaultValue the default value if the field is missing or null
+     * @return the decoded optional value
      */
-    public static <A> Opt<A> decodeOptionalField(Name name,
-                                                 Function<Value, A> mapping,
-                                                 Value json,
-                                                 A defaultValue) {
+    public static <A> Maybe<A> decodeOptionalField(Name name,
+                                                   Function<Value, A> mapping,
+                                                   Value json,
+                                                   A defaultValue) {
         return decodeOptionalField(name.value, mapping, json, defaultValue);
     }
 
     /**
      * Decode an optional field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map the JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded optional value
      */
-    public static <A> Opt<A> decodeOptionalField(String name, Function<Value, A> mapping, Value json) {
+    public static <A> Maybe<A> decodeOptionalField(String name, Function<Value, A> mapping, Value json) {
         return decodeOptionalField(name, mapping, json, null);
     }
 
     /**
      * Decode an optional field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map the JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded optional value
      */
-    public static <A> Opt<A> decodeOptionalField(Name name, Function<Value, A> mapping, Value json) {
+    public static <A> Maybe<A> decodeOptionalField(Name name, Function<Value, A> mapping, Value json) {
         return decodeOptionalField(name.value, mapping, json, null);
     }
 
     /**
      * Decode an optional integer-valued field from JSON.
+     *
+     * @param name the field name
+     * @param json the JSON value to decode
+     * @return the decoded optional integer
      */
-    public static Opt<Integer> decodeOptionalIntegerField(String name, Value json) {
+    public static Maybe<Integer> decodeOptionalIntegerField(String name, Value json) {
         return decodeOptionalField(name, JsonDecoding::decodeInteger, json, null);
     }
 
     /**
      * Decode an optional integer-valued field from JSON.
+     *
+     * @param name the field name
+     * @param json the JSON value to decode
+     * @return the decoded optional integer
      */
-    public static Opt<Integer> decodeOptionalIntegerField(Name name, Value json) {
+    public static Maybe<Integer> decodeOptionalIntegerField(Name name, Value json) {
         return decodeOptionalField(name.value, JsonDecoding::decodeInteger, json, null);
     }
 
     /**
      * Decode an optional set-valued field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map each JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded optional set
      */
-    public static <A> Opt<Set<A>> decodeOptionalSetField(String name, Function<Value, A> mapping, Value json) {
+    public static <A> Maybe<Set<A>> decodeOptionalSetField(String name, Function<Value, A> mapping, Value json) {
         return decodeOptionalField(name, v -> decodeSet(mapping, v), json);
     }
 
     /**
      * Decode an optional set-valued field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map each JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded optional set
      */
-    public static <A> Opt<Set<A>> decodeOptionalSetField(Name name, Function<Value, A> mapping, Value json) {
+    public static <A> Maybe<Set<A>> decodeOptionalSetField(Name name, Function<Value, A> mapping, Value json) {
         return decodeOptionalField(name.value, v -> decodeSet(mapping, v), json);
     }
 
     /**
      * Decode a required boolean-valued field from JSON.
+     *
+     * @param name the field name
+     * @param json the JSON value to decode
+     * @return the decoded boolean value
      */
     public static boolean decodeRequiredBooleanField(String name, Value json) {
         return decodeRequiredField(name, JsonDecoding::decodeBoolean, json);
@@ -258,6 +366,10 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a required boolean-valued field from JSON.
+     *
+     * @param name the field name
+     * @param json the JSON value to decode
+     * @return the decoded boolean value
      */
     public static boolean decodeRequiredBooleanField(Name name, Value json) {
         return decodeRequiredField(name.value, JsonDecoding::decodeBoolean, json);
@@ -265,11 +377,18 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a required field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map the JSON value to an element
+     * @param json the JSON value to decode
+     * @param defaultValue the default value if the field is missing
+     * @return the decoded value
      */
     public static <A> A decodeRequiredField(String name, Function<Value, A> mapping, Value json, A defaultValue) {
-        Opt<A> opt = decodeOptionalField(name, mapping, json);
-        if (opt.isPresent()) {
-            return opt.get();
+        Maybe<A> opt = decodeOptionalField(name, mapping, json);
+        if (opt.isJust()) {
+            return opt.fromJust();
         } else {
             return defaultValue;
         }
@@ -277,6 +396,13 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a required field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map the JSON value to an element
+     * @param json the JSON value to decode
+     * @param defaultValue the default value if the field is missing
+     * @return the decoded value
      */
     public static <A> A decodeRequiredField(Name name, Function<Value, A> mapping, Value json, A defaultValue) {
         return decodeRequiredField(name.value, mapping, json, defaultValue);
@@ -284,11 +410,17 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a required field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map the JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded value
      */
     public static <A> A decodeRequiredField(String name, Function<Value, A> mapping, Value json) {
-        Opt<A> opt = decodeOptionalField(name, mapping, json);
-        if (opt.isPresent()) {
-            return opt.get();
+        Maybe<A> opt = decodeOptionalField(name, mapping, json);
+        if (opt.isJust()) {
+            return opt.fromJust();
         } else {
             throw new JsonDecodingException("missing required field \"" + name + "\"");
         }
@@ -296,6 +428,12 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a required field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map the JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded value
      */
     public static <A> A decodeRequiredField(Name name, Function<Value, A> mapping, Value json) {
         return decodeRequiredField(name.value, mapping, json, null);
@@ -303,6 +441,10 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a required int32-valued field from JSON.
+     *
+     * @param name the field name
+     * @param json the JSON value to decode
+     * @return the decoded integer value
      */
     public static int decodeRequiredIntField(String name, Value json) {
         return decodeRequiredField(name, JsonDecoding::decodeInteger, json);
@@ -310,6 +452,10 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a required int32-valued field from JSON.
+     *
+     * @param name the field name
+     * @param json the JSON value to decode
+     * @return the decoded integer value
      */
     public static int decodeRequiredIntField(Name name, Value json) {
         return decodeRequiredField(name.value, JsonDecoding::decodeInteger, json);
@@ -317,6 +463,12 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a required list-valued field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map each JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded list
      */
     public static <A> List<A> decodeRequiredListField(String name, Function<Value, A> mapping, Value json) {
         return decodeRequiredField(name, v -> decodeList(mapping, v), json, Collections.emptyList());
@@ -324,6 +476,12 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a required list-valued field from JSON.
+     *
+     * @param <A> the element type
+     * @param name the field name
+     * @param mapping the function to map each JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded list
      */
     public static <A> List<A> decodeRequiredListField(Name name, Function<Value, A> mapping, Value json) {
         return decodeRequiredField(name.value, v -> decodeList(mapping, v), json, Collections.emptyList());
@@ -331,6 +489,11 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a set from JSON.
+     *
+     * @param <A> the element type
+     * @param mapping the function to map each JSON value to an element
+     * @param json the JSON value to decode
+     * @return the decoded set
      */
     public static <A> Set<A> decodeSet(Function<Value, A> mapping, Value json) {
         // Note: use LinkedHashSet for the sake of predictable ordering
@@ -339,6 +502,9 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a string value from JSON.
+     *
+     * @param json the JSON value to decode
+     * @return the decoded string
      */
     public static String decodeString(Value json) {
         return json.accept(new Value.PartialVisitor<>() {
@@ -356,6 +522,9 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a list of string values from JSON.
+     *
+     * @param json the JSON value to decode
+     * @return the decoded list of strings
      */
     public static List<String> decodeStringList(Value json) {
         return decodeList(JsonDecoding::decodeString, json);
@@ -363,6 +532,11 @@ public abstract class JsonDecoding {
 
     /**
      * Decode a union (injection) from JSON.
+     *
+     * @param <A> the element type
+     * @param mappings the map of union field names to decoding functions
+     * @param json the JSON value to decode
+     * @return the decoded union value
      */
     public static <A> A decodeUnion(Map<String, Function<Value, A>> mappings, Value json) {
         return json.accept(new Value.PartialVisitor<A>() {
@@ -400,12 +574,24 @@ public abstract class JsonDecoding {
 
     /**
      * Fail on an unexpected JSON value.
+     *
+     * @param expected the expected type description
+     * @param actual the actual JSON value
+     * @return a JsonDecodingException with a descriptive error message
      */
     public static JsonDecodingException unexpected(String expected, Value actual) {
         return new JsonDecodingException("expected " + expected + ", found " + actual);
     }
 
+    /**
+     * Exception thrown when JSON decoding fails.
+     */
     public static class JsonDecodingException extends RuntimeException {
+        /**
+         * Constructs a new JsonDecodingException with the specified error message.
+         *
+         * @param message the error message
+         */
         public JsonDecodingException(String message) {
             super(message);
         }

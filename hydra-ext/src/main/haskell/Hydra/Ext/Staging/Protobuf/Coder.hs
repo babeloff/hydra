@@ -6,73 +6,150 @@ import qualified Hydra.Ext.Protobuf.Proto3 as P3
 import qualified Hydra.Lib.Strings as Strings
 import qualified Hydra.Decode.Core as DecodeCore
 import qualified Hydra.Encode.Core as EncodeCore
+import qualified Hydra.Monads as Monads
+import qualified Hydra.Schemas as Schemas
 import Hydra.Ext.Staging.Protobuf.Serde
 import qualified Hydra.Dsl.Types as Types
 import Hydra.Dsl.Annotations
 import qualified Hydra.Extract.Core as ExtractCore
+import qualified Hydra.Util as Util
 
 import qualified Control.Monad as CM
 import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified Text.Read as TR
 import qualified Data.Maybe as Y
 
 
 key_proto_field_index = Name "proto_field_index"
 
--- | Note: follows the Protobuf Style Guide (https://protobuf.dev/programming-guides/style)
-moduleToProtobuf :: Module -> Flow Graph (M.Map FilePath String)
-moduleToProtobuf mod = do
-    files <- transformModule protobufLanguage encodeTerm constructModule mod
-    return $ M.fromList (mapPair <$> M.toList files)
+-- Track structural types (Either, Pair) that need helper message definitions
+data StructuralTypeRef
+  = StructuralTypeRefEither Type Type
+  | StructuralTypeRefPair Type Type
+  deriving (Eq, Ord, Show)
+
+-- Generate a message name for a structural type reference
+structuralTypeName :: Namespace -> StructuralTypeRef -> P3.TypeName
+structuralTypeName localNs ref = P3.TypeName $ case ref of
+  StructuralTypeRefEither lt rt -> "Either_" ++ typeSuffix lt ++ "_" ++ typeSuffix rt
+  StructuralTypeRefPair ft st -> "Pair_" ++ typeSuffix ft ++ "_" ++ typeSuffix st
   where
-    mapPair (path, sf) = (path, printExpr $ parenthesize $ writeProtoFile sf)
-    encodeTerm _ = fail "term-level encoding is not yet supported"
+    typeSuffix typ = case simplifyType typ of
+      TypeLiteral lt -> case lt of
+        LiteralTypeBinary -> "bytes"
+        LiteralTypeBoolean -> "bool"
+        LiteralTypeFloat ft -> case ft of
+          FloatTypeFloat32 -> "float"
+          FloatTypeFloat64 -> "double"
+          _ -> "float"
+        LiteralTypeInteger it -> case it of
+          IntegerTypeInt32 -> "int32"
+          IntegerTypeInt64 -> "int64"
+          IntegerTypeUint32 -> "uint32"
+          IntegerTypeUint64 -> "uint64"
+          _ -> "int64"
+        LiteralTypeString -> "string"
+      TypeRecord (RowType name _) -> localNameOf name
+      TypeUnion (RowType name _) -> localNameOf name
+      TypeVariable name -> localNameOf name
+      TypeUnit -> "unit"
+      TypeList _ -> "list"
+      TypeSet _ -> "set"
+      TypeMap _ -> "map"
+      TypeMaybe _ -> "maybe"
+      _ -> "value"
+
+-- Generate a helper message definition for a structural type
+generateStructuralTypeMessage :: Namespace -> StructuralTypeRef -> Flow Graph P3.Definition
+generateStructuralTypeMessage localNs ref = do
+  resetCount key_proto_field_index
+  nextIndex
+  case ref of
+    StructuralTypeRefEither lt rt -> do
+      leftField <- makeField localNs "left" lt
+      rightField <- makeField localNs "right" rt
+      return $ P3.DefinitionMessage P3.MessageDefinition {
+        P3.messageDefinitionName = structuralTypeName localNs ref,
+        P3.messageDefinitionFields = [leftField, rightField],
+        P3.messageDefinitionOptions = []}
+    StructuralTypeRefPair ft st -> do
+      firstField <- makeField localNs "first" ft
+      secondField <- makeField localNs "second" st
+      return $ P3.DefinitionMessage P3.MessageDefinition {
+        P3.messageDefinitionName = structuralTypeName localNs ref,
+        P3.messageDefinitionFields = [firstField, secondField],
+        P3.messageDefinitionOptions = []}
+  where
+    makeField ns fname ftyp = do
+      ft <- encodeSimpleTypeForHelper ns ftyp
+      idx <- nextIndex
+      return $ P3.Field {
+        P3.fieldName = P3.FieldName fname,
+        P3.fieldJsonName = Nothing,
+        P3.fieldType = P3.FieldTypeSimple ft,
+        P3.fieldNumber = idx,
+        P3.fieldOptions = []}
+
+-- Encode a simple type for helper message fields
+encodeSimpleTypeForHelper :: Namespace -> Type -> Flow Graph P3.SimpleType
+encodeSimpleTypeForHelper localNs typ = case simplifyType typ of
+  TypeLiteral lt -> P3.SimpleTypeScalar <$> encodeScalarType lt
+  TypeRecord (RowType name _) -> forNominal name
+  TypeUnion (RowType name _) -> forNominal name
+  TypeUnit -> pure $ P3.SimpleTypeReference $ P3.TypeName $ "google.protobuf.Empty"
+  TypeVariable name -> forNominal name
+  t -> unexpected "simple type in structural type helper" $ show $ removeTypeAnnotations t
+  where
+    forNominal name = pure $ P3.SimpleTypeReference $ encodeTypeReference localNs name
+
+-- Collect all structural type references (Either, Pair) from a list of types
+collectStructuralTypes :: [Type] -> S.Set StructuralTypeRef
+collectStructuralTypes types = L.foldl S.union S.empty (collectFromType <$> types)
+  where
+    collectFromType = foldOverType TraversalOrderPre collect S.empty
+    collect acc typ = case simplifyType typ of
+      TypeEither (EitherType lt rt) -> S.insert (StructuralTypeRefEither lt rt) acc
+      TypePair (PairType ft st) -> S.insert (StructuralTypeRefPair ft st) acc
+      _ -> acc
+
+-- | Note: follows the Protobuf Style Guide (https://protobuf.dev/programming-guides/style)
+moduleToProtobuf :: Module -> [Definition] -> Flow Graph (M.Map FilePath String)
+moduleToProtobuf mod defs = withTrace ("encode module to Protobuf: " ++ unNamespace ns) $ do
+    let (typeDefs, _termDefs) = partitionDefinitions defs
+    pfile <- constructModule mod typeDefs
+    let content = printExpr $ parenthesize $ writeProtoFile pfile
+    return $ M.fromList [(path, content)]
+  where
+    ns = moduleNamespace mod
+    path = P3.unFileReference $ namespaceToFileReference ns
 
 --
 
 javaMultipleFilesOptionName = "java_multiple_files"
 javaPackageOptionName = "java_package"
 
-checkIsStringType :: Type -> Flow Graph ()
-checkIsStringType typ = case simplifyType typ of
-  TypeLiteral lt -> case lt of
-    LiteralTypeString -> pure ()
-    _ -> unexpected "string type" $ show lt
-  TypeVariable name -> requireType name >>= checkIsStringType
-  _ -> unexpected "literal (string) type" $ show typ
-
-constructModule :: Module
-  -> M.Map Type (Coder Graph Graph Term ())
-  -> [(Binding, TypedTerm)]
-  -> Flow Graph (M.Map FilePath P3.ProtoFile)
-constructModule mod@(Module ns els _ _ desc) _ pairs = do
+constructModule :: Module -> [TypeDefinition] -> Flow Graph P3.ProtoFile
+constructModule mod@(Module ns _ _ _ desc) typeDefs = do
     schemaImports <- (fmap namespaceToFileReference . S.toList) <$> moduleDependencyNamespaces True False False False mod
-    types <- CM.mapM toType pairs
-    definitions <- CM.mapM toDef types
-    let pfile = P3.ProtoFile {
+    definitions <- CM.mapM toDef typeDefs
+    let types = typeDefinitionType <$> typeDefs
+    -- Collect structural type references and generate helper messages
+    let structRefs = collectStructuralTypes types
+    helperDefs <- CM.mapM (generateStructuralTypeMessage ns) (S.toList structRefs)
+    return P3.ProtoFile {
       P3.protoFilePackage = namespaceToPackageName ns,
-      P3.protoFileImports = schemaImports ++ (wrapperImport $ snd <$> types) ++ (emptyImport $ snd <$> types),
-      P3.protoFileTypes = definitions,
+      P3.protoFileImports = schemaImports ++ wrapperImport types ++ emptyImport types,
+      P3.protoFileTypes = helperDefs ++ definitions,
       P3.protoFileOptions = descOption:javaOptions}
-    return $ M.singleton path pfile
   where
     javaOptions = [
       P3.Option javaMultipleFilesOptionName $ P3.ValueBoolean True,
       P3.Option javaPackageOptionName $ P3.ValueString $ P3.unPackageName $ namespaceToPackageName ns]
     descOption = P3.Option descriptionOptionName $ P3.ValueString $
       (Y.maybe "" (\d -> d ++ "\n\n") desc) ++ warningAutoGeneratedFile
-    path = P3.unFileReference $ namespaceToFileReference ns
-    toType (el, tt@(TypedTerm term typ)) = do
-      if isNativeType el
-        then do
-          t <- DecodeCore.type_ term
-          return (el, t)
-        else fail $ "mapping of non-type elements to PDL is not yet supported: " ++ unName (bindingName el)
-    toDef (el, typ) = do
-      typ <- DecodeCore.type_ $ bindingTerm el
-      adaptTypeToLanguageAndEncode protobufLanguage (encodeDefinition ns (bindingName el)) $ flattenType typ
+    toDef (TypeDefinition name typ) =
+      adaptTypeToLanguageAndEncode protobufLanguage (encodeDefinition ns name) $ flattenType typ
     checkFields checkType checkFieldType types = L.foldl (||) False (hasMatches <$> types)
       where
         hasMatches = foldOverType TraversalOrderPre (\b t -> b || hasMatch t) False
@@ -89,11 +166,11 @@ constructModule mod@(Module ns els _ _ desc) _ pairs = do
         else []
       where
         isOptionalScalarField typ = case typ of
-          TypeOptional ot -> case deannotateType ot of
+          TypeMaybe ot -> case deannotateType ot of
             TypeLiteral _ -> True
             _ -> False
           _ -> False
-    emptyImport types = if checkFields checkType EncodeCore.isUnitType types
+    emptyImport types = if checkFields checkType Schemas.isUnitType types
         then [P3.FileReference "google/protobuf/empty.proto"]
         else []
       where
@@ -162,10 +239,21 @@ encodeFieldType localNs (FieldType fname ftype) = withTrace ("encode field " ++ 
       P3.fieldOptions = options}
   where
     encodeType typ = case simplifyType typ of
+      TypeEither (EitherType lt rt) -> do
+        -- Reference the generated helper message type for this Either instantiation
+        let ref = StructuralTypeRefEither lt rt
+        return $ P3.FieldTypeSimple $ P3.SimpleTypeReference $ structuralTypeName localNs ref
+      TypePair (PairType ft st) -> do
+        -- Reference the generated helper message type for this Pair instantiation
+        let ref = StructuralTypeRefPair ft st
+        return $ P3.FieldTypeSimple $ P3.SimpleTypeReference $ structuralTypeName localNs ref
       TypeList lt -> do
         P3.FieldTypeRepeated <$> encodeSimpleType True lt
+      TypeSet st -> do
+        -- Encode Set as a repeated field (same as List)
+        P3.FieldTypeRepeated <$> encodeSimpleType True st
       TypeMap (MapType kt vt) -> P3.FieldTypeMap <$> (P3.MapType <$> encodeSimpleType False kt <*> encodeSimpleType True vt)
-      TypeOptional ot -> case deannotateType ot of
+      TypeMaybe ot -> case deannotateType ot of
         TypeLiteral lt -> P3.FieldTypeSimple <$> encodeScalarTypeWrapped lt
         _ -> encodeType ot -- TODO
       TypeUnion (RowType _ fields) -> do
@@ -181,7 +269,9 @@ encodeFieldType localNs (FieldType fname ftype) = withTrace ("encode field " ++ 
         TypeVariable name -> if noms
           then forNominal name
           else do
-            typ <- (bindingTerm <$> requireElement name) >>= DecodeCore.type_
+            g <- Monads.getState
+            term <- bindingTerm <$> requireElement name
+            typ <- Monads.eitherToFlow Util.unDecodingError $ DecodeCore.type_ g term
             encodeSimpleType noms typ
         t -> unexpected "simple type" $ show $ removeTypeAnnotations t
       where
@@ -263,15 +353,12 @@ findOptions typ = do
 isEnumFields :: [FieldType] -> Bool
 isEnumFields fields = L.foldl (&&) True $ fmap isEnumField fields
   where
-    isEnumField = EncodeCore.isUnitType . simplifyType . fieldTypeType
+    isEnumField = Schemas.isUnitType . simplifyType . fieldTypeType
 
 isEnumDefinition :: Type -> Bool
 isEnumDefinition typ = case simplifyType typ of
   TypeUnion (RowType _ fields) -> isEnumFields fields
   _ -> False
-
-isEnumDefinitionReference :: Name -> Flow Graph Bool
-isEnumDefinitionReference name = isEnumDefinition <$> ((bindingTerm <$> requireElement name) >>= DecodeCore.type_)
 
 namespaceToFileReference :: Namespace -> P3.FileReference
 namespaceToFileReference (Namespace ns) = P3.FileReference $ pns ++ ".proto"

@@ -1,10 +1,67 @@
-"""Conversion functions for literal values."""
+# Note: this is an automatically generated file. Do not edit.
+
+r"""Conversion functions for literal values."""
 
 from __future__ import annotations
+from collections.abc import Callable
+from decimal import Decimal
+from typing import cast
 import hydra.core
 import hydra.lib.literals
 
-def float_value_to_bigfloat(v1: hydra.core.FloatValue) -> float:
+def bigfloat_to_float_value(ft: hydra.core.FloatType, bf: Decimal) -> hydra.core.FloatValue:
+    r"""Convert a bigfloat to a floating-point value of a given type (note: lossy)."""
+    
+    match ft:
+        case hydra.core.FloatType.BIGFLOAT:
+            return cast(hydra.core.FloatValue, hydra.core.FloatValueBigfloat(bf))
+        
+        case hydra.core.FloatType.FLOAT32:
+            return cast(hydra.core.FloatValue, hydra.core.FloatValueFloat32(hydra.lib.literals.bigfloat_to_float32(bf)))
+        
+        case hydra.core.FloatType.FLOAT64:
+            return cast(hydra.core.FloatValue, hydra.core.FloatValueFloat64(hydra.lib.literals.bigfloat_to_float64(bf)))
+        
+        case _:
+            raise AssertionError("Unreachable: all variants handled")
+
+def bigint_to_integer_value(it: hydra.core.IntegerType, bi: int) -> hydra.core.IntegerValue:
+    r"""Convert a bigint to an integer value of a given type (note: lossy)."""
+    
+    match it:
+        case hydra.core.IntegerType.BIGINT:
+            return cast(hydra.core.IntegerValue, hydra.core.IntegerValueBigint(bi))
+        
+        case hydra.core.IntegerType.INT8:
+            return cast(hydra.core.IntegerValue, hydra.core.IntegerValueInt8(hydra.lib.literals.bigint_to_int8(bi)))
+        
+        case hydra.core.IntegerType.INT16:
+            return cast(hydra.core.IntegerValue, hydra.core.IntegerValueInt16(hydra.lib.literals.bigint_to_int16(bi)))
+        
+        case hydra.core.IntegerType.INT32:
+            return cast(hydra.core.IntegerValue, hydra.core.IntegerValueInt32(hydra.lib.literals.bigint_to_int32(bi)))
+        
+        case hydra.core.IntegerType.INT64:
+            return cast(hydra.core.IntegerValue, hydra.core.IntegerValueInt64(hydra.lib.literals.bigint_to_int64(bi)))
+        
+        case hydra.core.IntegerType.UINT8:
+            return cast(hydra.core.IntegerValue, hydra.core.IntegerValueUint8(hydra.lib.literals.bigint_to_uint8(bi)))
+        
+        case hydra.core.IntegerType.UINT16:
+            return cast(hydra.core.IntegerValue, hydra.core.IntegerValueUint16(hydra.lib.literals.bigint_to_uint16(bi)))
+        
+        case hydra.core.IntegerType.UINT32:
+            return cast(hydra.core.IntegerValue, hydra.core.IntegerValueUint32(hydra.lib.literals.bigint_to_uint32(bi)))
+        
+        case hydra.core.IntegerType.UINT64:
+            return cast(hydra.core.IntegerValue, hydra.core.IntegerValueUint64(hydra.lib.literals.bigint_to_uint64(bi)))
+        
+        case _:
+            raise AssertionError("Unreachable: all variants handled")
+
+def float_value_to_bigfloat(v1: hydra.core.FloatValue) -> Decimal:
+    r"""Convert a floating-point value of any precision to a bigfloat."""
+    
     match v1:
         case hydra.core.FloatValueBigfloat(value=bf):
             return bf
@@ -14,9 +71,12 @@ def float_value_to_bigfloat(v1: hydra.core.FloatValue) -> float:
         
         case hydra.core.FloatValueFloat64(value=f64):
             return hydra.lib.literals.float64_to_bigfloat(f64)
+        
+        case _:
+            raise AssertionError("Unreachable: all variants handled")
 
 def integer_value_to_bigint(v1: hydra.core.IntegerValue) -> int:
-    """Convert an integer value of any precision to a bigint."""
+    r"""Convert an integer value of any precision to a bigint."""
     
     match v1:
         case hydra.core.IntegerValueBigint(value=bi):
@@ -45,3 +105,6 @@ def integer_value_to_bigint(v1: hydra.core.IntegerValue) -> int:
         
         case hydra.core.IntegerValueUint64(value=ui64):
             return hydra.lib.literals.uint64_to_bigint(ui64)
+        
+        case _:
+            raise AssertionError("Unreachable: all variants handled")

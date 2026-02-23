@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * The specification of a schema at the source end of a workflow
  */
-public abstract class SchemaSpec implements Serializable {
+public abstract class SchemaSpec implements Serializable, Comparable<SchemaSpec> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.workflow.SchemaSpec");
   
   public static final hydra.core.Name FIELD_NAME_HYDRA = new hydra.core.Name("hydra");
@@ -32,19 +32,19 @@ public abstract class SchemaSpec implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(SchemaSpec instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Hydra instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(File instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Provided instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -55,7 +55,6 @@ public abstract class SchemaSpec implements Serializable {
     public final hydra.workflow.HydraSchemaSpec value;
     
     public Hydra (hydra.workflow.HydraSchemaSpec value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -64,13 +63,26 @@ public abstract class SchemaSpec implements Serializable {
       if (!(other instanceof Hydra)) {
         return false;
       }
-      Hydra o = (Hydra) (other);
-      return value.equals(o.value);
+      Hydra o = (Hydra) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SchemaSpec other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Hydra o = (Hydra) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -86,7 +98,6 @@ public abstract class SchemaSpec implements Serializable {
     public final String value;
     
     public File (String value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -95,13 +106,26 @@ public abstract class SchemaSpec implements Serializable {
       if (!(other instanceof File)) {
         return false;
       }
-      File o = (File) (other);
-      return value.equals(o.value);
+      File o = (File) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SchemaSpec other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      File o = (File) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -123,12 +147,22 @@ public abstract class SchemaSpec implements Serializable {
       if (!(other instanceof Provided)) {
         return false;
       }
-      Provided o = (Provided) (other);
+      Provided o = (Provided) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SchemaSpec other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class NoDefaultStarAnnotationStarEtc implements Serializable {
+public class NoDefaultStarAnnotationStarEtc implements Serializable, Comparable<NoDefaultStarAnnotationStarEtc> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.NoDefaultStarAnnotationStarEtc");
   
   public static final hydra.core.Name FIELD_NAME_PARAM_NO_DEFAULT_STAR_ANNOTATION = new hydra.core.Name("paramNoDefaultStarAnnotation");
@@ -17,12 +17,9 @@ public class NoDefaultStarAnnotationStarEtc implements Serializable {
   
   public final java.util.List<hydra.ext.python.syntax.ParamMaybeDefault> paramMaybeDefault;
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.Keywords> keywords;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.Keywords> keywords;
   
-  public NoDefaultStarAnnotationStarEtc (hydra.ext.python.syntax.ParamNoDefaultStarAnnotation paramNoDefaultStarAnnotation, java.util.List<hydra.ext.python.syntax.ParamMaybeDefault> paramMaybeDefault, hydra.util.Opt<hydra.ext.python.syntax.Keywords> keywords) {
-    java.util.Objects.requireNonNull((paramNoDefaultStarAnnotation));
-    java.util.Objects.requireNonNull((paramMaybeDefault));
-    java.util.Objects.requireNonNull((keywords));
+  public NoDefaultStarAnnotationStarEtc (hydra.ext.python.syntax.ParamNoDefaultStarAnnotation paramNoDefaultStarAnnotation, java.util.List<hydra.ext.python.syntax.ParamMaybeDefault> paramMaybeDefault, hydra.util.Maybe<hydra.ext.python.syntax.Keywords> keywords) {
     this.paramNoDefaultStarAnnotation = paramNoDefaultStarAnnotation;
     this.paramMaybeDefault = paramMaybeDefault;
     this.keywords = keywords;
@@ -33,27 +30,49 @@ public class NoDefaultStarAnnotationStarEtc implements Serializable {
     if (!(other instanceof NoDefaultStarAnnotationStarEtc)) {
       return false;
     }
-    NoDefaultStarAnnotationStarEtc o = (NoDefaultStarAnnotationStarEtc) (other);
-    return paramNoDefaultStarAnnotation.equals(o.paramNoDefaultStarAnnotation) && paramMaybeDefault.equals(o.paramMaybeDefault) && keywords.equals(o.keywords);
+    NoDefaultStarAnnotationStarEtc o = (NoDefaultStarAnnotationStarEtc) other;
+    return java.util.Objects.equals(
+      this.paramNoDefaultStarAnnotation,
+      o.paramNoDefaultStarAnnotation) && java.util.Objects.equals(
+      this.paramMaybeDefault,
+      o.paramMaybeDefault) && java.util.Objects.equals(
+      this.keywords,
+      o.keywords);
   }
   
   @Override
   public int hashCode() {
-    return 2 * paramNoDefaultStarAnnotation.hashCode() + 3 * paramMaybeDefault.hashCode() + 5 * keywords.hashCode();
+    return 2 * java.util.Objects.hashCode(paramNoDefaultStarAnnotation) + 3 * java.util.Objects.hashCode(paramMaybeDefault) + 5 * java.util.Objects.hashCode(keywords);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(NoDefaultStarAnnotationStarEtc other) {
+    int cmp = 0;
+    cmp = ((Comparable) paramNoDefaultStarAnnotation).compareTo(other.paramNoDefaultStarAnnotation);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      paramMaybeDefault.hashCode(),
+      other.paramMaybeDefault.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      keywords.hashCode(),
+      other.keywords.hashCode());
   }
   
   public NoDefaultStarAnnotationStarEtc withParamNoDefaultStarAnnotation(hydra.ext.python.syntax.ParamNoDefaultStarAnnotation paramNoDefaultStarAnnotation) {
-    java.util.Objects.requireNonNull((paramNoDefaultStarAnnotation));
     return new NoDefaultStarAnnotationStarEtc(paramNoDefaultStarAnnotation, paramMaybeDefault, keywords);
   }
   
   public NoDefaultStarAnnotationStarEtc withParamMaybeDefault(java.util.List<hydra.ext.python.syntax.ParamMaybeDefault> paramMaybeDefault) {
-    java.util.Objects.requireNonNull((paramMaybeDefault));
     return new NoDefaultStarAnnotationStarEtc(paramNoDefaultStarAnnotation, paramMaybeDefault, keywords);
   }
   
-  public NoDefaultStarAnnotationStarEtc withKeywords(hydra.util.Opt<hydra.ext.python.syntax.Keywords> keywords) {
-    java.util.Objects.requireNonNull((keywords));
+  public NoDefaultStarAnnotationStarEtc withKeywords(hydra.util.Maybe<hydra.ext.python.syntax.Keywords> keywords) {
     return new NoDefaultStarAnnotationStarEtc(paramNoDefaultStarAnnotation, paramMaybeDefault, keywords);
   }
 }

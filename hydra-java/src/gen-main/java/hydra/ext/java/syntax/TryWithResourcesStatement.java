@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class TryWithResourcesStatement implements Serializable {
+public class TryWithResourcesStatement implements Serializable, Comparable<TryWithResourcesStatement> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.TryWithResourcesStatement");
   
   public static final hydra.core.Name FIELD_NAME_RESOURCE_SPECIFICATION = new hydra.core.Name("resourceSpecification");
@@ -19,15 +19,11 @@ public class TryWithResourcesStatement implements Serializable {
   
   public final hydra.ext.java.syntax.Block block;
   
-  public final hydra.util.Opt<hydra.ext.java.syntax.Catches> catches;
+  public final hydra.util.Maybe<hydra.ext.java.syntax.Catches> catches;
   
-  public final hydra.util.Opt<hydra.ext.java.syntax.Finally> finally_;
+  public final hydra.util.Maybe<hydra.ext.java.syntax.Finally> finally_;
   
-  public TryWithResourcesStatement (hydra.ext.java.syntax.ResourceSpecification resourceSpecification, hydra.ext.java.syntax.Block block, hydra.util.Opt<hydra.ext.java.syntax.Catches> catches, hydra.util.Opt<hydra.ext.java.syntax.Finally> finally_) {
-    java.util.Objects.requireNonNull((resourceSpecification));
-    java.util.Objects.requireNonNull((block));
-    java.util.Objects.requireNonNull((catches));
-    java.util.Objects.requireNonNull((finally_));
+  public TryWithResourcesStatement (hydra.ext.java.syntax.ResourceSpecification resourceSpecification, hydra.ext.java.syntax.Block block, hydra.util.Maybe<hydra.ext.java.syntax.Catches> catches, hydra.util.Maybe<hydra.ext.java.syntax.Finally> finally_) {
     this.resourceSpecification = resourceSpecification;
     this.block = block;
     this.catches = catches;
@@ -39,32 +35,59 @@ public class TryWithResourcesStatement implements Serializable {
     if (!(other instanceof TryWithResourcesStatement)) {
       return false;
     }
-    TryWithResourcesStatement o = (TryWithResourcesStatement) (other);
-    return resourceSpecification.equals(o.resourceSpecification) && block.equals(o.block) && catches.equals(o.catches) && finally_.equals(o.finally_);
+    TryWithResourcesStatement o = (TryWithResourcesStatement) other;
+    return java.util.Objects.equals(
+      this.resourceSpecification,
+      o.resourceSpecification) && java.util.Objects.equals(
+      this.block,
+      o.block) && java.util.Objects.equals(
+      this.catches,
+      o.catches) && java.util.Objects.equals(
+      this.finally_,
+      o.finally_);
   }
   
   @Override
   public int hashCode() {
-    return 2 * resourceSpecification.hashCode() + 3 * block.hashCode() + 5 * catches.hashCode() + 7 * finally_.hashCode();
+    return 2 * java.util.Objects.hashCode(resourceSpecification) + 3 * java.util.Objects.hashCode(block) + 5 * java.util.Objects.hashCode(catches) + 7 * java.util.Objects.hashCode(finally_);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(TryWithResourcesStatement other) {
+    int cmp = 0;
+    cmp = ((Comparable) resourceSpecification).compareTo(other.resourceSpecification);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) block).compareTo(other.block);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      catches.hashCode(),
+      other.catches.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      finally_.hashCode(),
+      other.finally_.hashCode());
   }
   
   public TryWithResourcesStatement withResourceSpecification(hydra.ext.java.syntax.ResourceSpecification resourceSpecification) {
-    java.util.Objects.requireNonNull((resourceSpecification));
     return new TryWithResourcesStatement(resourceSpecification, block, catches, finally_);
   }
   
   public TryWithResourcesStatement withBlock(hydra.ext.java.syntax.Block block) {
-    java.util.Objects.requireNonNull((block));
     return new TryWithResourcesStatement(resourceSpecification, block, catches, finally_);
   }
   
-  public TryWithResourcesStatement withCatches(hydra.util.Opt<hydra.ext.java.syntax.Catches> catches) {
-    java.util.Objects.requireNonNull((catches));
+  public TryWithResourcesStatement withCatches(hydra.util.Maybe<hydra.ext.java.syntax.Catches> catches) {
     return new TryWithResourcesStatement(resourceSpecification, block, catches, finally_);
   }
   
-  public TryWithResourcesStatement withFinally(hydra.util.Opt<hydra.ext.java.syntax.Finally> finally_) {
-    java.util.Objects.requireNonNull((finally_));
+  public TryWithResourcesStatement withFinally(hydra.util.Maybe<hydra.ext.java.syntax.Finally> finally_) {
     return new TryWithResourcesStatement(resourceSpecification, block, catches, finally_);
   }
 }

@@ -1,10 +1,20 @@
 -- | A bootstrapping DSL, used for Hydra's inner core models
 
-module Hydra.Dsl.Bootstrap where
+module Hydra.Dsl.Bootstrap (
+  module Hydra.Dsl.AsType,
+  bootstrapGraph,
+  datatype,
+  qualify,
+  typeref,
+  defineType,
+  use,
+  useType,
+) where
 
 import Hydra.Compute
 import Hydra.Constants
 import Hydra.Core
+import Hydra.Dsl.AsType
 import qualified Hydra.Encode.Core as EncodeCore
 import Hydra.Graph
 import Hydra.Lexical
@@ -50,3 +60,17 @@ qualify (Namespace gname) (Name lname) = Name $ gname ++ "." ++ lname
 
 typeref :: Namespace -> String -> Type
 typeref ns = TypeVariable . qualify ns . Name
+
+-- | New DSL helpers (Option 1 from dsl-redesign-options.md)
+
+-- | Define a type in a namespace
+defineType :: Namespace -> String -> Type -> Binding
+defineType = datatype
+
+-- | Reference a type by its binding
+use :: Binding -> Type
+use b = TypeVariable (bindingName b)
+
+-- | Reference a type in a namespace (old style, for migration)
+useType :: Namespace -> String -> Type
+useType = typeref

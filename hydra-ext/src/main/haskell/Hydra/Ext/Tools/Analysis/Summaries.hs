@@ -19,9 +19,12 @@ import Hydra.Generation
 import Hydra.Ext.Sources.All
 import Hydra.Sources.Libraries
 import qualified Hydra.Decode.Core as DecodeCore
-import qualified Hydra.Describe.Core as DescribeCore
-import qualified Hydra.Encode.Core as EncodeCore
 import qualified Hydra.Show.Core as ShowCore
+import qualified Hydra.Encode.Core as EncodeCore
+import qualified Hydra.Monads as Monads
+import qualified Hydra.Schemas as Schemas
+import qualified Hydra.Show.Core as ShowCore
+import qualified Hydra.Util as Util
 import qualified Hydra.Pg.Model as PG
 
 import qualified Control.Monad as CM
@@ -40,10 +43,11 @@ elementSummary withTypes el = do
     findTypeInfo = if withTypes
       then case bindingType el of
         Nothing -> return Nothing
-        Just ts -> Just <$> if EncodeCore.isType (deannotateType $ typeSchemeType ts)
+        Just ts -> Just <$> if Schemas.isType (deannotateType $ typeSchemeType ts)
           then do
-            typ <- deannotateType <$> (DecodeCore.type_ $ bindingTerm el)
-            return $ " = " ++ ShowCore.type_ typ
+            g <- Monads.getState
+            typ <- Monads.eitherToFlow Util.unDecodingError $ DecodeCore.type_ g $ bindingTerm el
+            return $ " = " ++ ShowCore.type_ (deannotateType typ)
           else pure $ " : " ++ ShowCore.typeScheme ts
       else pure Nothing
 
@@ -62,7 +66,7 @@ fieldTypeSummary (FieldType fname ftype) = unName fname ++ " : " ++ ShowCore.typ
 graphSummary :: Bool -> Graph -> Flow Graph String
 graphSummary withTypes g = do
   gi <- if withTypes then inferGraphTypes g else pure g
-  let els = L.sortBy (O.comparing bindingName) $ M.elems $ graphElements gi
+  let els = L.sortBy (O.comparing bindingName) $ graphElements gi
   let prims = L.sortBy (O.comparing primitiveName) $ M.elems $ graphPrimitives gi
   elSummaries <- CM.mapM (elementSummary withTypes) els
   let primSummaries = fmap (primitiveSummary withTypes) prims
@@ -99,7 +103,7 @@ termGraphToDependencyPropertyGraph withPrimitives g = PG.Graph vertexMap edgeMap
               where
                 toVertex prim = PG.Vertex primLabel (nameToId $ primitiveName prim) $
                   M.singleton namespaceKey (nameToNamespace $ primitiveName prim)
-            els = fmap toVertex $ M.elems elements
+            els = fmap toVertex elements
               where
                 toVertex el = PG.Vertex elLabel (nameToId $ bindingName el) $
                   M.singleton namespaceKey (nameToNamespace $ bindingName el)

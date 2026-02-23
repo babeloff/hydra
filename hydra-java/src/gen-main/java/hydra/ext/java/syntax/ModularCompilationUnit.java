@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class ModularCompilationUnit implements Serializable {
+public class ModularCompilationUnit implements Serializable, Comparable<ModularCompilationUnit> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ModularCompilationUnit");
   
   public static final hydra.core.Name FIELD_NAME_IMPORTS = new hydra.core.Name("imports");
@@ -16,8 +16,6 @@ public class ModularCompilationUnit implements Serializable {
   public final hydra.ext.java.syntax.ModuleDeclaration module;
   
   public ModularCompilationUnit (java.util.List<hydra.ext.java.syntax.ImportDeclaration> imports, hydra.ext.java.syntax.ModuleDeclaration module) {
-    java.util.Objects.requireNonNull((imports));
-    java.util.Objects.requireNonNull((module));
     this.imports = imports;
     this.module = module;
   }
@@ -27,22 +25,37 @@ public class ModularCompilationUnit implements Serializable {
     if (!(other instanceof ModularCompilationUnit)) {
       return false;
     }
-    ModularCompilationUnit o = (ModularCompilationUnit) (other);
-    return imports.equals(o.imports) && module.equals(o.module);
+    ModularCompilationUnit o = (ModularCompilationUnit) other;
+    return java.util.Objects.equals(
+      this.imports,
+      o.imports) && java.util.Objects.equals(
+      this.module,
+      o.module);
   }
   
   @Override
   public int hashCode() {
-    return 2 * imports.hashCode() + 3 * module.hashCode();
+    return 2 * java.util.Objects.hashCode(imports) + 3 * java.util.Objects.hashCode(module);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(ModularCompilationUnit other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      imports.hashCode(),
+      other.imports.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) module).compareTo(other.module);
   }
   
   public ModularCompilationUnit withImports(java.util.List<hydra.ext.java.syntax.ImportDeclaration> imports) {
-    java.util.Objects.requireNonNull((imports));
     return new ModularCompilationUnit(imports, module);
   }
   
   public ModularCompilationUnit withModule(hydra.ext.java.syntax.ModuleDeclaration module) {
-    java.util.Objects.requireNonNull((module));
     return new ModularCompilationUnit(imports, module);
   }
 }

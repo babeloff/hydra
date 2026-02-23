@@ -46,22 +46,21 @@ public abstract class MultiplyDivideModuloOperator implements Serializable {
   }
   
   public static final class Multiply extends hydra.ext.cypher.openCypher.MultiplyDivideModuloOperator implements Serializable {
-    public Multiply () {
+    public final Boolean value;
     
+    public Multiply (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Multiply)) {
-        return false;
-      }
-      Multiply o = (Multiply) (other);
-      return true;
+      return other instanceof Multiply;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -71,22 +70,21 @@ public abstract class MultiplyDivideModuloOperator implements Serializable {
   }
   
   public static final class Divide extends hydra.ext.cypher.openCypher.MultiplyDivideModuloOperator implements Serializable {
-    public Divide () {
+    public final Boolean value;
     
+    public Divide (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Divide)) {
-        return false;
-      }
-      Divide o = (Divide) (other);
-      return true;
+      return other instanceof Divide;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -96,22 +94,21 @@ public abstract class MultiplyDivideModuloOperator implements Serializable {
   }
   
   public static final class Modulo extends hydra.ext.cypher.openCypher.MultiplyDivideModuloOperator implements Serializable {
-    public Modulo () {
+    public final Boolean value;
     
+    public Modulo (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Modulo)) {
-        return false;
-      }
-      Modulo o = (Modulo) (other);
-      return true;
+      return other instanceof Modulo;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override

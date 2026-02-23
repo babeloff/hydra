@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class Assignment implements Serializable {
+public abstract class Assignment implements Serializable, Comparable<Assignment> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Assignment");
   
   public static final hydra.core.Name FIELD_NAME_TYPED = new hydra.core.Name("typed");
@@ -29,19 +29,19 @@ public abstract class Assignment implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(Assignment instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Typed instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Untyped instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Aug instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -49,7 +49,6 @@ public abstract class Assignment implements Serializable {
     public final hydra.ext.python.syntax.TypedAssignment value;
     
     public Typed (hydra.ext.python.syntax.TypedAssignment value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -58,13 +57,26 @@ public abstract class Assignment implements Serializable {
       if (!(other instanceof Typed)) {
         return false;
       }
-      Typed o = (Typed) (other);
-      return value.equals(o.value);
+      Typed o = (Typed) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Assignment other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Typed o = (Typed) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -77,7 +89,6 @@ public abstract class Assignment implements Serializable {
     public final hydra.ext.python.syntax.UntypedAssignment value;
     
     public Untyped (hydra.ext.python.syntax.UntypedAssignment value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -86,13 +97,26 @@ public abstract class Assignment implements Serializable {
       if (!(other instanceof Untyped)) {
         return false;
       }
-      Untyped o = (Untyped) (other);
-      return value.equals(o.value);
+      Untyped o = (Untyped) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Assignment other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Untyped o = (Untyped) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -105,7 +129,6 @@ public abstract class Assignment implements Serializable {
     public final hydra.ext.python.syntax.AugAssignment value;
     
     public Aug (hydra.ext.python.syntax.AugAssignment value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -114,13 +137,26 @@ public abstract class Assignment implements Serializable {
       if (!(other instanceof Aug)) {
         return false;
       }
-      Aug o = (Aug) (other);
-      return value.equals(o.value);
+      Aug o = (Aug) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Assignment other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Aug o = (Aug) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

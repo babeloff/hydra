@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * Indicates either the 'out' or the 'in' direction of a coder
  */
-public abstract class CoderDirection implements Serializable {
+public abstract class CoderDirection implements Serializable, Comparable<CoderDirection> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.coders.CoderDirection");
   
   public static final hydra.core.Name FIELD_NAME_ENCODE = new hydra.core.Name("encode");
@@ -28,15 +28,15 @@ public abstract class CoderDirection implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(CoderDirection instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Encode instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Decode instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -50,12 +50,22 @@ public abstract class CoderDirection implements Serializable {
       if (!(other instanceof Encode)) {
         return false;
       }
-      Encode o = (Encode) (other);
+      Encode o = (Encode) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CoderDirection other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -75,12 +85,22 @@ public abstract class CoderDirection implements Serializable {
       if (!(other instanceof Decode)) {
         return false;
       }
-      Decode o = (Decode) (other);
+      Decode o = (Decode) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(CoderDirection other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

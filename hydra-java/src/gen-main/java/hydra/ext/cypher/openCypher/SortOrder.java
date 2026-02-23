@@ -38,22 +38,21 @@ public abstract class SortOrder implements Serializable {
   }
   
   public static final class Ascending extends hydra.ext.cypher.openCypher.SortOrder implements Serializable {
-    public Ascending () {
+    public final Boolean value;
     
+    public Ascending (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Ascending)) {
-        return false;
-      }
-      Ascending o = (Ascending) (other);
-      return true;
+      return other instanceof Ascending;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -63,22 +62,21 @@ public abstract class SortOrder implements Serializable {
   }
   
   public static final class Descending extends hydra.ext.cypher.openCypher.SortOrder implements Serializable {
-    public Descending () {
+    public final Boolean value;
     
+    public Descending (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Descending)) {
-        return false;
-      }
-      Descending o = (Descending) (other);
-      return true;
+      return other instanceof Descending;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override

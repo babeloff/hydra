@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class ShiftOp implements Serializable {
+public abstract class ShiftOp implements Serializable, Comparable<ShiftOp> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.ShiftOp");
   
   public static final hydra.core.Name FIELD_NAME_LEFT = new hydra.core.Name("left");
@@ -25,15 +25,15 @@ public abstract class ShiftOp implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(ShiftOp instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Left instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Right instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -47,12 +47,22 @@ public abstract class ShiftOp implements Serializable {
       if (!(other instanceof Left)) {
         return false;
       }
-      Left o = (Left) (other);
+      Left o = (Left) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ShiftOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -72,12 +82,22 @@ public abstract class ShiftOp implements Serializable {
       if (!(other instanceof Right)) {
         return false;
       }
-      Right o = (Right) (other);
+      Right o = (Right) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ShiftOp other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

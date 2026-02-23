@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class SimpleTypeName implements Serializable {
+public class SimpleTypeName implements Serializable, Comparable<SimpleTypeName> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.SimpleTypeName");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class SimpleTypeName implements Serializable {
   public final hydra.ext.java.syntax.TypeIdentifier value;
   
   public SimpleTypeName (hydra.ext.java.syntax.TypeIdentifier value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,20 @@ public class SimpleTypeName implements Serializable {
     if (!(other instanceof SimpleTypeName)) {
       return false;
     }
-    SimpleTypeName o = (SimpleTypeName) (other);
-    return value.equals(o.value);
+    SimpleTypeName o = (SimpleTypeName) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(SimpleTypeName other) {
+    return ((Comparable) value).compareTo(other.value);
   }
 }

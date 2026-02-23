@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class ModuleDeclaration implements Serializable {
+public class ModuleDeclaration implements Serializable, Comparable<ModuleDeclaration> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ModuleDeclaration");
   
   public static final hydra.core.Name FIELD_NAME_ANNOTATIONS = new hydra.core.Name("annotations");
@@ -24,10 +24,6 @@ public class ModuleDeclaration implements Serializable {
   public final java.util.List<java.util.List<hydra.ext.java.syntax.ModuleDirective>> directives;
   
   public ModuleDeclaration (java.util.List<hydra.ext.java.syntax.Annotation> annotations, Boolean open, java.util.List<hydra.ext.java.syntax.Identifier> identifiers, java.util.List<java.util.List<hydra.ext.java.syntax.ModuleDirective>> directives) {
-    java.util.Objects.requireNonNull((annotations));
-    java.util.Objects.requireNonNull((open));
-    java.util.Objects.requireNonNull((identifiers));
-    java.util.Objects.requireNonNull((directives));
     this.annotations = annotations;
     this.open = open;
     this.identifiers = identifiers;
@@ -39,32 +35,61 @@ public class ModuleDeclaration implements Serializable {
     if (!(other instanceof ModuleDeclaration)) {
       return false;
     }
-    ModuleDeclaration o = (ModuleDeclaration) (other);
-    return annotations.equals(o.annotations) && open.equals(o.open) && identifiers.equals(o.identifiers) && directives.equals(o.directives);
+    ModuleDeclaration o = (ModuleDeclaration) other;
+    return java.util.Objects.equals(
+      this.annotations,
+      o.annotations) && java.util.Objects.equals(
+      this.open,
+      o.open) && java.util.Objects.equals(
+      this.identifiers,
+      o.identifiers) && java.util.Objects.equals(
+      this.directives,
+      o.directives);
   }
   
   @Override
   public int hashCode() {
-    return 2 * annotations.hashCode() + 3 * open.hashCode() + 5 * identifiers.hashCode() + 7 * directives.hashCode();
+    return 2 * java.util.Objects.hashCode(annotations) + 3 * java.util.Objects.hashCode(open) + 5 * java.util.Objects.hashCode(identifiers) + 7 * java.util.Objects.hashCode(directives);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(ModuleDeclaration other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      annotations.hashCode(),
+      other.annotations.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) open).compareTo(other.open);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      identifiers.hashCode(),
+      other.identifiers.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      directives.hashCode(),
+      other.directives.hashCode());
   }
   
   public ModuleDeclaration withAnnotations(java.util.List<hydra.ext.java.syntax.Annotation> annotations) {
-    java.util.Objects.requireNonNull((annotations));
     return new ModuleDeclaration(annotations, open, identifiers, directives);
   }
   
   public ModuleDeclaration withOpen(Boolean open) {
-    java.util.Objects.requireNonNull((open));
     return new ModuleDeclaration(annotations, open, identifiers, directives);
   }
   
   public ModuleDeclaration withIdentifiers(java.util.List<hydra.ext.java.syntax.Identifier> identifiers) {
-    java.util.Objects.requireNonNull((identifiers));
     return new ModuleDeclaration(annotations, open, identifiers, directives);
   }
   
   public ModuleDeclaration withDirectives(java.util.List<java.util.List<hydra.ext.java.syntax.ModuleDirective>> directives) {
-    java.util.Objects.requireNonNull((directives));
     return new ModuleDeclaration(annotations, open, identifiers, directives);
   }
 }

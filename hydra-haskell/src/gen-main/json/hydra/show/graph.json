@@ -1,0 +1,99 @@
+{
+  "description": ["String representations of hydra.graph types"],
+  "elements": [
+    {
+      "name": "hydra.show.graph.graph",
+      "term": {
+        "annotated": {
+          "annotation": [
+            {
+              "@key": "description",
+              "@value": {"literal": {"string": "Show a graph as a string"}}}],
+          "body": {
+            "function": {
+              "lambda": {
+                "body": {
+                  "let": {
+                    "bindings": [
+                      {
+                        "name": "elements",
+                        "term": {
+                          "application": {
+                            "argument": {"variable": "graph"},
+                            "function": {
+                              "function": {
+                                "elimination": {"record": {"field": "elements", "typeName": "hydra.graph.Graph"}}}}}},
+                        "type": [
+                          {
+                            "constraints": null,
+                            "type": {"list": {"variable": "hydra.core.Binding"}},
+                            "variables": []}]},
+                      {
+                        "name": "elementStrs",
+                        "term": {
+                          "application": {
+                            "argument": {"variable": "elements"},
+                            "function": {
+                              "application": {
+                                "argument": {"variable": "hydra.show.core.binding"},
+                                "function": {
+                                  "typeApplication": {
+                                    "body": {
+                                      "typeApplication": {
+                                        "body": {"function": {"primitive": "hydra.lib.lists.map"}},
+                                        "type": {"variable": "hydra.core.Binding"}}},
+                                    "type": {"literal": {"string": {}}}}}}}}},
+                        "type": [
+                          {
+                            "constraints": null,
+                            "type": {"list": {"literal": {"string": {}}}},
+                            "variables": []}]}],
+                    "body": {
+                      "application": {
+                        "argument": {
+                          "list": [
+                            {"literal": {"string": "{"}},
+                            {
+                              "application": {
+                                "argument": {"variable": "elementStrs"},
+                                "function": {
+                                  "application": {
+                                    "argument": {"literal": {"string": ", "}},
+                                    "function": {"function": {"primitive": "hydra.lib.strings.intercalate"}}}}}},
+                            {"literal": {"string": "}"}}]},
+                        "function": {"function": {"primitive": "hydra.lib.strings.cat"}}}}}},
+                "domain": [{"variable": "hydra.graph.Graph"}],
+                "parameter": "graph"}}}}},
+      "type": [
+        {
+          "constraints": null,
+          "type": {
+            "function": {
+              "codomain": {"literal": {"string": {}}},
+              "domain": {"variable": "hydra.graph.Graph"}}},
+          "variables": []}]}],
+  "namespace": "hydra.show.graph",
+  "termDependencies": ["hydra.show.core"],
+  "typeDependencies": [
+    "hydra.accessors",
+    "hydra.ast",
+    "hydra.classes",
+    "hydra.coders",
+    "hydra.compute",
+    "hydra.constraints",
+    "hydra.core",
+    "hydra.grammar",
+    "hydra.graph",
+    "hydra.json.model",
+    "hydra.module",
+    "hydra.parsing",
+    "hydra.phantoms",
+    "hydra.query",
+    "hydra.relational",
+    "hydra.tabular",
+    "hydra.testing",
+    "hydra.topology",
+    "hydra.typing",
+    "hydra.util",
+    "hydra.variants",
+    "hydra.workflow"]}

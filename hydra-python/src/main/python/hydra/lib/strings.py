@@ -1,5 +1,6 @@
 """Python implementations of hydra.lib.strings primitives."""
 
+from __future__ import annotations
 from collections.abc import Sequence
 
 from hydra.dsl.python import frozenlist
@@ -15,6 +16,11 @@ def cat2(s1: str, s2: str) -> str:
     return s1 + s2
 
 
+def char_at(i: int, s: str) -> int:
+    """Get the character code at a specific index in a string."""
+    return ord(s[i])
+
+
 def from_list(values: Sequence[int]) -> str:
     """Convert a list of integers to a string."""
     return "".join(chr(v) for v in values)
@@ -25,11 +31,6 @@ def intercalate(separator: str, values: Sequence[str]) -> str:
     return separator.join(values)
 
 
-def is_empty(s: str) -> bool:
-    """Check if a string is empty."""
-    return len(s) == 0
-
-
 def length(s: str) -> int:
     """Return the length of a string."""
     return len(s)
@@ -37,7 +38,13 @@ def length(s: str) -> int:
 
 def lines(s: str) -> frozenlist[str]:
     """Split a string into lines."""
-    return tuple(s.splitlines())
+    if not s:
+        return ()
+    result = s.split('\n')
+    # Remove trailing empty string if the string ends with newline
+    if result and result[-1] == '':
+        result = result[:-1]
+    return tuple(result)
 
 
 def null(s: str) -> bool:
@@ -46,7 +53,17 @@ def null(s: str) -> bool:
 
 
 def split_on(delimiter: str, x: str) -> frozenlist[str]:
-    """Split a string on a delimiter."""
+    """Split a string on a delimiter.
+
+    With empty delimiter, splits into individual characters with leading empty string
+    (Haskell semantics: splitOn "" "abc" == ["", "a", "b", "c"]).
+    """
+    if not delimiter:
+        # Haskell: splitOn "" "abc" == ["", "a", "b", "c"]
+        # splitOn "" "" == [""]
+        if not x:
+            return ("",)
+        return ("",) + tuple(x)
     return tuple(x.split(delimiter))
 
 
@@ -66,5 +83,15 @@ def to_upper(s: str) -> str:
 
 
 def unlines(xs: Sequence[str]) -> str:
-    """Join strings with newlines."""
-    return '\n'.join(xs)
+    """Join strings with newlines, adding trailing newline.
+
+    Haskell semantics: unlines ["a", "b"] == "a\nb\n"
+    """
+    if not xs:
+        return ""
+    return '\n'.join(xs) + '\n'
+
+
+def words(s: str) -> frozenlist[str]:
+    """Split a string into words."""
+    return tuple(s.split())

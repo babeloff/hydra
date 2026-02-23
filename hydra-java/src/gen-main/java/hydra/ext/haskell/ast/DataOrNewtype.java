@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * The 'data' versus 'newtype keyword
  */
-public abstract class DataOrNewtype implements Serializable {
+public abstract class DataOrNewtype implements Serializable, Comparable<DataOrNewtype> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.haskell.ast.DataOrNewtype");
   
   public static final hydra.core.Name FIELD_NAME_DATA = new hydra.core.Name("data");
@@ -28,15 +28,15 @@ public abstract class DataOrNewtype implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(DataOrNewtype instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Data instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Newtype instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -50,12 +50,22 @@ public abstract class DataOrNewtype implements Serializable {
       if (!(other instanceof Data)) {
         return false;
       }
-      Data o = (Data) (other);
+      Data o = (Data) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(DataOrNewtype other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -75,12 +85,22 @@ public abstract class DataOrNewtype implements Serializable {
       if (!(other instanceof Newtype)) {
         return false;
       }
-      Newtype o = (Newtype) (other);
+      Newtype o = (Newtype) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(DataOrNewtype other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

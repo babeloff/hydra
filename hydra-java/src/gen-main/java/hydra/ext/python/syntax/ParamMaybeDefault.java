@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class ParamMaybeDefault implements Serializable {
+public class ParamMaybeDefault implements Serializable, Comparable<ParamMaybeDefault> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.ParamMaybeDefault");
   
   public static final hydra.core.Name FIELD_NAME_PARAM = new hydra.core.Name("param");
@@ -15,14 +15,11 @@ public class ParamMaybeDefault implements Serializable {
   
   public final hydra.ext.python.syntax.Param param;
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.Default> default_;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.Default> default_;
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.TypeComment> typeComment;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.TypeComment> typeComment;
   
-  public ParamMaybeDefault (hydra.ext.python.syntax.Param param, hydra.util.Opt<hydra.ext.python.syntax.Default> default_, hydra.util.Opt<hydra.ext.python.syntax.TypeComment> typeComment) {
-    java.util.Objects.requireNonNull((param));
-    java.util.Objects.requireNonNull((default_));
-    java.util.Objects.requireNonNull((typeComment));
+  public ParamMaybeDefault (hydra.ext.python.syntax.Param param, hydra.util.Maybe<hydra.ext.python.syntax.Default> default_, hydra.util.Maybe<hydra.ext.python.syntax.TypeComment> typeComment) {
     this.param = param;
     this.default_ = default_;
     this.typeComment = typeComment;
@@ -33,27 +30,49 @@ public class ParamMaybeDefault implements Serializable {
     if (!(other instanceof ParamMaybeDefault)) {
       return false;
     }
-    ParamMaybeDefault o = (ParamMaybeDefault) (other);
-    return param.equals(o.param) && default_.equals(o.default_) && typeComment.equals(o.typeComment);
+    ParamMaybeDefault o = (ParamMaybeDefault) other;
+    return java.util.Objects.equals(
+      this.param,
+      o.param) && java.util.Objects.equals(
+      this.default_,
+      o.default_) && java.util.Objects.equals(
+      this.typeComment,
+      o.typeComment);
   }
   
   @Override
   public int hashCode() {
-    return 2 * param.hashCode() + 3 * default_.hashCode() + 5 * typeComment.hashCode();
+    return 2 * java.util.Objects.hashCode(param) + 3 * java.util.Objects.hashCode(default_) + 5 * java.util.Objects.hashCode(typeComment);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(ParamMaybeDefault other) {
+    int cmp = 0;
+    cmp = ((Comparable) param).compareTo(other.param);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      default_.hashCode(),
+      other.default_.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      typeComment.hashCode(),
+      other.typeComment.hashCode());
   }
   
   public ParamMaybeDefault withParam(hydra.ext.python.syntax.Param param) {
-    java.util.Objects.requireNonNull((param));
     return new ParamMaybeDefault(param, default_, typeComment);
   }
   
-  public ParamMaybeDefault withDefault(hydra.util.Opt<hydra.ext.python.syntax.Default> default_) {
-    java.util.Objects.requireNonNull((default_));
+  public ParamMaybeDefault withDefault(hydra.util.Maybe<hydra.ext.python.syntax.Default> default_) {
     return new ParamMaybeDefault(param, default_, typeComment);
   }
   
-  public ParamMaybeDefault withTypeComment(hydra.util.Opt<hydra.ext.python.syntax.TypeComment> typeComment) {
-    java.util.Objects.requireNonNull((typeComment));
+  public ParamMaybeDefault withTypeComment(hydra.util.Maybe<hydra.ext.python.syntax.TypeComment> typeComment) {
     return new ParamMaybeDefault(param, default_, typeComment);
   }
 }

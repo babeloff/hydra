@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class PostfixExpression implements Serializable {
+public abstract class PostfixExpression implements Serializable, Comparable<PostfixExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.PostfixExpression");
   
   public static final hydra.core.Name FIELD_NAME_PRIMARY = new hydra.core.Name("primary");
@@ -33,23 +33,23 @@ public abstract class PostfixExpression implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(PostfixExpression instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Primary instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Name instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(PostIncrement instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(PostDecrement instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -57,7 +57,6 @@ public abstract class PostfixExpression implements Serializable {
     public final hydra.ext.java.syntax.Primary value;
     
     public Primary (hydra.ext.java.syntax.Primary value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -66,13 +65,26 @@ public abstract class PostfixExpression implements Serializable {
       if (!(other instanceof Primary)) {
         return false;
       }
-      Primary o = (Primary) (other);
-      return value.equals(o.value);
+      Primary o = (Primary) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(PostfixExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Primary o = (Primary) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -85,7 +97,6 @@ public abstract class PostfixExpression implements Serializable {
     public final hydra.ext.java.syntax.ExpressionName value;
     
     public Name (hydra.ext.java.syntax.ExpressionName value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -94,13 +105,26 @@ public abstract class PostfixExpression implements Serializable {
       if (!(other instanceof Name)) {
         return false;
       }
-      Name o = (Name) (other);
-      return value.equals(o.value);
+      Name o = (Name) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(PostfixExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Name o = (Name) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -113,7 +137,6 @@ public abstract class PostfixExpression implements Serializable {
     public final hydra.ext.java.syntax.PostIncrementExpression value;
     
     public PostIncrement (hydra.ext.java.syntax.PostIncrementExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -122,13 +145,26 @@ public abstract class PostfixExpression implements Serializable {
       if (!(other instanceof PostIncrement)) {
         return false;
       }
-      PostIncrement o = (PostIncrement) (other);
-      return value.equals(o.value);
+      PostIncrement o = (PostIncrement) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(PostfixExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      PostIncrement o = (PostIncrement) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -141,7 +177,6 @@ public abstract class PostfixExpression implements Serializable {
     public final hydra.ext.java.syntax.PostDecrementExpression value;
     
     public PostDecrement (hydra.ext.java.syntax.PostDecrementExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -150,13 +185,26 @@ public abstract class PostfixExpression implements Serializable {
       if (!(other instanceof PostDecrement)) {
         return false;
       }
-      PostDecrement o = (PostDecrement) (other);
-      return value.equals(o.value);
+      PostDecrement o = (PostDecrement) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(PostfixExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      PostDecrement o = (PostDecrement) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

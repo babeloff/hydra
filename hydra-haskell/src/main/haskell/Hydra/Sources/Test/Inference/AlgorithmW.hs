@@ -1,29 +1,46 @@
-module Hydra.Sources.Test.Inference.AlgorithmW (algorithmWTests) where
+module Hydra.Sources.Test.Inference.AlgorithmW where
 
+-- Standard imports for shallow DSL tests
 import Hydra.Kernel
-import Hydra.Testing
-import qualified Hydra.Dsl.Phantoms as Base
-import qualified Hydra.Dsl.Core as Core
-import Hydra.Dsl.Testing as Testing
-import Hydra.Dsl.ShorthandTypes
-import qualified Hydra.Dsl.Terms as Terms
-import qualified Hydra.Dsl.Types as Types
-import Hydra.Sources.Test.TestGraph
-import Hydra.Dsl.TTerms as TTerms
-import qualified Hydra.Dsl.TTypes as T
-import Hydra.Sources.Test.Inference.Fundamentals
-
-import qualified Data.Map as M
-import Prelude hiding (map, sum)
+import Hydra.Dsl.Meta.Testing                 as Testing
+import Hydra.Dsl.Meta.Terms                   as Terms
+import Hydra.Sources.Kernel.Types.All
+import qualified Hydra.Dsl.Meta.Core          as Core
+import qualified Hydra.Dsl.Meta.Phantoms      as Phantoms
+import qualified Hydra.Dsl.Meta.Types         as T
+import qualified Hydra.Sources.Test.TestGraph as TestGraph
+import qualified Hydra.Sources.Test.TestTerms as TestTerms
+import qualified Hydra.Sources.Test.TestTypes as TestTypes
+import qualified Data.List                    as L
+import qualified Data.Map                     as M
 
 
-algorithmWTests :: TTerm TestGroup
-algorithmWTests = supergroup "Algorithm W test cases" [
-  testGroupForSystemF]
+ns :: Namespace
+ns = Namespace "hydra.test.inference.algorithmW"
+
+module_ :: Module
+module_ = Module ns elements
+    [TestGraph.ns]
+    kernelTypesNamespaces
+    (Just "Algorithm W inference tests")
+  where
+    elements = [
+      Phantoms.toBinding allTests,
+      Phantoms.toBinding testGroupForSystemF]
+
+define :: String -> TTerm a -> TBinding a
+define = definitionInModule module_
+
+allTests :: TBinding TestGroup
+allTests = define "allTests" $
+  Phantoms.doc "Algorithm W test cases" $
+  supergroup "Algorithm W test cases" [
+    testGroupForSystemF]
 
 -- @wisnesky's original Algorithm W test cases, modified so as to normalize type variables
-testGroupForSystemF :: TTerm TestGroup
-testGroupForSystemF = subgroup "STLC to System F" [
+testGroupForSystemF :: TBinding TestGroup
+testGroupForSystemF = define "testGroupForSystemF" $
+  subgroup "STLC to System F" [
 
 --  --Untyped input:
 --  --	(\x. x)
@@ -192,5 +209,5 @@ testGroupForSystemF = subgroup "STLC to System F" [
   where
     -- Placeholders for the primitives in @wisnesky's test cases; they are not necessarily the same functions,
     -- but they have the same types.
-    primPred = primitive _math_neg
-    primSucc = primitive _math_neg
+    primPred = primitive _math_negate
+    primSucc = primitive _math_negate

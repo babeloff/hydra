@@ -7,6 +7,7 @@ import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Expect;
 import hydra.dsl.Terms;
+import hydra.dsl.Types;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -20,6 +21,9 @@ import static hydra.dsl.Types.function;
 import static hydra.dsl.Types.list;
 import static hydra.dsl.Types.scheme;
 
+/**
+ * Removes duplicate elements.
+ */
 public class Nub extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.lists.nub");
@@ -37,6 +41,9 @@ public class Nub extends PrimitiveFunction {
 
     /**
      * Apply the function to the single argument.
+     * @param <X> the element type
+     * @param arg the list to remove duplicates from
+     * @return the list with duplicates removed
      */
     public static <X> List<X> apply(List<X> arg) {
         Set<X> visited = new HashSet<>();

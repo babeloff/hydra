@@ -1,10 +1,13 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | The extension to graphs of Hydra's core type system (hydra.core)
 
 module Hydra.Graph where
 
 import qualified Hydra.Compute as Compute
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -14,7 +17,7 @@ import qualified Data.Set as S
 data Graph = 
   Graph {
     -- | All of the elements in the graph
-    graphElements :: (M.Map Core.Name Core.Binding),
+    graphElements :: [Core.Binding],
     -- | The lambda environment of this graph context; it indicates whether a variable is bound by a lambda (Nothing) or a let (Just term)
     graphEnvironment :: (M.Map Core.Name (Maybe Core.Term)),
     -- | The typing environment of the graph
@@ -61,7 +64,9 @@ _Primitive_implementation = (Core.Name "implementation")
 -- | A type together with a coder for mapping terms into arguments for primitive functions, and mapping computed results into terms
 data TermCoder a = 
   TermCoder {
+    -- | The Hydra type of encoded terms
     termCoderType :: Core.Type,
+    -- | A coder between Hydra terms and instances of the given type
     termCoderCoder :: (Compute.Coder Graph Graph Core.Term a)}
 
 _TermCoder = (Core.Name "hydra.graph.TermCoder")

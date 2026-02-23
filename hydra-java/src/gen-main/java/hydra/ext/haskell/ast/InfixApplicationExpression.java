@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * An infix application expression
  */
-public class InfixApplicationExpression implements Serializable {
+public class InfixApplicationExpression implements Serializable, Comparable<InfixApplicationExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.haskell.ast.InfixApplicationExpression");
   
   public static final hydra.core.Name FIELD_NAME_LHS = new hydra.core.Name("lhs");
@@ -16,16 +16,22 @@ public class InfixApplicationExpression implements Serializable {
   
   public static final hydra.core.Name FIELD_NAME_RHS = new hydra.core.Name("rhs");
   
+  /**
+   * The left-hand operand
+   */
   public final hydra.ext.haskell.ast.Expression lhs;
   
+  /**
+   * The infix operator
+   */
   public final hydra.ext.haskell.ast.Operator operator;
   
+  /**
+   * The right-hand operand
+   */
   public final hydra.ext.haskell.ast.Expression rhs;
   
   public InfixApplicationExpression (hydra.ext.haskell.ast.Expression lhs, hydra.ext.haskell.ast.Operator operator, hydra.ext.haskell.ast.Expression rhs) {
-    java.util.Objects.requireNonNull((lhs));
-    java.util.Objects.requireNonNull((operator));
-    java.util.Objects.requireNonNull((rhs));
     this.lhs = lhs;
     this.operator = operator;
     this.rhs = rhs;
@@ -36,27 +42,45 @@ public class InfixApplicationExpression implements Serializable {
     if (!(other instanceof InfixApplicationExpression)) {
       return false;
     }
-    InfixApplicationExpression o = (InfixApplicationExpression) (other);
-    return lhs.equals(o.lhs) && operator.equals(o.operator) && rhs.equals(o.rhs);
+    InfixApplicationExpression o = (InfixApplicationExpression) other;
+    return java.util.Objects.equals(
+      this.lhs,
+      o.lhs) && java.util.Objects.equals(
+      this.operator,
+      o.operator) && java.util.Objects.equals(
+      this.rhs,
+      o.rhs);
   }
   
   @Override
   public int hashCode() {
-    return 2 * lhs.hashCode() + 3 * operator.hashCode() + 5 * rhs.hashCode();
+    return 2 * java.util.Objects.hashCode(lhs) + 3 * java.util.Objects.hashCode(operator) + 5 * java.util.Objects.hashCode(rhs);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(InfixApplicationExpression other) {
+    int cmp = 0;
+    cmp = ((Comparable) lhs).compareTo(other.lhs);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) operator).compareTo(other.operator);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) rhs).compareTo(other.rhs);
   }
   
   public InfixApplicationExpression withLhs(hydra.ext.haskell.ast.Expression lhs) {
-    java.util.Objects.requireNonNull((lhs));
     return new InfixApplicationExpression(lhs, operator, rhs);
   }
   
   public InfixApplicationExpression withOperator(hydra.ext.haskell.ast.Operator operator) {
-    java.util.Objects.requireNonNull((operator));
     return new InfixApplicationExpression(lhs, operator, rhs);
   }
   
   public InfixApplicationExpression withRhs(hydra.ext.haskell.ast.Expression rhs) {
-    java.util.Objects.requireNonNull((rhs));
     return new InfixApplicationExpression(lhs, operator, rhs);
   }
 }

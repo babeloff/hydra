@@ -13,9 +13,9 @@ public class Projection implements Serializable {
   
   public final hydra.pg.query.Expression value;
   
-  public final hydra.util.Opt<hydra.pg.query.Variable> as;
+  public final hydra.util.Maybe<hydra.pg.query.Variable> as;
   
-  public Projection (hydra.pg.query.Expression value, hydra.util.Opt<hydra.pg.query.Variable> as) {
+  public Projection (hydra.pg.query.Expression value, hydra.util.Maybe<hydra.pg.query.Variable> as) {
     java.util.Objects.requireNonNull((value));
     java.util.Objects.requireNonNull((as));
     this.value = value;
@@ -41,7 +41,7 @@ public class Projection implements Serializable {
     return new Projection(value, as);
   }
   
-  public Projection withAs(hydra.util.Opt<hydra.pg.query.Variable> as) {
+  public Projection withAs(hydra.util.Maybe<hydra.pg.query.Variable> as) {
     java.util.Objects.requireNonNull((as));
     return new Projection(value, as);
   }

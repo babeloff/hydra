@@ -16,6 +16,9 @@ import static hydra.dsl.Terms.flowState;
 import static hydra.dsl.Terms.just;
 
 
+/**
+ * Wraps a value in a flow.
+ */
 public class Pure extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.flows.pure");
@@ -31,6 +34,13 @@ public class Pure extends PrimitiveFunction {
         return args -> Flows.pure(flowState(just(args.get(0)), args.get(1), args.get(2)));
     }
 
+    /**
+     * Creates a successful flow.
+     * @param <S> the state type
+     * @param <X> the output type
+     * @param elem the value
+     * @return the flow
+     */
     public static <S, X> Flow<S, X> apply(X elem) {
         return Flows.pure(elem);
     }

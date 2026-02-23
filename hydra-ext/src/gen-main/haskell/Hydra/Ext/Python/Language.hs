@@ -1,3 +1,5 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | Language constraints and reserved words for Python 3
 
 module Hydra.Ext.Python.Language where
@@ -6,8 +8,9 @@ import qualified Hydra.Coders as Coders
 import qualified Hydra.Core as Core
 import qualified Hydra.Lib.Lists as Lists
 import qualified Hydra.Lib.Sets as Sets
-import qualified Hydra.Mantle as Mantle
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import qualified Hydra.Variants as Variants
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -28,64 +31,68 @@ pythonLanguage = Coders.Language {
     Coders.languageConstraintsTypes = typePredicate}} 
   where 
     eliminationVariants = (Sets.fromList [
-      Mantle.EliminationVariantProduct,
-      Mantle.EliminationVariantRecord,
-      Mantle.EliminationVariantUnion,
-      Mantle.EliminationVariantWrap])
+      Variants.EliminationVariantRecord,
+      Variants.EliminationVariantUnion,
+      Variants.EliminationVariantWrap])
     literalVariants = (Sets.fromList [
-      Mantle.LiteralVariantBinary,
-      Mantle.LiteralVariantBoolean,
-      Mantle.LiteralVariantFloat,
-      Mantle.LiteralVariantInteger,
-      Mantle.LiteralVariantString])
+      Variants.LiteralVariantBinary,
+      Variants.LiteralVariantBoolean,
+      Variants.LiteralVariantFloat,
+      Variants.LiteralVariantInteger,
+      Variants.LiteralVariantString])
     floatTypes = (Sets.fromList [
       Core.FloatTypeBigfloat,
       Core.FloatTypeFloat64])
     functionVariants = (Sets.fromList [
-      Mantle.FunctionVariantElimination,
-      Mantle.FunctionVariantLambda,
-      Mantle.FunctionVariantPrimitive])
+      Variants.FunctionVariantElimination,
+      Variants.FunctionVariantLambda,
+      Variants.FunctionVariantPrimitive])
     integerTypes = (Sets.fromList [
       Core.IntegerTypeBigint])
     termVariants = (Sets.fromList [
-      Mantle.TermVariantAnnotated,
-      Mantle.TermVariantApplication,
-      Mantle.TermVariantFunction,
-      Mantle.TermVariantLet,
-      Mantle.TermVariantList,
-      Mantle.TermVariantLiteral,
-      Mantle.TermVariantMap,
-      Mantle.TermVariantOptional,
-      Mantle.TermVariantProduct,
-      Mantle.TermVariantRecord,
-      Mantle.TermVariantSet,
-      Mantle.TermVariantTypeApplication,
-      Mantle.TermVariantTypeLambda,
-      Mantle.TermVariantUnion,
-      Mantle.TermVariantUnit,
-      Mantle.TermVariantVariable,
-      Mantle.TermVariantWrap])
+      Variants.TermVariantAnnotated,
+      Variants.TermVariantApplication,
+      Variants.TermVariantEither,
+      Variants.TermVariantFunction,
+      Variants.TermVariantLet,
+      Variants.TermVariantList,
+      Variants.TermVariantLiteral,
+      Variants.TermVariantMap,
+      Variants.TermVariantMaybe,
+      Variants.TermVariantPair,
+      Variants.TermVariantRecord,
+      Variants.TermVariantSet,
+      Variants.TermVariantTypeApplication,
+      Variants.TermVariantTypeLambda,
+      Variants.TermVariantUnion,
+      Variants.TermVariantUnit,
+      Variants.TermVariantVariable,
+      Variants.TermVariantWrap])
     typeVariants = (Sets.fromList [
-      Mantle.TypeVariantAnnotated,
-      Mantle.TypeVariantApplication,
-      Mantle.TypeVariantFunction,
-      Mantle.TypeVariantForall,
-      Mantle.TypeVariantList,
-      Mantle.TypeVariantLiteral,
-      Mantle.TypeVariantMap,
-      Mantle.TypeVariantOptional,
-      Mantle.TypeVariantProduct,
-      Mantle.TypeVariantRecord,
-      Mantle.TypeVariantSet,
-      Mantle.TypeVariantUnion,
-      Mantle.TypeVariantUnit,
-      Mantle.TypeVariantVariable,
-      Mantle.TypeVariantWrap])
+      Variants.TypeVariantAnnotated,
+      Variants.TypeVariantApplication,
+      Variants.TypeVariantEither,
+      Variants.TypeVariantFunction,
+      Variants.TypeVariantForall,
+      Variants.TypeVariantList,
+      Variants.TypeVariantLiteral,
+      Variants.TypeVariantMap,
+      Variants.TypeVariantMaybe,
+      Variants.TypeVariantPair,
+      Variants.TypeVariantRecord,
+      Variants.TypeVariantSet,
+      Variants.TypeVariantUnion,
+      Variants.TypeVariantUnit,
+      Variants.TypeVariantVariable,
+      Variants.TypeVariantWrap])
     typePredicate = (\_ -> True)
 
 -- | A set of reserved words in Python
 pythonReservedWords :: (S.Set String)
-pythonReservedWords = (Sets.fromList (Lists.concat2 pythonKeywords hydraPythonKeywords)) 
+pythonReservedWords = (Sets.fromList (Lists.concat [
+  pythonKeywords,
+  pythonBuiltInFunctions,
+  hydraPythonKeywords])) 
   where 
     pythonKeywords = [
       "False",
@@ -123,6 +130,8 @@ pythonReservedWords = (Sets.fromList (Lists.concat2 pythonKeywords hydraPythonKe
       "while",
       "with",
       "yield"]
+    pythonBuiltInFunctions = [
+      "range"]
     hydraPythonKeywords = [
       "Node",
       "FrozenDict"]

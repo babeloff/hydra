@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class PostDecrementExpression implements Serializable {
+public class PostDecrementExpression implements Serializable, Comparable<PostDecrementExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.PostDecrementExpression");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class PostDecrementExpression implements Serializable {
   public final hydra.ext.java.syntax.PostfixExpression value;
   
   public PostDecrementExpression (hydra.ext.java.syntax.PostfixExpression value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,20 @@ public class PostDecrementExpression implements Serializable {
     if (!(other instanceof PostDecrementExpression)) {
       return false;
     }
-    PostDecrementExpression o = (PostDecrementExpression) (other);
-    return value.equals(o.value);
+    PostDecrementExpression o = (PostDecrementExpression) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(PostDecrementExpression other) {
+    return ((Comparable) value).compareTo(other.value);
   }
 }

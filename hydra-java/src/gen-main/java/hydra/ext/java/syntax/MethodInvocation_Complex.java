@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class MethodInvocation_Complex implements Serializable {
+public class MethodInvocation_Complex implements Serializable, Comparable<MethodInvocation_Complex> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.MethodInvocation_Complex");
   
   public static final hydra.core.Name FIELD_NAME_VARIANT = new hydra.core.Name("variant");
@@ -20,9 +20,6 @@ public class MethodInvocation_Complex implements Serializable {
   public final hydra.ext.java.syntax.Identifier identifier;
   
   public MethodInvocation_Complex (hydra.ext.java.syntax.MethodInvocation_Variant variant, java.util.List<hydra.ext.java.syntax.TypeArgument> typeArguments, hydra.ext.java.syntax.Identifier identifier) {
-    java.util.Objects.requireNonNull((variant));
-    java.util.Objects.requireNonNull((typeArguments));
-    java.util.Objects.requireNonNull((identifier));
     this.variant = variant;
     this.typeArguments = typeArguments;
     this.identifier = identifier;
@@ -33,27 +30,47 @@ public class MethodInvocation_Complex implements Serializable {
     if (!(other instanceof MethodInvocation_Complex)) {
       return false;
     }
-    MethodInvocation_Complex o = (MethodInvocation_Complex) (other);
-    return variant.equals(o.variant) && typeArguments.equals(o.typeArguments) && identifier.equals(o.identifier);
+    MethodInvocation_Complex o = (MethodInvocation_Complex) other;
+    return java.util.Objects.equals(
+      this.variant,
+      o.variant) && java.util.Objects.equals(
+      this.typeArguments,
+      o.typeArguments) && java.util.Objects.equals(
+      this.identifier,
+      o.identifier);
   }
   
   @Override
   public int hashCode() {
-    return 2 * variant.hashCode() + 3 * typeArguments.hashCode() + 5 * identifier.hashCode();
+    return 2 * java.util.Objects.hashCode(variant) + 3 * java.util.Objects.hashCode(typeArguments) + 5 * java.util.Objects.hashCode(identifier);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(MethodInvocation_Complex other) {
+    int cmp = 0;
+    cmp = ((Comparable) variant).compareTo(other.variant);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      typeArguments.hashCode(),
+      other.typeArguments.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) identifier).compareTo(other.identifier);
   }
   
   public MethodInvocation_Complex withVariant(hydra.ext.java.syntax.MethodInvocation_Variant variant) {
-    java.util.Objects.requireNonNull((variant));
     return new MethodInvocation_Complex(variant, typeArguments, identifier);
   }
   
   public MethodInvocation_Complex withTypeArguments(java.util.List<hydra.ext.java.syntax.TypeArgument> typeArguments) {
-    java.util.Objects.requireNonNull((typeArguments));
     return new MethodInvocation_Complex(variant, typeArguments, identifier);
   }
   
   public MethodInvocation_Complex withIdentifier(hydra.ext.java.syntax.Identifier identifier) {
-    java.util.Objects.requireNonNull((identifier));
     return new MethodInvocation_Complex(variant, typeArguments, identifier);
   }
 }

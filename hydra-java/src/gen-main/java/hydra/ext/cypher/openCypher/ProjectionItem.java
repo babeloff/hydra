@@ -13,9 +13,9 @@ public class ProjectionItem implements Serializable {
   
   public final hydra.ext.cypher.openCypher.Expression expression;
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.Variable> variable;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.Variable> variable;
   
-  public ProjectionItem (hydra.ext.cypher.openCypher.Expression expression, hydra.util.Opt<hydra.ext.cypher.openCypher.Variable> variable) {
+  public ProjectionItem (hydra.ext.cypher.openCypher.Expression expression, hydra.util.Maybe<hydra.ext.cypher.openCypher.Variable> variable) {
     java.util.Objects.requireNonNull((expression));
     java.util.Objects.requireNonNull((variable));
     this.expression = expression;
@@ -41,7 +41,7 @@ public class ProjectionItem implements Serializable {
     return new ProjectionItem(expression, variable);
   }
   
-  public ProjectionItem withVariable(hydra.util.Opt<hydra.ext.cypher.openCypher.Variable> variable) {
+  public ProjectionItem withVariable(hydra.util.Maybe<hydra.ext.cypher.openCypher.Variable> variable) {
     java.util.Objects.requireNonNull((variable));
     return new ProjectionItem(expression, variable);
   }

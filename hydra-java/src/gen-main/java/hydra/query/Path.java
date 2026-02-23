@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * A query path
  */
-public abstract class Path implements Serializable {
+public abstract class Path implements Serializable, Comparable<Path> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.query.Path");
   
   public static final hydra.core.Name FIELD_NAME_STEP = new hydra.core.Name("step");
@@ -32,19 +32,19 @@ public abstract class Path implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(Path instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Step instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Regex instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Inverse instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -55,7 +55,6 @@ public abstract class Path implements Serializable {
     public final hydra.query.Step value;
     
     public Step (hydra.query.Step value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -64,13 +63,26 @@ public abstract class Path implements Serializable {
       if (!(other instanceof Step)) {
         return false;
       }
-      Step o = (Step) (other);
-      return value.equals(o.value);
+      Step o = (Step) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Path other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Step o = (Step) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -86,7 +98,6 @@ public abstract class Path implements Serializable {
     public final hydra.query.RegexSequence value;
     
     public Regex (hydra.query.RegexSequence value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -95,13 +106,26 @@ public abstract class Path implements Serializable {
       if (!(other instanceof Regex)) {
         return false;
       }
-      Regex o = (Regex) (other);
-      return value.equals(o.value);
+      Regex o = (Regex) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Path other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Regex o = (Regex) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -117,7 +141,6 @@ public abstract class Path implements Serializable {
     public final hydra.query.Path value;
     
     public Inverse (hydra.query.Path value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -126,13 +149,26 @@ public abstract class Path implements Serializable {
       if (!(other instanceof Inverse)) {
         return false;
       }
-      Inverse o = (Inverse) (other);
-      return value.equals(o.value);
+      Inverse o = (Inverse) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Path other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Inverse o = (Inverse) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

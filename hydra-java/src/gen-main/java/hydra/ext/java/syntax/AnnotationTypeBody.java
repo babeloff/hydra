@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class AnnotationTypeBody implements Serializable {
+public class AnnotationTypeBody implements Serializable, Comparable<AnnotationTypeBody> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.AnnotationTypeBody");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class AnnotationTypeBody implements Serializable {
   public final java.util.List<java.util.List<hydra.ext.java.syntax.AnnotationTypeMemberDeclaration>> value;
   
   public AnnotationTypeBody (java.util.List<java.util.List<hydra.ext.java.syntax.AnnotationTypeMemberDeclaration>> value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,22 @@ public class AnnotationTypeBody implements Serializable {
     if (!(other instanceof AnnotationTypeBody)) {
       return false;
     }
-    AnnotationTypeBody o = (AnnotationTypeBody) (other);
-    return value.equals(o.value);
+    AnnotationTypeBody o = (AnnotationTypeBody) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(AnnotationTypeBody other) {
+    return Integer.compare(
+      value.hashCode(),
+      other.value.hashCode());
   }
 }

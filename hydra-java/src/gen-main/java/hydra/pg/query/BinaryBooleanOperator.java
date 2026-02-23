@@ -46,22 +46,21 @@ public abstract class BinaryBooleanOperator implements Serializable {
   }
   
   public static final class And extends hydra.pg.query.BinaryBooleanOperator implements Serializable {
-    public And () {
+    public final Boolean value;
     
+    public And (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof And)) {
-        return false;
-      }
-      And o = (And) (other);
-      return true;
+      return other instanceof And;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -71,22 +70,21 @@ public abstract class BinaryBooleanOperator implements Serializable {
   }
   
   public static final class Or extends hydra.pg.query.BinaryBooleanOperator implements Serializable {
-    public Or () {
+    public final Boolean value;
     
+    public Or (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Or)) {
-        return false;
-      }
-      Or o = (Or) (other);
-      return true;
+      return other instanceof Or;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -96,22 +94,21 @@ public abstract class BinaryBooleanOperator implements Serializable {
   }
   
   public static final class Xor extends hydra.pg.query.BinaryBooleanOperator implements Serializable {
-    public Xor () {
+    public final Boolean value;
     
+    public Xor (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Xor)) {
-        return false;
-      }
-      Xor o = (Xor) (other);
-      return true;
+      return other instanceof Xor;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override

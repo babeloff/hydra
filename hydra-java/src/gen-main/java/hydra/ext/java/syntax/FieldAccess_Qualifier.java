@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class FieldAccess_Qualifier implements Serializable {
+public abstract class FieldAccess_Qualifier implements Serializable, Comparable<FieldAccess_Qualifier> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.FieldAccess_Qualifier");
   
   public static final hydra.core.Name FIELD_NAME_PRIMARY = new hydra.core.Name("primary");
@@ -29,19 +29,19 @@ public abstract class FieldAccess_Qualifier implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(FieldAccess_Qualifier instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Primary instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Super instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Typed instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -49,7 +49,6 @@ public abstract class FieldAccess_Qualifier implements Serializable {
     public final hydra.ext.java.syntax.Primary value;
     
     public Primary (hydra.ext.java.syntax.Primary value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -58,13 +57,26 @@ public abstract class FieldAccess_Qualifier implements Serializable {
       if (!(other instanceof Primary)) {
         return false;
       }
-      Primary o = (Primary) (other);
-      return value.equals(o.value);
+      Primary o = (Primary) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FieldAccess_Qualifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Primary o = (Primary) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -83,12 +95,22 @@ public abstract class FieldAccess_Qualifier implements Serializable {
       if (!(other instanceof Super)) {
         return false;
       }
-      Super o = (Super) (other);
+      Super o = (Super) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FieldAccess_Qualifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -102,7 +124,6 @@ public abstract class FieldAccess_Qualifier implements Serializable {
     public final hydra.ext.java.syntax.TypeName value;
     
     public Typed (hydra.ext.java.syntax.TypeName value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -111,13 +132,26 @@ public abstract class FieldAccess_Qualifier implements Serializable {
       if (!(other instanceof Typed)) {
         return false;
       }
-      Typed o = (Typed) (other);
-      return value.equals(o.value);
+      Typed o = (Typed) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FieldAccess_Qualifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Typed o = (Typed) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

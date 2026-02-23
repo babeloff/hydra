@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class OpenSequencePattern implements Serializable {
+public class OpenSequencePattern implements Serializable, Comparable<OpenSequencePattern> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.OpenSequencePattern");
   
   public static final hydra.core.Name FIELD_NAME_HEAD = new hydra.core.Name("head");
@@ -13,11 +13,9 @@ public class OpenSequencePattern implements Serializable {
   
   public final hydra.ext.python.syntax.MaybeStarPattern head;
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.MaybeSequencePattern> tail;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.MaybeSequencePattern> tail;
   
-  public OpenSequencePattern (hydra.ext.python.syntax.MaybeStarPattern head, hydra.util.Opt<hydra.ext.python.syntax.MaybeSequencePattern> tail) {
-    java.util.Objects.requireNonNull((head));
-    java.util.Objects.requireNonNull((tail));
+  public OpenSequencePattern (hydra.ext.python.syntax.MaybeStarPattern head, hydra.util.Maybe<hydra.ext.python.syntax.MaybeSequencePattern> tail) {
     this.head = head;
     this.tail = tail;
   }
@@ -27,22 +25,37 @@ public class OpenSequencePattern implements Serializable {
     if (!(other instanceof OpenSequencePattern)) {
       return false;
     }
-    OpenSequencePattern o = (OpenSequencePattern) (other);
-    return head.equals(o.head) && tail.equals(o.tail);
+    OpenSequencePattern o = (OpenSequencePattern) other;
+    return java.util.Objects.equals(
+      this.head,
+      o.head) && java.util.Objects.equals(
+      this.tail,
+      o.tail);
   }
   
   @Override
   public int hashCode() {
-    return 2 * head.hashCode() + 3 * tail.hashCode();
+    return 2 * java.util.Objects.hashCode(head) + 3 * java.util.Objects.hashCode(tail);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(OpenSequencePattern other) {
+    int cmp = 0;
+    cmp = ((Comparable) head).compareTo(other.head);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      tail.hashCode(),
+      other.tail.hashCode());
   }
   
   public OpenSequencePattern withHead(hydra.ext.python.syntax.MaybeStarPattern head) {
-    java.util.Objects.requireNonNull((head));
     return new OpenSequencePattern(head, tail);
   }
   
-  public OpenSequencePattern withTail(hydra.util.Opt<hydra.ext.python.syntax.MaybeSequencePattern> tail) {
-    java.util.Objects.requireNonNull((tail));
+  public OpenSequencePattern withTail(hydra.util.Maybe<hydra.ext.python.syntax.MaybeSequencePattern> tail) {
     return new OpenSequencePattern(head, tail);
   }
 }

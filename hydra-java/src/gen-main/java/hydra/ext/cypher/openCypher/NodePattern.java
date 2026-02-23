@@ -13,13 +13,13 @@ public class NodePattern implements Serializable {
   
   public static final hydra.core.Name FIELD_NAME_PROPERTIES = new hydra.core.Name("properties");
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.Variable> variable;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.Variable> variable;
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.NodeLabels> labels;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.NodeLabels> labels;
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.Properties> properties;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.Properties> properties;
   
-  public NodePattern (hydra.util.Opt<hydra.ext.cypher.openCypher.Variable> variable, hydra.util.Opt<hydra.ext.cypher.openCypher.NodeLabels> labels, hydra.util.Opt<hydra.ext.cypher.openCypher.Properties> properties) {
+  public NodePattern (hydra.util.Maybe<hydra.ext.cypher.openCypher.Variable> variable, hydra.util.Maybe<hydra.ext.cypher.openCypher.NodeLabels> labels, hydra.util.Maybe<hydra.ext.cypher.openCypher.Properties> properties) {
     java.util.Objects.requireNonNull((variable));
     java.util.Objects.requireNonNull((labels));
     java.util.Objects.requireNonNull((properties));
@@ -42,17 +42,17 @@ public class NodePattern implements Serializable {
     return 2 * variable.hashCode() + 3 * labels.hashCode() + 5 * properties.hashCode();
   }
   
-  public NodePattern withVariable(hydra.util.Opt<hydra.ext.cypher.openCypher.Variable> variable) {
+  public NodePattern withVariable(hydra.util.Maybe<hydra.ext.cypher.openCypher.Variable> variable) {
     java.util.Objects.requireNonNull((variable));
     return new NodePattern(variable, labels, properties);
   }
   
-  public NodePattern withLabels(hydra.util.Opt<hydra.ext.cypher.openCypher.NodeLabels> labels) {
+  public NodePattern withLabels(hydra.util.Maybe<hydra.ext.cypher.openCypher.NodeLabels> labels) {
     java.util.Objects.requireNonNull((labels));
     return new NodePattern(variable, labels, properties);
   }
   
-  public NodePattern withProperties(hydra.util.Opt<hydra.ext.cypher.openCypher.Properties> properties) {
+  public NodePattern withProperties(hydra.util.Maybe<hydra.ext.cypher.openCypher.Properties> properties) {
     java.util.Objects.requireNonNull((properties));
     return new NodePattern(variable, labels, properties);
   }

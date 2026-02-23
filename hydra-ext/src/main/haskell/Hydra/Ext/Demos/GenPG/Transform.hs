@@ -27,8 +27,8 @@ evaluate = reduceTerm True
 evaluateEdge :: Pg.Edge Term -> Term -> Flow Graph (Maybe (Pg.Edge Term))
 evaluateEdge (Pg.Edge label idSpec outSpec inSpec propSpecs) term = do
     id <- evaluate $ Terms.apply idSpec term
-    mOutId <- evaluate (Terms.apply outSpec term) >>= (ExtractCore.optional pure)
-    mInId <- evaluate (Terms.apply inSpec term) >>= (ExtractCore.optional pure)
+    mOutId <- evaluate (Terms.apply outSpec term) >>= (ExtractCore.maybeTerm pure)
+    mInId <- evaluate (Terms.apply inSpec term) >>= (ExtractCore.maybeTerm pure)
     props <- evaluateProperties propSpecs term
     return $ case mOutId of
       Nothing -> Nothing
@@ -42,14 +42,14 @@ evaluateProperties specs record = M.fromList . Y.catMaybes <$> (CM.mapM forPair 
     forPair (k, spec) = do
       value <- (evaluate $ Terms.apply spec record)
       case deannotateTerm value of
-        TermOptional mv -> case mv of
+        TermMaybe mv -> case mv of
           Nothing -> return Nothing
           Just v -> return $ Just (k, v)
         _ -> fail $ "expected an optional value for property " ++ Pg.unPropertyKey k ++ " but got " ++ ShowCore.term value
 
 evaluateVertex :: Pg.Vertex Term -> Term -> Flow Graph (Maybe (Pg.Vertex Term))
 evaluateVertex (Pg.Vertex label idSpec propSpecs) record = do
-  mId <- evaluate (Terms.apply idSpec record) >>= (ExtractCore.optional pure)
+  mId <- evaluate (Terms.apply idSpec record) >>= (ExtractCore.maybeTerm pure)
   props <- evaluateProperties propSpecs record
   return $ case mId of
     Nothing -> Nothing
@@ -65,8 +65,8 @@ findTablesInTerm = foldOverTerm TraversalOrderPre f S.empty
 findTablesInTerms :: [Term] -> S.Set String
 findTablesInTerms terms = S.unions $ fmap findTablesInTerm terms
 
-elementSpecsByTable :: LazyGraph Term -> Either String PgTransform
-elementSpecsByTable (LazyGraph vertices edges) = do
+elementSpecsByTable :: Pg.LazyGraph Term -> Either String PgTransform
+elementSpecsByTable (Pg.LazyGraph vertices edges) = do
     vertexPairs <- CM.mapM vertexPair vertices
     edgePairs <- CM.mapM edgePair edges
     return $ L.foldl addEdgePair (L.foldl addVertexPair M.empty vertexPairs) edgePairs
@@ -104,7 +104,7 @@ termRowToRecord :: TableType -> DataRow Term -> Term
 termRowToRecord (TableType (RelationName tname) colTypes) (DataRow cells) = TermRecord $ Record (Name tname) $
     L.zipWith toField colTypes cells
   where
-    toField (ColumnType (ColumnName cname) _) mvalue = Field (Name cname) $ TermOptional mvalue
+    toField (ColumnType (ColumnName cname) _) mvalue = Field (Name cname) $ TermMaybe mvalue
 
 transformRecord :: [Pg.Vertex Term] -> [Pg.Edge Term] -> Term -> Flow Graph ([Pg.Vertex Term], [Pg.Edge Term])
 transformRecord vspecs especs term = do
@@ -122,14 +122,14 @@ transformTable tableType@(TableType (RelationName tableName) _) path vspecs espe
     filePath = tableName
     addRow (vertices, edges) (v, e) = (vertices ++ v, edges ++ e)
 
-transformTables :: FilePath -> [TableType] -> LazyGraph Term -> IO (LazyGraph Term)
+transformTables :: FilePath -> [TableType] -> Pg.LazyGraph Term -> IO (Pg.LazyGraph Term)
 transformTables fileRoot tableTypes spec = do
     transform <- case (elementSpecsByTable spec) of
       Left err -> fail $ "Error in mapping specification: " ++ err
       Right t -> return t
     pairs <- CM.mapM forTable $ M.toList transform
     let (vertices, edges) = L.foldl addRow ([], []) pairs
-    return $ LazyGraph vertices edges
+    return $ Pg.LazyGraph vertices edges
   where
     addRow (vertices, edges) (v, e) = (vertices ++ v, edges ++ e)
     forTable (tname, (vspecs, especs)) = case M.lookup (RelationName tname) tableTypesByName of

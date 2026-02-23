@@ -38,22 +38,21 @@ public abstract class StarOrYieldItems implements Serializable {
   }
   
   public static final class Star extends hydra.ext.cypher.openCypher.StarOrYieldItems implements Serializable {
-    public Star () {
+    public final Boolean value;
     
+    public Star (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Star)) {
-        return false;
-      }
-      Star o = (Star) (other);
-      return true;
+      return other instanceof Star;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -76,12 +75,12 @@ public abstract class StarOrYieldItems implements Serializable {
         return false;
       }
       Items o = (Items) (other);
-      return value.equals(o.value);
+      return other instanceof StarOrYieldItems;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override

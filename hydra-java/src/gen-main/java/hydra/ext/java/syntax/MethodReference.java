@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class MethodReference implements Serializable {
+public abstract class MethodReference implements Serializable, Comparable<MethodReference> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.MethodReference");
   
   public static final hydra.core.Name FIELD_NAME_EXPRESSION = new hydra.core.Name("expression");
@@ -41,31 +41,31 @@ public abstract class MethodReference implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(MethodReference instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Expression instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Primary instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ReferenceType instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Super instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(New instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Array instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -73,7 +73,6 @@ public abstract class MethodReference implements Serializable {
     public final hydra.ext.java.syntax.MethodReference_Expression value;
     
     public Expression (hydra.ext.java.syntax.MethodReference_Expression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -82,13 +81,26 @@ public abstract class MethodReference implements Serializable {
       if (!(other instanceof Expression)) {
         return false;
       }
-      Expression o = (Expression) (other);
-      return value.equals(o.value);
+      Expression o = (Expression) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(MethodReference other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Expression o = (Expression) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -101,7 +113,6 @@ public abstract class MethodReference implements Serializable {
     public final hydra.ext.java.syntax.MethodReference_Primary value;
     
     public Primary (hydra.ext.java.syntax.MethodReference_Primary value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -110,13 +121,26 @@ public abstract class MethodReference implements Serializable {
       if (!(other instanceof Primary)) {
         return false;
       }
-      Primary o = (Primary) (other);
-      return value.equals(o.value);
+      Primary o = (Primary) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(MethodReference other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Primary o = (Primary) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -129,7 +153,6 @@ public abstract class MethodReference implements Serializable {
     public final hydra.ext.java.syntax.MethodReference_ReferenceType value;
     
     public ReferenceType (hydra.ext.java.syntax.MethodReference_ReferenceType value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -138,13 +161,26 @@ public abstract class MethodReference implements Serializable {
       if (!(other instanceof ReferenceType)) {
         return false;
       }
-      ReferenceType o = (ReferenceType) (other);
-      return value.equals(o.value);
+      ReferenceType o = (ReferenceType) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(MethodReference other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ReferenceType o = (ReferenceType) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -157,7 +193,6 @@ public abstract class MethodReference implements Serializable {
     public final hydra.ext.java.syntax.MethodReference_Super value;
     
     public Super (hydra.ext.java.syntax.MethodReference_Super value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -166,13 +201,26 @@ public abstract class MethodReference implements Serializable {
       if (!(other instanceof Super)) {
         return false;
       }
-      Super o = (Super) (other);
-      return value.equals(o.value);
+      Super o = (Super) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(MethodReference other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Super o = (Super) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -185,7 +233,6 @@ public abstract class MethodReference implements Serializable {
     public final hydra.ext.java.syntax.MethodReference_New value;
     
     public New (hydra.ext.java.syntax.MethodReference_New value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -194,13 +241,26 @@ public abstract class MethodReference implements Serializable {
       if (!(other instanceof New)) {
         return false;
       }
-      New o = (New) (other);
-      return value.equals(o.value);
+      New o = (New) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(MethodReference other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      New o = (New) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -213,7 +273,6 @@ public abstract class MethodReference implements Serializable {
     public final hydra.ext.java.syntax.MethodReference_Array value;
     
     public Array (hydra.ext.java.syntax.MethodReference_Array value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -222,13 +281,26 @@ public abstract class MethodReference implements Serializable {
       if (!(other instanceof Array)) {
         return false;
       }
-      Array o = (Array) (other);
-      return value.equals(o.value);
+      Array o = (Array) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(MethodReference other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Array o = (Array) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

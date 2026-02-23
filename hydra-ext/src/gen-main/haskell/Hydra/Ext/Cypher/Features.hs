@@ -1,9 +1,12 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A model for characterizing OpenCypher queries and implementations in terms of included features.Based on the OpenCypher grammar and the list of standard Cypher functions at https://neo4j.com/docs/cypher-manual/current/functions. Current as of August 2024.
 
 module Hydra.Ext.Cypher.Features where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M

@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * A literal value
  */
-public abstract class Literal implements Serializable {
+public abstract class Literal implements Serializable, Comparable<Literal> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.haskell.ast.Literal");
   
   public static final hydra.core.Name FIELD_NAME_CHAR = new hydra.core.Name("char");
@@ -44,39 +44,41 @@ public abstract class Literal implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(Literal instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Char instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Double_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Float_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Int instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Integer_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(String_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
+  /**
+   * A character literal
+   */
   public static final class Char extends hydra.ext.haskell.ast.Literal implements Serializable {
     public final Character value;
     
     public Char (Character value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -85,13 +87,26 @@ public abstract class Literal implements Serializable {
       if (!(other instanceof Char)) {
         return false;
       }
-      Char o = (Char) (other);
-      return value.equals(o.value);
+      Char o = (Char) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Literal other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Char o = (Char) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -100,11 +115,13 @@ public abstract class Literal implements Serializable {
     }
   }
   
+  /**
+   * A double-precision floating point literal
+   */
   public static final class Double_ extends hydra.ext.haskell.ast.Literal implements Serializable {
     public final Double value;
     
     public Double_ (Double value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -113,13 +130,26 @@ public abstract class Literal implements Serializable {
       if (!(other instanceof Double_)) {
         return false;
       }
-      Double_ o = (Double_) (other);
-      return value.equals(o.value);
+      Double_ o = (Double_) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Literal other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Double_ o = (Double_) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -128,11 +158,13 @@ public abstract class Literal implements Serializable {
     }
   }
   
+  /**
+   * A single-precision floating point literal
+   */
   public static final class Float_ extends hydra.ext.haskell.ast.Literal implements Serializable {
     public final Float value;
     
     public Float_ (Float value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -141,13 +173,26 @@ public abstract class Literal implements Serializable {
       if (!(other instanceof Float_)) {
         return false;
       }
-      Float_ o = (Float_) (other);
-      return value.equals(o.value);
+      Float_ o = (Float_) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Literal other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Float_ o = (Float_) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -156,11 +201,13 @@ public abstract class Literal implements Serializable {
     }
   }
   
+  /**
+   * A 32-bit integer literal
+   */
   public static final class Int extends hydra.ext.haskell.ast.Literal implements Serializable {
     public final Integer value;
     
     public Int (Integer value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -169,13 +216,26 @@ public abstract class Literal implements Serializable {
       if (!(other instanceof Int)) {
         return false;
       }
-      Int o = (Int) (other);
-      return value.equals(o.value);
+      Int o = (Int) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Literal other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Int o = (Int) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -184,11 +244,13 @@ public abstract class Literal implements Serializable {
     }
   }
   
+  /**
+   * An arbitrary-precision integer literal
+   */
   public static final class Integer_ extends hydra.ext.haskell.ast.Literal implements Serializable {
     public final java.math.BigInteger value;
     
     public Integer_ (java.math.BigInteger value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -197,13 +259,24 @@ public abstract class Literal implements Serializable {
       if (!(other instanceof Integer_)) {
         return false;
       }
-      Integer_ o = (Integer_) (other);
-      return value.equals(o.value);
+      Integer_ o = (Integer_) other;
+      return this.value.compareTo(o.value) == 0;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Literal other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Integer_ o = (Integer_) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -212,11 +285,13 @@ public abstract class Literal implements Serializable {
     }
   }
   
+  /**
+   * A string literal
+   */
   public static final class String_ extends hydra.ext.haskell.ast.Literal implements Serializable {
     public final String value;
     
     public String_ (String value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -225,13 +300,26 @@ public abstract class Literal implements Serializable {
       if (!(other instanceof String_)) {
         return false;
       }
-      String_ o = (String_) (other);
-      return value.equals(o.value);
+      String_ o = (String_) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Literal other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      String_ o = (String_) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

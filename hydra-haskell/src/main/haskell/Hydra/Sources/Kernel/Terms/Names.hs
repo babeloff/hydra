@@ -1,131 +1,153 @@
-{-# LANGUAGE OverloadedStrings #-}
 
 module Hydra.Sources.Kernel.Terms.Names where
 
--- Standard imports for term-level kernel modules
-import Hydra.Kernel
+-- Standard imports for kernel terms modules
+import Hydra.Kernel hiding (
+  compactName, localNameOf, namespaceOf, namespaceToFilePath, qname, qualifyName,
+  uniqueLabel, unqualifyName)
 import Hydra.Sources.Libraries
-import qualified Hydra.Dsl.Accessors     as Accessors
-import qualified Hydra.Dsl.Ast           as Ast
-import qualified Hydra.Dsl.Coders        as Coders
-import qualified Hydra.Dsl.Compute       as Compute
-import qualified Hydra.Dsl.Core          as Core
-import qualified Hydra.Dsl.Grammar       as Grammar
-import qualified Hydra.Dsl.Graph         as Graph
-import qualified Hydra.Dsl.Json          as Json
-import qualified Hydra.Dsl.Lib.Chars     as Chars
-import qualified Hydra.Dsl.Lib.Equality  as Equality
-import qualified Hydra.Dsl.Lib.Flows     as Flows
-import qualified Hydra.Dsl.Lib.Lists     as Lists
-import qualified Hydra.Dsl.Lib.Literals  as Literals
-import qualified Hydra.Dsl.Lib.Logic     as Logic
-import qualified Hydra.Dsl.Lib.Maps      as Maps
-import qualified Hydra.Dsl.Lib.Math      as Math
-import qualified Hydra.Dsl.Lib.Optionals as Optionals
-import           Hydra.Dsl.Phantoms      as Phantoms
-import qualified Hydra.Dsl.Lib.Sets      as Sets
-import           Hydra.Dsl.Lib.Strings   as Strings
-import qualified Hydra.Dsl.Mantle        as Mantle
-import qualified Hydra.Dsl.Module        as Module
-import qualified Hydra.Dsl.TTerms        as TTerms
-import qualified Hydra.Dsl.TTypes        as TTypes
-import qualified Hydra.Dsl.Terms         as Terms
-import qualified Hydra.Dsl.Topology      as Topology
-import qualified Hydra.Dsl.Types         as Types
-import qualified Hydra.Dsl.Typing        as Typing
+import qualified Hydra.Dsl.Meta.Accessors    as Accessors
+import qualified Hydra.Dsl.Annotations       as Annotations
+import qualified Hydra.Dsl.Meta.Ast          as Ast
+import qualified Hydra.Dsl.Bootstrap         as Bootstrap
+import qualified Hydra.Dsl.Meta.Coders       as Coders
+import qualified Hydra.Dsl.Meta.Compute      as Compute
+import qualified Hydra.Dsl.Meta.Core         as Core
+import qualified Hydra.Dsl.Meta.Grammar      as Grammar
+import qualified Hydra.Dsl.Grammars          as Grammars
+import qualified Hydra.Dsl.Meta.Graph        as Graph
+import qualified Hydra.Dsl.Meta.Json         as Json
+import qualified Hydra.Dsl.Meta.Lib.Chars    as Chars
+import qualified Hydra.Dsl.Meta.Lib.Eithers  as Eithers
+import qualified Hydra.Dsl.Meta.Lib.Equality as Equality
+import qualified Hydra.Dsl.Meta.Lib.Flows    as Flows
+import qualified Hydra.Dsl.Meta.Lib.Lists    as Lists
+import qualified Hydra.Dsl.Meta.Lib.Literals as Literals
+import qualified Hydra.Dsl.Meta.Lib.Logic    as Logic
+import qualified Hydra.Dsl.Meta.Lib.Maps     as Maps
+import qualified Hydra.Dsl.Meta.Lib.Math     as Math
+import qualified Hydra.Dsl.Meta.Lib.Maybes   as Maybes
+import qualified Hydra.Dsl.Meta.Lib.Pairs    as Pairs
+import qualified Hydra.Dsl.Meta.Lib.Sets     as Sets
+import           Hydra.Dsl.Meta.Lib.Strings  as Strings
+import qualified Hydra.Dsl.Literals          as Literals
+import qualified Hydra.Dsl.LiteralTypes      as LiteralTypes
+import qualified Hydra.Dsl.Meta.Base         as MetaBase
+import qualified Hydra.Dsl.Meta.Terms        as MetaTerms
+import qualified Hydra.Dsl.Meta.Types        as MetaTypes
+import qualified Hydra.Dsl.Meta.Module       as Module
+import qualified Hydra.Dsl.Meta.Parsing      as Parsing
+import           Hydra.Dsl.Meta.Phantoms     as Phantoms
+import qualified Hydra.Dsl.Prims             as Prims
+import qualified Hydra.Dsl.Tabular           as Tabular
+import qualified Hydra.Dsl.Meta.Testing      as Testing
+import qualified Hydra.Dsl.Terms             as Terms
+import qualified Hydra.Dsl.Tests             as Tests
+import qualified Hydra.Dsl.Meta.Topology     as Topology
+import qualified Hydra.Dsl.Types             as Types
+import qualified Hydra.Dsl.Meta.Typing       as Typing
+import qualified Hydra.Dsl.Meta.Util         as Util
+import qualified Hydra.Dsl.Meta.Variants     as Variants
 import           Hydra.Sources.Kernel.Types.All
 import           Prelude hiding ((++))
-import qualified Data.Int                as I
-import qualified Data.List               as L
-import qualified Data.Map                as M
-import qualified Data.Set                as S
-import qualified Data.Maybe              as Y
+import qualified Data.Int                    as I
+import qualified Data.List                   as L
+import qualified Data.Map                    as M
+import qualified Data.Set                    as S
+import qualified Data.Maybe                  as Y
 
 import qualified Hydra.Sources.Kernel.Terms.Formatting as Formatting
 
 
+ns :: Namespace
+ns = Namespace "hydra.names"
+
 module_ :: Module
-module_ = Module (Namespace "hydra.names") elements
-    [Formatting.module_]
-    kernelTypesModules $
+module_ = Module ns elements
+    [Formatting.ns]
+    kernelTypesNamespaces $
     Just ("Functions for working with qualified names.")
   where
    elements = [
-     el compactNameDef,
-     el localNameOfDef,
-     el namespaceOfDef,
-     el namespaceToFilePathDef,
-     el qnameDef,
-     el qualifyNameDef,
-     el uniqueLabelDef,
-     el unqualifyNameDef]
+     toBinding compactName,
+     toBinding localNameOf,
+     toBinding namespaceOf,
+     toBinding namespaceToFilePath,
+     toBinding qname,
+     toBinding qualifyName,
+     toBinding uniqueLabel,
+     toBinding unqualifyName]
 
 define :: String -> TTerm a -> TBinding a
 define = definitionInModule module_
 
-compactNameDef :: TBinding (M.Map Namespace String -> Name -> String)
-compactNameDef = define "compactName" $
+compactName :: TBinding (M.Map Namespace String -> Name -> String)
+compactName = define "compactName" $
   doc "Given a mapping of namespaces to prefixes, convert a name to a compact string representation" $
   lambda "namespaces" $ lambda "name" $ lets [
-    "qualName">: ref qualifyNameDef @@ var "name",
+    "qualName">: qualifyName @@ var "name",
     "mns">: Module.qualifiedNameNamespace $ var "qualName",
     "local">: Module.qualifiedNameLocal $ var "qualName"]
-    $ Optionals.maybe
+    $ Maybes.maybe
         (Core.unName $ var "name")
         (lambda "ns" $
-          Optionals.maybe (var "local")
+          Maybes.maybe (var "local")
             (lambda "pre" $ Strings.cat $ list [var "pre", string ":", var "local"])
             (Maps.lookup (var "ns") (var "namespaces")))
         (var "mns")
 
-localNameOfDef :: TBinding (Name -> String)
-localNameOfDef = define "localNameOf" $
-  unaryFunction Module.qualifiedNameLocal <.> ref qualifyNameDef
+localNameOf :: TBinding (Name -> String)
+localNameOf = define "localNameOf" $
+  doc "Extract the local part of a name" $
+  unaryFunction Module.qualifiedNameLocal <.> qualifyName
 
-namespaceOfDef :: TBinding (Name -> Maybe Namespace)
-namespaceOfDef = define "namespaceOf" $
-  unaryFunction Module.qualifiedNameNamespace <.> ref qualifyNameDef
+namespaceOf :: TBinding (Name -> Maybe Namespace)
+namespaceOf = define "namespaceOf" $
+  doc "Extract the namespace of a name, if any" $
+  unaryFunction Module.qualifiedNameNamespace <.> qualifyName
 
-namespaceToFilePathDef :: TBinding (CaseConvention -> FileExtension -> Namespace -> String)
-namespaceToFilePathDef = define "namespaceToFilePath" $
+namespaceToFilePath :: TBinding (CaseConvention -> FileExtension -> Namespace -> String)
+namespaceToFilePath = define "namespaceToFilePath" $
+  doc "Convert a namespace to a file path with the given case convention and file extension" $
   lambda "caseConv" $ lambda "ext" $ lambda "ns" $ lets [
     "parts">: Lists.map
-      (ref Formatting.convertCaseDef @@ Mantle.caseConventionCamel @@ var "caseConv")
-      (Strings.splitOn "." (Core.unNamespace $ var "ns"))]
-    $ (Strings.intercalate "/" $ var "parts") ++ "." ++ (Module.unFileExtension $ var "ext")
+      (Formatting.convertCase @@ Util.caseConventionCamel @@ var "caseConv")
+      (Strings.splitOn (string ".") (Core.unNamespace $ var "ns"))]
+    $ (Strings.intercalate (string "/") $ var "parts") ++ string "." ++ (Module.unFileExtension $ var "ext")
 
-qnameDef :: TBinding (Namespace -> String -> Name)
-qnameDef = define "qname" $
+qname :: TBinding (Namespace -> String -> Name)
+qname = define "qname" $
   doc "Construct a qualified (dot-separated) name" $
   lambda "ns" $ lambda "name" $
     wrap _Name $
       Strings.cat $
         list [apply (unwrap _Namespace) (var "ns"), string ".", var "name"]
 
-qualifyNameDef :: TBinding (Name -> QualifiedName)
-qualifyNameDef = define "qualifyName" $
+qualifyName :: TBinding (Name -> QualifiedName)
+qualifyName = define "qualifyName" $
+  doc "Split a dot-separated name into a namespace and local name" $
   lambda "name" $ lets [
-    "parts">: Lists.reverse (Strings.splitOn "." (Core.unName $ var "name"))]
+    "parts">: Lists.reverse (Strings.splitOn (string ".") (Core.unName $ var "name"))]
     $ Logic.ifElse
       (Equality.equal (int32 1) (Lists.length $ var "parts"))
       (Module.qualifiedName nothing (Core.unName $ var "name"))
       (Module.qualifiedName
-        (just $ wrap _Namespace (Strings.intercalate "." (Lists.reverse (Lists.tail $ var "parts"))))
+        (just $ wrap _Namespace (Strings.intercalate (string ".") (Lists.reverse (Lists.tail $ var "parts"))))
         (Lists.head $ var "parts"))
 
-uniqueLabelDef :: TBinding (S.Set String -> String -> String)
-uniqueLabelDef = define "uniqueLabel" $
+uniqueLabel :: TBinding (S.Set String -> String -> String)
+uniqueLabel = define "uniqueLabel" $
   doc "Generate a unique label by appending a suffix if the label is already in use" $
   lambda "visited" $ lambda "l" $
   Logic.ifElse (Sets.member (var "l") (var "visited"))
-    (ref uniqueLabelDef @@ var "visited" @@ Strings.cat2 (var "l") (string "'"))
+    (uniqueLabel @@ var "visited" @@ Strings.cat2 (var "l") (string "'"))
     (var "l")
 
-unqualifyNameDef :: TBinding (QualifiedName -> Name)
-unqualifyNameDef = define "unqualifyName" $
+unqualifyName :: TBinding (QualifiedName -> Name)
+unqualifyName = define "unqualifyName" $
   doc "Convert a qualified name to a dot-separated name" $
   lambda "qname" $ lets [
-    "prefix">: Optionals.maybe
+    "prefix">: Maybes.maybe
       (string "")
       (lambda "n" $ (unwrap _Namespace @@ var "n") ++ string ".")
       (project _QualifiedName _QualifiedName_namespace @@ var "qname")]

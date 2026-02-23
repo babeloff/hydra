@@ -57,22 +57,21 @@ public abstract class Direction implements Serializable {
   }
   
   public static final class Out extends hydra.pg.model.Direction implements Serializable {
-    public Out () {
+    public final Boolean value;
     
+    public Out (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Out)) {
-        return false;
-      }
-      Out o = (Out) (other);
-      return true;
+      return other instanceof Out;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -82,22 +81,21 @@ public abstract class Direction implements Serializable {
   }
   
   public static final class In extends hydra.pg.model.Direction implements Serializable {
-    public In () {
+    public final Boolean value;
     
+    public In (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof In)) {
-        return false;
-      }
-      In o = (In) (other);
-      return true;
+      return other instanceof In;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -107,22 +105,21 @@ public abstract class Direction implements Serializable {
   }
   
   public static final class Both extends hydra.pg.model.Direction implements Serializable {
-    public Both () {
+    public final Boolean value;
     
+    public Both (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Both)) {
-        return false;
-      }
-      Both o = (Both) (other);
-      return true;
+      return other instanceof Both;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -132,22 +129,21 @@ public abstract class Direction implements Serializable {
   }
   
   public static final class Undirected extends hydra.pg.model.Direction implements Serializable {
-    public Undirected () {
+    public final Boolean value;
     
+    public Undirected (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof Undirected)) {
-        return false;
-      }
-      Undirected o = (Undirected) (other);
-      return true;
+      return other instanceof Undirected;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override

@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * The left-hand side of a declaration
  */
-public abstract class DeclarationHead implements Serializable {
+public abstract class DeclarationHead implements Serializable, Comparable<DeclarationHead> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.haskell.ast.DeclarationHead");
   
   public static final hydra.core.Name FIELD_NAME_APPLICATION = new hydra.core.Name("application");
@@ -32,27 +32,29 @@ public abstract class DeclarationHead implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(DeclarationHead instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Application instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Parens instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Simple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
+  /**
+   * An application-style declaration head
+   */
   public static final class Application extends hydra.ext.haskell.ast.DeclarationHead implements Serializable {
     public final hydra.ext.haskell.ast.ApplicationDeclarationHead value;
     
     public Application (hydra.ext.haskell.ast.ApplicationDeclarationHead value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -61,13 +63,26 @@ public abstract class DeclarationHead implements Serializable {
       if (!(other instanceof Application)) {
         return false;
       }
-      Application o = (Application) (other);
-      return value.equals(o.value);
+      Application o = (Application) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(DeclarationHead other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Application o = (Application) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -76,11 +91,13 @@ public abstract class DeclarationHead implements Serializable {
     }
   }
   
+  /**
+   * A parenthesized declaration head
+   */
   public static final class Parens extends hydra.ext.haskell.ast.DeclarationHead implements Serializable {
     public final hydra.ext.haskell.ast.DeclarationHead value;
     
     public Parens (hydra.ext.haskell.ast.DeclarationHead value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -89,13 +106,26 @@ public abstract class DeclarationHead implements Serializable {
       if (!(other instanceof Parens)) {
         return false;
       }
-      Parens o = (Parens) (other);
-      return value.equals(o.value);
+      Parens o = (Parens) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(DeclarationHead other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Parens o = (Parens) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -104,11 +134,13 @@ public abstract class DeclarationHead implements Serializable {
     }
   }
   
+  /**
+   * A simple name
+   */
   public static final class Simple extends hydra.ext.haskell.ast.DeclarationHead implements Serializable {
     public final hydra.ext.haskell.ast.Name value;
     
     public Simple (hydra.ext.haskell.ast.Name value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -117,13 +149,26 @@ public abstract class DeclarationHead implements Serializable {
       if (!(other instanceof Simple)) {
         return false;
       }
-      Simple o = (Simple) (other);
-      return value.equals(o.value);
+      Simple o = (Simple) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(DeclarationHead other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Simple o = (Simple) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

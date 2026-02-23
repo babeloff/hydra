@@ -3,219 +3,40 @@
 package hydra.test.testSuite;
 
 /**
- * Test cases for primitive functions
+ * Hydra's common test suite, which is designed to run identically in each Hydra implementation; the criterion for a true Hydra implementation is that all test cases pass.
  */
 public interface TestSuite {
   static hydra.testing.TestGroup allTests() {
-    return new hydra.testing.TestGroup("All tests", hydra.util.Opt.empty(), java.util.Arrays.asList(
-      (hydra.test.testSuite.TestSuite.formattingTests()),
-      (hydra.test.testSuite.TestSuite.inferenceTests()),
-      (hydra.test.testSuite.TestSuite.primitiveTests())), java.util.Arrays.asList());
-  }
-  
-  static hydra.testing.TestGroup formattingTests() {
-    return new hydra.testing.TestGroup("formatting tests", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(
-      new hydra.testing.TestCaseWithMetadata("#1 (lower_snake_case -> UPPER_SNAKE_CASE)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.LowerSnake(), new hydra.mantle.CaseConvention.UpperSnake(), "a_hello_world_42_a42_42a_b", "A_HELLO_WORLD_42_A42_42A_B")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#2 (lower_snake_case -> camelCase)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.LowerSnake(), new hydra.mantle.CaseConvention.Camel(), "a_hello_world_42_a42_42a_b", "aHelloWorld42A4242aB")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#3 (lower_snake_case -> PascalCase)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.LowerSnake(), new hydra.mantle.CaseConvention.Pascal(), "a_hello_world_42_a42_42a_b", "AHelloWorld42A4242aB")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#4 (lower_snake_case -> lower_snake_case)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.LowerSnake(), new hydra.mantle.CaseConvention.LowerSnake(), "a_hello_world_42_a42_42a_b", "a_hello_world_42_a42_42a_b")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#5 (UPPER_SNAKE_CASE -> lower_snake_case)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.UpperSnake(), new hydra.mantle.CaseConvention.LowerSnake(), "A_HELLO_WORLD_42_A42_42A_B", "a_hello_world_42_a42_42a_b")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#6 (UPPER_SNAKE_CASE -> camelCase)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.UpperSnake(), new hydra.mantle.CaseConvention.Camel(), "A_HELLO_WORLD_42_A42_42A_B", "aHelloWorld42A4242aB")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#7 (UPPER_SNAKE_CASE -> PascalCase)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.UpperSnake(), new hydra.mantle.CaseConvention.Pascal(), "A_HELLO_WORLD_42_A42_42A_B", "AHelloWorld42A4242aB")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#8 (UPPER_SNAKE_CASE -> UPPER_SNAKE_CASE)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.UpperSnake(), new hydra.mantle.CaseConvention.UpperSnake(), "A_HELLO_WORLD_42_A42_42A_B", "A_HELLO_WORLD_42_A42_42A_B")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#9 (camelCase -> lower_snake_case)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.Camel(), new hydra.mantle.CaseConvention.LowerSnake(), "aHelloWorld42A4242aB", "a_hello_world42_a4242a_b")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#10 (camelCase -> UPPER_SNAKE_CASE)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.Camel(), new hydra.mantle.CaseConvention.UpperSnake(), "aHelloWorld42A4242aB", "A_HELLO_WORLD42_A4242A_B")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#11 (camelCase -> PascalCase)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.Camel(), new hydra.mantle.CaseConvention.Pascal(), "aHelloWorld42A4242aB", "AHelloWorld42A4242aB")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#12 (camelCase -> camelCase)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.Camel(), new hydra.mantle.CaseConvention.Camel(), "aHelloWorld42A4242aB", "aHelloWorld42A4242aB")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#13 (PascalCase -> lower_snake_case)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.Pascal(), new hydra.mantle.CaseConvention.LowerSnake(), "AHelloWorld42A4242aB", "a_hello_world42_a4242a_b")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#14 (PascalCase -> UPPER_SNAKE_CASE)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.Pascal(), new hydra.mantle.CaseConvention.UpperSnake(), "AHelloWorld42A4242aB", "A_HELLO_WORLD42_A4242A_B")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#15 (PascalCase -> camelCase)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.Pascal(), new hydra.mantle.CaseConvention.Camel(), "AHelloWorld42A4242aB", "aHelloWorld42A4242aB")), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-      new hydra.testing.TestCaseWithMetadata("#16 (PascalCase -> PascalCase)", new hydra.testing.TestCase.CaseConversion(new hydra.testing.CaseConversionTestCase(new hydra.mantle.CaseConvention.Pascal(), new hydra.mantle.CaseConvention.Pascal(), "AHelloWorld42A4242aB", "AHelloWorld42A4242aB")), hydra.util.Opt.empty(), java.util.Arrays.asList())));
-  }
-  
-  static hydra.testing.TestGroup inferenceTests() {
-    return new hydra.testing.TestGroup("inference tests", hydra.util.Opt.empty(), java.util.Arrays.asList(
-      new hydra.testing.TestGroup("Application terms", hydra.util.Opt.of("Check a few hand-picked application terms"), java.util.Arrays.asList(), java.util.Arrays.asList(
-        new hydra.testing.TestCaseWithMetadata("#1", new hydra.testing.TestCase.Inference(new hydra.testing.InferenceTestCase(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Lambda(new hydra.core.Lambda(new hydra.core.Name("x"), hydra.util.Opt.empty(), new hydra.core.Term.Variable(new hydra.core.Name("x"))))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("foo")))), new hydra.core.TypeScheme(java.util.Arrays.asList(), new hydra.core.Type.Literal(new hydra.core.LiteralType.String_())))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("#2", new hydra.testing.TestCase.Inference(new hydra.testing.InferenceTestCase(new hydra.core.Term.Function(new hydra.core.Function.Lambda(new hydra.core.Lambda(new hydra.core.Name("x"), hydra.util.Opt.empty(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.math.sub"))), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.math.add"))), new hydra.core.Term.Variable(new hydra.core.Name("x")))), new hydra.core.Term.Variable(new hydra.core.Name("x")))))), new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1)))))))), new hydra.core.TypeScheme(java.util.Arrays.asList(), new hydra.core.Type.Function(new hydra.core.FunctionType(new hydra.core.Type.Literal(new hydra.core.LiteralType.Integer_(new hydra.core.IntegerType.Int32())), new hydra.core.Type.Literal(new hydra.core.LiteralType.Integer_(new hydra.core.IntegerType.Int32()))))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("Function terms", hydra.util.Opt.of("Check a few hand-picked function terms"), java.util.Arrays.asList(
-        new hydra.testing.TestGroup("Check lambdas", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(
-          new hydra.testing.TestCaseWithMetadata("#1", new hydra.testing.TestCase.Inference(new hydra.testing.InferenceTestCase(new hydra.core.Term.Function(new hydra.core.Function.Lambda(new hydra.core.Lambda(new hydra.core.Name("x"), hydra.util.Opt.empty(), new hydra.core.Term.Variable(new hydra.core.Name("x"))))), new hydra.core.TypeScheme(java.util.Arrays.asList(new hydra.core.Name("t0")), new hydra.core.Type.Function(new hydra.core.FunctionType(new hydra.core.Type.Variable(new hydra.core.Name("t0")), new hydra.core.Type.Variable(new hydra.core.Name("t0"))))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-          new hydra.testing.TestCaseWithMetadata("#2", new hydra.testing.TestCase.Inference(new hydra.testing.InferenceTestCase(new hydra.core.Term.Function(new hydra.core.Function.Lambda(new hydra.core.Lambda(new hydra.core.Name("x"), hydra.util.Opt.empty(), new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int16((short)137)))))), new hydra.core.TypeScheme(java.util.Arrays.asList(new hydra.core.Name("t0")), new hydra.core.Type.Function(new hydra.core.FunctionType(new hydra.core.Type.Variable(new hydra.core.Name("t0")), new hydra.core.Type.Literal(new hydra.core.LiteralType.Integer_(new hydra.core.IntegerType.Int16()))))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-        new hydra.testing.TestGroup("Check list eliminations", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(
-          new hydra.testing.TestCaseWithMetadata("#1", new hydra.testing.TestCase.Inference(new hydra.testing.InferenceTestCase(new hydra.core.Term.Function(new hydra.core.Function.Elimination(new hydra.core.Elimination.List(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.math.add")))))), new hydra.core.TypeScheme(java.util.Arrays.asList(), new hydra.core.Type.Function(new hydra.core.FunctionType(new hydra.core.Type.Literal(new hydra.core.LiteralType.Integer_(new hydra.core.IntegerType.Int32())), new hydra.core.Type.Function(new hydra.core.FunctionType(new hydra.core.Type.List(new hydra.core.Type.Literal(new hydra.core.LiteralType.Integer_(new hydra.core.IntegerType.Int32()))), new hydra.core.Type.Literal(new hydra.core.LiteralType.Integer_(new hydra.core.IntegerType.Int32()))))))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-          new hydra.testing.TestCaseWithMetadata("#2", new hydra.testing.TestCase.Inference(new hydra.testing.InferenceTestCase(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Elimination(new hydra.core.Elimination.List(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.math.add")))))), new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(0))))), new hydra.core.TypeScheme(java.util.Arrays.asList(), new hydra.core.Type.Function(new hydra.core.FunctionType(new hydra.core.Type.List(new hydra.core.Type.Literal(new hydra.core.LiteralType.Integer_(new hydra.core.IntegerType.Int32()))), new hydra.core.Type.Literal(new hydra.core.LiteralType.Integer_(new hydra.core.IntegerType.Int32()))))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-          new hydra.testing.TestCaseWithMetadata("#3", new hydra.testing.TestCase.Inference(new hydra.testing.InferenceTestCase(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Elimination(new hydra.core.Elimination.List(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.math.add")))))), new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(0))))), new hydra.core.Term.List(java.util.Arrays.asList(
-            new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1))),
-            new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(2))),
-            new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))),
-            new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(4))),
-            new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(5))))))), new hydra.core.TypeScheme(java.util.Arrays.asList(), new hydra.core.Type.Literal(new hydra.core.LiteralType.Integer_(new hydra.core.IntegerType.Int32()))))), hydra.util.Opt.empty(), java.util.Arrays.asList())))), java.util.Arrays.asList())), java.util.Arrays.asList());
-  }
-  
-  static hydra.testing.TestGroup listPrimitiveTests() {
-    return new hydra.testing.TestGroup("hydra.lib.lists primitives", hydra.util.Opt.empty(), java.util.Arrays.asList(
-      new hydra.testing.TestGroup("apply", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.lists.apply"))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.toUpper"))),
-        new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.toLower"))))))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("One")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("Two")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("Three")))))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("ONE")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("TWO")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("THREE")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("two")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("three")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("bind", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.lists.bind"))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(2))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(4))))))), new hydra.core.Term.Function(new hydra.core.Function.Lambda(new hydra.core.Lambda(new hydra.core.Name("x"), hydra.util.Opt.empty(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.lists.pure"))), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.math.neg"))), new hydra.core.Term.Variable(new hydra.core.Name("x"))))))))))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(-1))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(-2))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(-3))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(-4))))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("concat", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.lists.concat"))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1))),
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(2))),
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))))),
-        new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(4))),
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(5))))),
-        new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(6))),
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(7))),
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(8))))))))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(2))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(4))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(5))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(6))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(7))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(8))))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("head", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.lists.head"))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(2))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))))))), new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("intercalate", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.lists.intercalate"))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(0))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(0))))))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1))),
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(2))),
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))))),
-        new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(4))),
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(5))))),
-        new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(6))),
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(7))),
-          new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(8))))))))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(2))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(0))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(0))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(4))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(5))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(0))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(0))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(6))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(7))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(8))))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("intersperse", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.lists.intersperse"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("and")))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("two")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("three")))))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("and")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("two")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("and")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("three")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("last", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.lists.last"))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(2))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))))))), new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("length", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.lists.length"))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(2))),
-        new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))))))), new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("map", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.lists.map"))), new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.toUpper"))))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("two")))))), new hydra.core.Term.List(java.util.Arrays.asList(
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("ONE")),
-        new hydra.core.Term.Literal(new hydra.core.Literal.String_("TWO")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("pure", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.lists.pure"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")))), new hydra.core.Term.List(java.util.Arrays.asList(new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")))))), hydra.util.Opt.empty(), java.util.Arrays.asList())))), java.util.Arrays.asList());
-  }
-  
-  static hydra.testing.TestGroup primitiveTests() {
-    return new hydra.testing.TestGroup("Primitive functions", hydra.util.Opt.of("Test cases for primitive functions"), java.util.Arrays.asList(
-      (hydra.test.testSuite.TestSuite.listPrimitiveTests()),
-      (hydra.test.testSuite.TestSuite.stringPrimitiveTests())), java.util.Arrays.asList());
-  }
-  
-  static hydra.testing.TestGroup stringPrimitiveTests() {
-    return new hydra.testing.TestGroup("hydra.lib.strings primitives", hydra.util.Opt.empty(), java.util.Arrays.asList(
-      new hydra.testing.TestGroup("cat", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(
-        new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.cat"))), new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("two")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("three")))))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("onetwothree")))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("2", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.cat"))), new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")))))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("3", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.cat"))), new hydra.core.Term.List(java.util.Arrays.asList()))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("")))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("length", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(
-        new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.length"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("")))), new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(0))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("2", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.length"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("a")))), new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(1))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("3", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.length"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")))), new hydra.core.Term.Literal(new hydra.core.Literal.Integer_(new hydra.core.IntegerValue.Int32(3))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("splitOn", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(
-        new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.splitOn"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("ss")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("Mississippi")))), new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("Mi")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("i")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("ippi")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("2", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.splitOn"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("Mississippi")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("Mississippi")))), new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("3", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.splitOn"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_(" ")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("one two three")))), new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("two")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("three")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("4", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.splitOn"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_(" ")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_(" one two three ")))), new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("two")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("three")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("5", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.splitOn"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_(" ")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("  one two three")))), new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("one")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("two")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("three")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("6", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.splitOn"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("  ")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("  one two three")))), new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("one two three")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("6", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.splitOn"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("aa")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("aaa")))), new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("a")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("7", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.splitOn"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("a")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("")))), new hydra.core.Term.List(java.util.Arrays.asList(new hydra.core.Term.Literal(new hydra.core.Literal.String_("")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("8", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.splitOn"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("abc")))), new hydra.core.Term.List(java.util.Arrays.asList(
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("a")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("b")),
-          new hydra.core.Term.Literal(new hydra.core.Literal.String_("c")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("9", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.splitOn"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("")))), new hydra.core.Term.List(java.util.Arrays.asList(new hydra.core.Term.Literal(new hydra.core.Literal.String_("")))))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("toLower", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(
-        new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.toLower"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("One TWO threE")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("one two three")))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("2", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.toLower"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("Abc123")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("abc123")))), hydra.util.Opt.empty(), java.util.Arrays.asList()))),
-      new hydra.testing.TestGroup("toUpper", hydra.util.Opt.empty(), java.util.Arrays.asList(), java.util.Arrays.asList(
-        new hydra.testing.TestCaseWithMetadata("1", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.toUpper"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("One TWO threE")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("ONE TWO THREE")))), hydra.util.Opt.empty(), java.util.Arrays.asList()),
-        new hydra.testing.TestCaseWithMetadata("2", new hydra.testing.TestCase.Evaluation(new hydra.testing.EvaluationTestCase(new hydra.testing.EvaluationStyle.Eager(), new hydra.core.Term.Application(new hydra.core.Application(new hydra.core.Term.Function(new hydra.core.Function.Primitive(new hydra.core.Name("hydra.lib.strings.toUpper"))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("Abc123")))), new hydra.core.Term.Literal(new hydra.core.Literal.String_("ABC123")))), hydra.util.Opt.empty(), java.util.Arrays.asList())))), java.util.Arrays.asList());
+    return new hydra.testing.TestGroup("common", (hydra.util.Maybe<String>) (hydra.util.Maybe.<String>nothing()), java.util.List.of(
+      hydra.test.lib.chars.Chars.allTests(),
+      hydra.test.lib.eithers.Eithers.allTests(),
+      hydra.test.lib.equality.Equality.allTests(),
+      hydra.test.lib.flows.Flows.allTests(),
+      hydra.test.lib.lists.Lists.allTests(),
+      hydra.test.lib.literals.Literals.allTests(),
+      hydra.test.lib.logic.Logic.allTests(),
+      hydra.test.lib.maps.Maps.allTests(),
+      hydra.test.lib.math.Math_.allTests(),
+      hydra.test.lib.maybes.Maybes.allTests(),
+      hydra.test.lib.pairs.Pairs.allTests(),
+      hydra.test.lib.sets.Sets.allTests(),
+      hydra.test.lib.strings.Strings.allTests(),
+      hydra.test.annotations.Annotations.allTests(),
+      hydra.test.checking.all.All.allTests(),
+      hydra.test.etaExpansion.EtaExpansion.allTests(),
+      hydra.test.formatting.Formatting.allTests(),
+      hydra.test.hoisting.Hoisting.allTests(),
+      hydra.test.inference.all.All.allTests(),
+      hydra.test.json.coder.Coder.allTests(),
+      hydra.test.json.parser.Parser.allTests(),
+      hydra.test.json.roundtrip.Roundtrip.allTests(),
+      hydra.test.json.writer.Writer.allTests(),
+      hydra.test.monads.Monads.allTests(),
+      hydra.test.reduction.Reduction.allTests(),
+      hydra.test.rewriting.Rewriting.allTests(),
+      hydra.test.serialization.Serialization.allTests(),
+      hydra.test.sorting.Sorting.allTests(),
+      hydra.test.substitution.Substitution.allTests(),
+      hydra.test.unification.Unification.allTests()), (java.util.List<hydra.testing.TestCaseWithMetadata>) (java.util.List.<hydra.testing.TestCaseWithMetadata>of()));
   }
 }

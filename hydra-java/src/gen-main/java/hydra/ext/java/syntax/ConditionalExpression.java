@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class ConditionalExpression implements Serializable {
+public abstract class ConditionalExpression implements Serializable, Comparable<ConditionalExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ConditionalExpression");
   
   public static final hydra.core.Name FIELD_NAME_SIMPLE = new hydra.core.Name("simple");
@@ -29,19 +29,19 @@ public abstract class ConditionalExpression implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(ConditionalExpression instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Simple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(TernaryCond instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(TernaryLambda instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -49,7 +49,6 @@ public abstract class ConditionalExpression implements Serializable {
     public final hydra.ext.java.syntax.ConditionalOrExpression value;
     
     public Simple (hydra.ext.java.syntax.ConditionalOrExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -58,13 +57,26 @@ public abstract class ConditionalExpression implements Serializable {
       if (!(other instanceof Simple)) {
         return false;
       }
-      Simple o = (Simple) (other);
-      return value.equals(o.value);
+      Simple o = (Simple) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ConditionalExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Simple o = (Simple) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -77,7 +89,6 @@ public abstract class ConditionalExpression implements Serializable {
     public final hydra.ext.java.syntax.ConditionalExpression_TernaryCond value;
     
     public TernaryCond (hydra.ext.java.syntax.ConditionalExpression_TernaryCond value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -86,13 +97,26 @@ public abstract class ConditionalExpression implements Serializable {
       if (!(other instanceof TernaryCond)) {
         return false;
       }
-      TernaryCond o = (TernaryCond) (other);
-      return value.equals(o.value);
+      TernaryCond o = (TernaryCond) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ConditionalExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      TernaryCond o = (TernaryCond) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -105,7 +129,6 @@ public abstract class ConditionalExpression implements Serializable {
     public final hydra.ext.java.syntax.ConditionalExpression_TernaryLambda value;
     
     public TernaryLambda (hydra.ext.java.syntax.ConditionalExpression_TernaryLambda value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -114,13 +137,26 @@ public abstract class ConditionalExpression implements Serializable {
       if (!(other instanceof TernaryLambda)) {
         return false;
       }
-      TernaryLambda o = (TernaryLambda) (other);
-      return value.equals(o.value);
+      TernaryLambda o = (TernaryLambda) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ConditionalExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      TernaryLambda o = (TernaryLambda) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

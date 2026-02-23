@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 {-
 stack ghci hydra:lib hydra:hydra-test
 
@@ -15,7 +13,6 @@ import qualified Hydra.Extract.Core as ExtractCore
 import Hydra.Dsl.Terms as Terms
 import qualified Hydra.Dsl.Annotations as Ann
 import qualified Hydra.Dsl.Types as Types
-import Hydra.Dsl.ShorthandTypes
 import qualified Hydra.Show.Core as ShowCore
 import qualified Hydra.Reference.AlgorithmWBridge as W
 
@@ -23,7 +20,7 @@ import qualified Hydra.TestUtils as TU
 import Hydra.Testing
 import Hydra.TestSuiteSpec
 import Hydra.Test.TestSuite
-import qualified Hydra.Dsl.Testing as Testing
+import qualified Hydra.Dsl.Meta.Testing as Testing
 
 import qualified Test.Hspec as H
 import qualified Test.QuickCheck as QC
@@ -38,11 +35,13 @@ testHydraContext = W.HydraContext $ graphPrimitives testGraph
 inferType :: Term -> IO (Term, TypeScheme)
 inferType = W.termToInferredTerm testHydraContext
 
-expectType :: Term -> TypeScheme -> H.Expectation
+expectType :: Term -> TypeScheme -> H.SpecWith ()
 expectType term ts = do
-  result <- inferType term
-  H.shouldBe (ShowCore.typeScheme $ snd result) (ShowCore.typeScheme ts)
-  H.shouldBe (ShowCore.term $ removeTypesFromTerm $ fst result) (ShowCore.term $ removeTypesFromTerm term)
+  result <- H.runIO $ inferType term
+  H.it "inferred type" $
+    H.shouldBe (ShowCore.typeScheme $ snd result) (ShowCore.typeScheme ts)
+  H.it "inferred term" $
+    H.shouldBe (ShowCore.term $ removeTypesFromTerm $ fst result) (ShowCore.term $ removeTypesFromTerm term)
 
 algorithmWRunner :: TestRunner
 algorithmWRunner desc tcase = if Testing.isDisabled tcase || Testing.isDisabledForMinimalInference tcase

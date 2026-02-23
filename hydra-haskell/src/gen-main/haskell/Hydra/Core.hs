@@ -1,8 +1,11 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | Hydra's core data model, consisting of the fundamental hydra.core.Term type and all of its dependencies.
 
 module Hydra.Core where
 
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -11,26 +14,30 @@ import qualified Data.Set as S
 -- | A term together with an annotation
 data AnnotatedTerm = 
   AnnotatedTerm {
-    annotatedTermSubject :: Term,
+    -- | The term being annotated
+    annotatedTermBody :: Term,
+    -- | The annotation as a map from keys to values
     annotatedTermAnnotation :: (M.Map Name Term)}
   deriving (Eq, Ord, Read, Show)
 
 _AnnotatedTerm = (Name "hydra.core.AnnotatedTerm")
 
-_AnnotatedTerm_subject = (Name "subject")
+_AnnotatedTerm_body = (Name "body")
 
 _AnnotatedTerm_annotation = (Name "annotation")
 
 -- | A type together with an annotation
 data AnnotatedType = 
   AnnotatedType {
-    annotatedTypeSubject :: Type,
+    -- | The type being annotated
+    annotatedTypeBody :: Type,
+    -- | The annotation as a map from keys to values
     annotatedTypeAnnotation :: (M.Map Name Term)}
   deriving (Eq, Ord, Read, Show)
 
 _AnnotatedType = (Name "hydra.core.AnnotatedType")
 
-_AnnotatedType_subject = (Name "subject")
+_AnnotatedType_body = (Name "body")
 
 _AnnotatedType_annotation = (Name "annotation")
 
@@ -64,11 +71,33 @@ _ApplicationType_function = (Name "function")
 
 _ApplicationType_argument = (Name "argument")
 
+-- | A field with an optional type scheme, used to bind variables to terms in a 'let' expression
+data Binding = 
+  Binding {
+    -- | The name of the bound variable
+    bindingName :: Name,
+    -- | The term to which the variable is bound
+    bindingTerm :: Term,
+    -- | The optional type of the bound term
+    bindingType :: (Maybe TypeScheme)}
+  deriving (Eq, Ord, Read, Show)
+
+_Binding = (Name "hydra.core.Binding")
+
+_Binding_name = (Name "name")
+
+_Binding_term = (Name "term")
+
+_Binding_type = (Name "type")
+
 -- | A union elimination; a case statement
 data CaseStatement = 
   CaseStatement {
+    -- | The name of the union type
     caseStatementTypeName :: Name,
+    -- | An optional default case, used if none of the explicit cases match
     caseStatementDefault :: (Maybe Term),
+    -- | A list of case alternatives, one per union field
     caseStatementCases :: [Field]}
   deriving (Eq, Ord, Read, Show)
 
@@ -80,10 +109,38 @@ _CaseStatement_default = (Name "default")
 
 _CaseStatement_cases = (Name "cases")
 
+-- | A type which provides a choice between a 'left' type and a 'right' type
+data EitherType = 
+  EitherType {
+    -- | The 'left' alternative
+    eitherTypeLeft :: Type,
+    -- | The 'right' alternative
+    eitherTypeRight :: Type}
+  deriving (Eq, Ord, Read, Show)
+
+_EitherType = (Name "hydra.core.EitherType")
+
+_EitherType_left = (Name "left")
+
+_EitherType_right = (Name "right")
+
+-- | A type which pairs a 'first' type and a 'second' type
+data PairType = 
+  PairType {
+    -- | The first component of the pair
+    pairTypeFirst :: Type,
+    -- | The second component of the pair
+    pairTypeSecond :: Type}
+  deriving (Eq, Ord, Read, Show)
+
+_PairType = (Name "hydra.core.PairType")
+
+_PairType_first = (Name "first")
+
+_PairType_second = (Name "second")
+
 -- | A corresponding elimination for an introduction term
 data Elimination = 
-  -- | Eliminates a tuple by projecting the component at a given 0-indexed offset
-  EliminationProduct TupleProjection |
   -- | Eliminates a record by projecting a given field
   EliminationRecord Projection |
   -- | Eliminates a union term by matching over the fields of the union. This is a case statement.
@@ -94,8 +151,6 @@ data Elimination =
 
 _Elimination = (Name "hydra.core.Elimination")
 
-_Elimination_product = (Name "product")
-
 _Elimination_record = (Name "record")
 
 _Elimination_union = (Name "union")
@@ -105,7 +160,9 @@ _Elimination_wrap = (Name "wrap")
 -- | A name/term pair
 data Field = 
   Field {
+    -- | The name of the field
     fieldName :: Name,
+    -- | The term value of the field
     fieldTerm :: Term}
   deriving (Eq, Ord, Read, Show)
 
@@ -118,7 +175,9 @@ _Field_term = (Name "term")
 -- | A name/type pair
 data FieldType = 
   FieldType {
+    -- | The name of the field
     fieldTypeName :: Name,
+    -- | The type of the field
     fieldTypeType :: Type}
   deriving (Eq, Ord, Read, Show)
 
@@ -130,8 +189,11 @@ _FieldType_type = (Name "type")
 
 -- | A floating-point type
 data FloatType = 
+  -- | An arbitrary-precision floating-point type
   FloatTypeBigfloat  |
+  -- | A 32-bit floating-point type
   FloatTypeFloat32  |
+  -- | A 64-bit floating-point type
   FloatTypeFloat64 
   deriving (Eq, Ord, Read, Show)
 
@@ -197,7 +259,9 @@ _Function_primitive = (Name "primitive")
 -- | A function type, also known as an arrow type
 data FunctionType = 
   FunctionType {
+    -- | The domain (input) type of the function
     functionTypeDomain :: Type,
+    -- | The codomain (output) type of the function
     functionTypeCodomain :: Type}
   deriving (Eq, Ord, Read, Show)
 
@@ -210,7 +274,9 @@ _FunctionType_codomain = (Name "codomain")
 -- | An instance of a union type; i.e. a string-indexed generalization of inl() or inr()
 data Injection = 
   Injection {
+    -- | The name of the union type
     injectionTypeName :: Name,
+    -- | The field being injected, including its name and value
     injectionField :: Field}
   deriving (Eq, Ord, Read, Show)
 
@@ -222,14 +288,23 @@ _Injection_field = (Name "field")
 
 -- | An integer type
 data IntegerType = 
+  -- | An arbitrary-precision integer type
   IntegerTypeBigint  |
+  -- | An 8-bit signed integer type
   IntegerTypeInt8  |
+  -- | A 16-bit signed integer type
   IntegerTypeInt16  |
+  -- | A 32-bit signed integer type
   IntegerTypeInt32  |
+  -- | A 64-bit signed integer type
   IntegerTypeInt64  |
+  -- | An 8-bit unsigned integer type
   IntegerTypeUint8  |
+  -- | A 16-bit unsigned integer type
   IntegerTypeUint16  |
+  -- | A 32-bit unsigned integer type
   IntegerTypeUint32  |
+  -- | A 64-bit unsigned integer type
   IntegerTypeUint64 
   deriving (Eq, Ord, Read, Show)
 
@@ -314,39 +389,25 @@ _Lambda_domain = (Name "domain")
 
 _Lambda_body = (Name "body")
 
--- | A set of (possibly recursive) 'let' bindings together with an environment in which they are bound
+-- | A set of (possibly recursive) 'let' bindings together with a body in which they are bound
 data Let = 
   Let {
+    -- | The list of variable bindings
     letBindings :: [Binding],
-    letEnvironment :: Term}
+    -- | The body term in which the variables are bound
+    letBody :: Term}
   deriving (Eq, Ord, Read, Show)
 
 _Let = (Name "hydra.core.Let")
 
 _Let_bindings = (Name "bindings")
 
-_Let_environment = (Name "environment")
-
--- | A field with an optional type scheme, used to bind variables to terms in a 'let' expression
-data Binding = 
-  Binding {
-    bindingName :: Name,
-    bindingTerm :: Term,
-    bindingType :: (Maybe TypeScheme)}
-  deriving (Eq, Ord, Read, Show)
-
-_Binding = (Name "hydra.core.Binding")
-
-_Binding_name = (Name "name")
-
-_Binding_term = (Name "term")
-
-_Binding_type = (Name "type")
+_Let_body = (Name "body")
 
 -- | A term constant; an instance of a literal type
 data Literal = 
   -- | A binary literal
-  LiteralBinary String |
+  LiteralBinary B.ByteString |
   -- | A boolean literal
   LiteralBoolean Bool |
   -- | A floating-point literal
@@ -398,7 +459,9 @@ _LiteralType_string = (Name "string")
 -- | A map type
 data MapType = 
   MapType {
+    -- | The type of keys in the map
     mapTypeKeys :: Type,
+    -- | The type of values in the map
     mapTypeValues :: Type}
   deriving (Eq, Ord, Read, Show)
 
@@ -434,7 +497,9 @@ _Projection_field = (Name "field")
 -- | A record, or labeled tuple; a map of field names to terms
 data Record = 
   Record {
+    -- | The name of the record type
     recordTypeName :: Name,
+    -- | The fields of the record, as a list of name/term pairs
     recordFields :: [Field]}
   deriving (Eq, Ord, Read, Show)
 
@@ -459,28 +524,14 @@ _RowType_typeName = (Name "typeName")
 
 _RowType_fields = (Name "fields")
 
--- | The unlabeled equivalent of an Injection term
-data Sum = 
-  Sum {
-    sumIndex :: Int,
-    sumSize :: Int,
-    sumTerm :: Term}
-  deriving (Eq, Ord, Read, Show)
-
-_Sum = (Name "hydra.core.Sum")
-
-_Sum_index = (Name "index")
-
-_Sum_size = (Name "size")
-
-_Sum_term = (Name "term")
-
 -- | A data term
 data Term = 
   -- | A term annotated with metadata
   TermAnnotated AnnotatedTerm |
   -- | A function application
   TermApplication Application |
+  -- | An either value
+  TermEither (Either Term Term) |
   -- | A function term
   TermFunction Function |
   -- | A 'let' term, which binds variables to terms
@@ -492,17 +543,15 @@ data Term =
   -- | A map of keys to values
   TermMap (M.Map Term Term) |
   -- | An optional value
-  TermOptional (Maybe Term) |
-  -- | A tuple
-  TermProduct [Term] |
+  TermMaybe (Maybe Term) |
+  -- | A pair (2-tuple)
+  TermPair (Term, Term) |
   -- | A record term
   TermRecord Record |
   -- | A set of values
   TermSet (S.Set Term) |
-  -- | A variant tuple
-  TermSum Sum |
   -- | A System F type application term
-  TermTypeApplication TypedTerm |
+  TermTypeApplication TypeApplicationTerm |
   -- | A System F type abstraction term
   TermTypeLambda TypeLambda |
   -- | An injection; an instance of a union type
@@ -521,6 +570,8 @@ _Term_annotated = (Name "annotated")
 
 _Term_application = (Name "application")
 
+_Term_either = (Name "either")
+
 _Term_function = (Name "function")
 
 _Term_let = (Name "let")
@@ -531,15 +582,13 @@ _Term_literal = (Name "literal")
 
 _Term_map = (Name "map")
 
-_Term_optional = (Name "optional")
+_Term_maybe = (Name "maybe")
 
-_Term_product = (Name "product")
+_Term_pair = (Name "pair")
 
 _Term_record = (Name "record")
 
 _Term_set = (Name "set")
-
-_Term_sum = (Name "sum")
 
 _Term_typeApplication = (Name "typeApplication")
 
@@ -553,42 +602,39 @@ _Term_variable = (Name "variable")
 
 _Term_wrap = (Name "wrap")
 
--- | A tuple elimination; a projection from an integer-indexed product
-data TupleProjection = 
-  TupleProjection {
-    -- | The arity of the tuple
-    tupleProjectionArity :: Int,
-    -- | The 0-indexed offset from the beginning of the tuple
-    tupleProjectionIndex :: Int,
-    -- | An optional domain for the projection; this is a list of component types
-    tupleProjectionDomain :: (Maybe [Type])}
-  deriving (Eq, Ord, Read, Show)
-
-_TupleProjection = (Name "hydra.core.TupleProjection")
-
-_TupleProjection_arity = (Name "arity")
-
-_TupleProjection_index = (Name "index")
-
-_TupleProjection_domain = (Name "domain")
-
 -- | A data type
 data Type = 
+  -- | An annotated type
   TypeAnnotated AnnotatedType |
+  -- | A type application
   TypeApplication ApplicationType |
+  -- | An either (sum) type
+  TypeEither EitherType |
+  -- | A universally quantified (polymorphic) type
   TypeForall ForallType |
+  -- | A function type
   TypeFunction FunctionType |
+  -- | A list type
   TypeList Type |
+  -- | A literal type
   TypeLiteral LiteralType |
+  -- | A map type
   TypeMap MapType |
-  TypeOptional Type |
-  TypeProduct [Type] |
+  -- | An optional type
+  TypeMaybe Type |
+  -- | A pair (2-tuple) type
+  TypePair PairType |
+  -- | A record type
   TypeRecord RowType |
+  -- | A set type
   TypeSet Type |
-  TypeSum [Type] |
+  -- | A union type with field names
   TypeUnion RowType |
+  -- | The unit type
   TypeUnit  |
+  -- | A type variable
   TypeVariable Name |
+  -- | A wrapped type (newtype)
   TypeWrap WrappedType
   deriving (Eq, Ord, Read, Show)
 
@@ -597,6 +643,8 @@ _Type = (Name "hydra.core.Type")
 _Type_annotated = (Name "annotated")
 
 _Type_application = (Name "application")
+
+_Type_either = (Name "either")
 
 _Type_forall = (Name "forall")
 
@@ -608,15 +656,13 @@ _Type_literal = (Name "literal")
 
 _Type_map = (Name "map")
 
-_Type_optional = (Name "optional")
+_Type_maybe = (Name "maybe")
 
-_Type_product = (Name "product")
+_Type_pair = (Name "pair")
 
 _Type_record = (Name "record")
 
 _Type_set = (Name "set")
-
-_Type_sum = (Name "sum")
 
 _Type_union = (Name "union")
 
@@ -625,6 +671,21 @@ _Type_unit = (Name "unit")
 _Type_variable = (Name "variable")
 
 _Type_wrap = (Name "wrap")
+
+-- | A term applied to a type; a type application
+data TypeApplicationTerm = 
+  TypeApplicationTerm {
+    -- | The term being applied to a type
+    typeApplicationTermBody :: Term,
+    -- | The type argument
+    typeApplicationTermType :: Type}
+  deriving (Eq, Ord, Read, Show)
+
+_TypeApplicationTerm = (Name "hydra.core.TypeApplicationTerm")
+
+_TypeApplicationTerm_body = (Name "body")
+
+_TypeApplicationTerm_type = (Name "type")
 
 -- | A System F type abstraction term
 data TypeLambda = 
@@ -641,24 +702,15 @@ _TypeLambda_parameter = (Name "parameter")
 
 _TypeLambda_body = (Name "body")
 
--- | A term applied to a type; a type application
-data TypedTerm = 
-  TypedTerm {
-    typedTermTerm :: Term,
-    typedTermType :: Type}
-  deriving (Eq, Ord, Read, Show)
-
-_TypedTerm = (Name "hydra.core.TypedTerm")
-
-_TypedTerm_term = (Name "term")
-
-_TypedTerm_type = (Name "type")
-
 -- | A type expression together with free type variables occurring in the expression
 data TypeScheme = 
   TypeScheme {
+    -- | The free type variables
     typeSchemeVariables :: [Name],
-    typeSchemeType :: Type}
+    -- | The type expression
+    typeSchemeType :: Type,
+    -- | Optional metadata for type variables, including typeclass constraints. The map keys are type variable names.
+    typeSchemeConstraints :: (Maybe (M.Map Name TypeVariableMetadata))}
   deriving (Eq, Ord, Read, Show)
 
 _TypeScheme = (Name "hydra.core.TypeScheme")
@@ -667,28 +719,45 @@ _TypeScheme_variables = (Name "variables")
 
 _TypeScheme_type = (Name "type")
 
+_TypeScheme_constraints = (Name "constraints")
+
+-- | Metadata associated with a type variable, including typeclass constraints
+data TypeVariableMetadata = 
+  TypeVariableMetadata {
+    -- | The set of typeclass constraints on this type variable
+    typeVariableMetadataClasses :: (S.Set Name)}
+  deriving (Eq, Ord, Read, Show)
+
+_TypeVariableMetadata = (Name "hydra.core.TypeVariableMetadata")
+
+_TypeVariableMetadata_classes = (Name "classes")
+
 -- | A term wrapped in a type name
 data WrappedTerm = 
   WrappedTerm {
+    -- | The name of the wrapper type
     wrappedTermTypeName :: Name,
-    wrappedTermObject :: Term}
+    -- | The wrapped term
+    wrappedTermBody :: Term}
   deriving (Eq, Ord, Read, Show)
 
 _WrappedTerm = (Name "hydra.core.WrappedTerm")
 
 _WrappedTerm_typeName = (Name "typeName")
 
-_WrappedTerm_object = (Name "object")
+_WrappedTerm_body = (Name "body")
 
 -- | A type wrapped in a type name; a newtype
 data WrappedType = 
   WrappedType {
+    -- | The name of the wrapper (newtype)
     wrappedTypeTypeName :: Name,
-    wrappedTypeObject :: Type}
+    -- | The wrapped type
+    wrappedTypeBody :: Type}
   deriving (Eq, Ord, Read, Show)
 
 _WrappedType = (Name "hydra.core.WrappedType")
 
 _WrappedType_typeName = (Name "typeName")
 
-_WrappedType_object = (Name "object")
+_WrappedType_body = (Name "body")

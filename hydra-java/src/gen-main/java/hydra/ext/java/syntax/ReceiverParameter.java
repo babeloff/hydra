@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class ReceiverParameter implements Serializable {
+public class ReceiverParameter implements Serializable, Comparable<ReceiverParameter> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ReceiverParameter");
   
   public static final hydra.core.Name FIELD_NAME_ANNOTATIONS = new hydra.core.Name("annotations");
@@ -17,12 +17,9 @@ public class ReceiverParameter implements Serializable {
   
   public final hydra.ext.java.syntax.UnannType unannType;
   
-  public final hydra.util.Opt<hydra.ext.java.syntax.Identifier> identifier;
+  public final hydra.util.Maybe<hydra.ext.java.syntax.Identifier> identifier;
   
-  public ReceiverParameter (java.util.List<hydra.ext.java.syntax.Annotation> annotations, hydra.ext.java.syntax.UnannType unannType, hydra.util.Opt<hydra.ext.java.syntax.Identifier> identifier) {
-    java.util.Objects.requireNonNull((annotations));
-    java.util.Objects.requireNonNull((unannType));
-    java.util.Objects.requireNonNull((identifier));
+  public ReceiverParameter (java.util.List<hydra.ext.java.syntax.Annotation> annotations, hydra.ext.java.syntax.UnannType unannType, hydra.util.Maybe<hydra.ext.java.syntax.Identifier> identifier) {
     this.annotations = annotations;
     this.unannType = unannType;
     this.identifier = identifier;
@@ -33,27 +30,49 @@ public class ReceiverParameter implements Serializable {
     if (!(other instanceof ReceiverParameter)) {
       return false;
     }
-    ReceiverParameter o = (ReceiverParameter) (other);
-    return annotations.equals(o.annotations) && unannType.equals(o.unannType) && identifier.equals(o.identifier);
+    ReceiverParameter o = (ReceiverParameter) other;
+    return java.util.Objects.equals(
+      this.annotations,
+      o.annotations) && java.util.Objects.equals(
+      this.unannType,
+      o.unannType) && java.util.Objects.equals(
+      this.identifier,
+      o.identifier);
   }
   
   @Override
   public int hashCode() {
-    return 2 * annotations.hashCode() + 3 * unannType.hashCode() + 5 * identifier.hashCode();
+    return 2 * java.util.Objects.hashCode(annotations) + 3 * java.util.Objects.hashCode(unannType) + 5 * java.util.Objects.hashCode(identifier);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(ReceiverParameter other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      annotations.hashCode(),
+      other.annotations.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) unannType).compareTo(other.unannType);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      identifier.hashCode(),
+      other.identifier.hashCode());
   }
   
   public ReceiverParameter withAnnotations(java.util.List<hydra.ext.java.syntax.Annotation> annotations) {
-    java.util.Objects.requireNonNull((annotations));
     return new ReceiverParameter(annotations, unannType, identifier);
   }
   
   public ReceiverParameter withUnannType(hydra.ext.java.syntax.UnannType unannType) {
-    java.util.Objects.requireNonNull((unannType));
     return new ReceiverParameter(annotations, unannType, identifier);
   }
   
-  public ReceiverParameter withIdentifier(hydra.util.Opt<hydra.ext.java.syntax.Identifier> identifier) {
-    java.util.Objects.requireNonNull((identifier));
+  public ReceiverParameter withIdentifier(hydra.util.Maybe<hydra.ext.java.syntax.Identifier> identifier) {
     return new ReceiverParameter(annotations, unannType, identifier);
   }
 }

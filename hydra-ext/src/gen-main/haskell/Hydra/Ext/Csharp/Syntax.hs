@@ -1,10 +1,13 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A C# syntax module based on the ANTLR grammar dated 02/07/2024 and available at:
 -- |   https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/language-specification/grammar
 
 module Hydra.Ext.Csharp.Syntax where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M

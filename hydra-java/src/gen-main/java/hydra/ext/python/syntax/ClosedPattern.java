@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class ClosedPattern implements Serializable {
+public abstract class ClosedPattern implements Serializable, Comparable<ClosedPattern> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.ClosedPattern");
   
   public static final hydra.core.Name FIELD_NAME_LITERAL = new hydra.core.Name("literal");
@@ -49,39 +49,39 @@ public abstract class ClosedPattern implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(ClosedPattern instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Literal instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Capture instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Wildcard instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Value instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Group instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Sequence instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Mapping instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Class_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -89,7 +89,6 @@ public abstract class ClosedPattern implements Serializable {
     public final hydra.ext.python.syntax.LiteralExpression value;
     
     public Literal (hydra.ext.python.syntax.LiteralExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -98,13 +97,26 @@ public abstract class ClosedPattern implements Serializable {
       if (!(other instanceof Literal)) {
         return false;
       }
-      Literal o = (Literal) (other);
-      return value.equals(o.value);
+      Literal o = (Literal) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ClosedPattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Literal o = (Literal) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -117,7 +129,6 @@ public abstract class ClosedPattern implements Serializable {
     public final hydra.ext.python.syntax.CapturePattern value;
     
     public Capture (hydra.ext.python.syntax.CapturePattern value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -126,13 +137,26 @@ public abstract class ClosedPattern implements Serializable {
       if (!(other instanceof Capture)) {
         return false;
       }
-      Capture o = (Capture) (other);
-      return value.equals(o.value);
+      Capture o = (Capture) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ClosedPattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Capture o = (Capture) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -151,12 +175,22 @@ public abstract class ClosedPattern implements Serializable {
       if (!(other instanceof Wildcard)) {
         return false;
       }
-      Wildcard o = (Wildcard) (other);
+      Wildcard o = (Wildcard) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ClosedPattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -170,7 +204,6 @@ public abstract class ClosedPattern implements Serializable {
     public final hydra.ext.python.syntax.ValuePattern value;
     
     public Value (hydra.ext.python.syntax.ValuePattern value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -179,13 +212,26 @@ public abstract class ClosedPattern implements Serializable {
       if (!(other instanceof Value)) {
         return false;
       }
-      Value o = (Value) (other);
-      return value.equals(o.value);
+      Value o = (Value) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ClosedPattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Value o = (Value) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -198,7 +244,6 @@ public abstract class ClosedPattern implements Serializable {
     public final hydra.ext.python.syntax.GroupPattern value;
     
     public Group (hydra.ext.python.syntax.GroupPattern value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -207,13 +252,26 @@ public abstract class ClosedPattern implements Serializable {
       if (!(other instanceof Group)) {
         return false;
       }
-      Group o = (Group) (other);
-      return value.equals(o.value);
+      Group o = (Group) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ClosedPattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Group o = (Group) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -226,7 +284,6 @@ public abstract class ClosedPattern implements Serializable {
     public final hydra.ext.python.syntax.SequencePattern value;
     
     public Sequence (hydra.ext.python.syntax.SequencePattern value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -235,13 +292,26 @@ public abstract class ClosedPattern implements Serializable {
       if (!(other instanceof Sequence)) {
         return false;
       }
-      Sequence o = (Sequence) (other);
-      return value.equals(o.value);
+      Sequence o = (Sequence) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ClosedPattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Sequence o = (Sequence) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -254,7 +324,6 @@ public abstract class ClosedPattern implements Serializable {
     public final hydra.ext.python.syntax.MappingPattern value;
     
     public Mapping (hydra.ext.python.syntax.MappingPattern value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -263,13 +332,26 @@ public abstract class ClosedPattern implements Serializable {
       if (!(other instanceof Mapping)) {
         return false;
       }
-      Mapping o = (Mapping) (other);
-      return value.equals(o.value);
+      Mapping o = (Mapping) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ClosedPattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Mapping o = (Mapping) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -282,7 +364,6 @@ public abstract class ClosedPattern implements Serializable {
     public final hydra.ext.python.syntax.ClassPattern value;
     
     public Class_ (hydra.ext.python.syntax.ClassPattern value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -291,13 +372,26 @@ public abstract class ClosedPattern implements Serializable {
       if (!(other instanceof Class_)) {
         return false;
       }
-      Class_ o = (Class_) (other);
-      return value.equals(o.value);
+      Class_ o = (Class_) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ClosedPattern other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Class_ o = (Class_) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

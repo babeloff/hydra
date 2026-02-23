@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class FieldModifier implements Serializable {
+public abstract class FieldModifier implements Serializable, Comparable<FieldModifier> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.FieldModifier");
   
   public static final hydra.core.Name FIELD_NAME_ANNOTATION = new hydra.core.Name("annotation");
@@ -49,39 +49,39 @@ public abstract class FieldModifier implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(FieldModifier instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Annotation instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Public instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Protected instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Private instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Static instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Final instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Transient instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Volatile instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -89,7 +89,6 @@ public abstract class FieldModifier implements Serializable {
     public final hydra.ext.java.syntax.Annotation value;
     
     public Annotation (hydra.ext.java.syntax.Annotation value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -98,13 +97,26 @@ public abstract class FieldModifier implements Serializable {
       if (!(other instanceof Annotation)) {
         return false;
       }
-      Annotation o = (Annotation) (other);
-      return value.equals(o.value);
+      Annotation o = (Annotation) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FieldModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Annotation o = (Annotation) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -123,12 +135,22 @@ public abstract class FieldModifier implements Serializable {
       if (!(other instanceof Public)) {
         return false;
       }
-      Public o = (Public) (other);
+      Public o = (Public) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FieldModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -148,12 +170,22 @@ public abstract class FieldModifier implements Serializable {
       if (!(other instanceof Protected)) {
         return false;
       }
-      Protected o = (Protected) (other);
+      Protected o = (Protected) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FieldModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -173,12 +205,22 @@ public abstract class FieldModifier implements Serializable {
       if (!(other instanceof Private)) {
         return false;
       }
-      Private o = (Private) (other);
+      Private o = (Private) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FieldModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -198,12 +240,22 @@ public abstract class FieldModifier implements Serializable {
       if (!(other instanceof Static)) {
         return false;
       }
-      Static o = (Static) (other);
+      Static o = (Static) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FieldModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -223,12 +275,22 @@ public abstract class FieldModifier implements Serializable {
       if (!(other instanceof Final)) {
         return false;
       }
-      Final o = (Final) (other);
+      Final o = (Final) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FieldModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -248,12 +310,22 @@ public abstract class FieldModifier implements Serializable {
       if (!(other instanceof Transient)) {
         return false;
       }
-      Transient o = (Transient) (other);
+      Transient o = (Transient) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FieldModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -273,12 +345,22 @@ public abstract class FieldModifier implements Serializable {
       if (!(other instanceof Volatile)) {
         return false;
       }
-      Volatile o = (Volatile) (other);
+      Volatile o = (Volatile) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FieldModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

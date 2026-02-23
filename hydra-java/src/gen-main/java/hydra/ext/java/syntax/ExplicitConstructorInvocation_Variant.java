@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class ExplicitConstructorInvocation_Variant implements Serializable {
+public abstract class ExplicitConstructorInvocation_Variant implements Serializable, Comparable<ExplicitConstructorInvocation_Variant> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ExplicitConstructorInvocation_Variant");
   
   public static final hydra.core.Name FIELD_NAME_THIS = new hydra.core.Name("this");
@@ -29,19 +29,19 @@ public abstract class ExplicitConstructorInvocation_Variant implements Serializa
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(ExplicitConstructorInvocation_Variant instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(This instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Super instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Primary instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -55,12 +55,22 @@ public abstract class ExplicitConstructorInvocation_Variant implements Serializa
       if (!(other instanceof This)) {
         return false;
       }
-      This o = (This) (other);
+      This o = (This) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ExplicitConstructorInvocation_Variant other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -71,10 +81,9 @@ public abstract class ExplicitConstructorInvocation_Variant implements Serializa
   }
   
   public static final class Super extends hydra.ext.java.syntax.ExplicitConstructorInvocation_Variant implements Serializable {
-    public final hydra.util.Opt<hydra.ext.java.syntax.ExpressionName> value;
+    public final hydra.util.Maybe<hydra.ext.java.syntax.ExpressionName> value;
     
-    public Super (hydra.util.Opt<hydra.ext.java.syntax.ExpressionName> value) {
-      java.util.Objects.requireNonNull((value));
+    public Super (hydra.util.Maybe<hydra.ext.java.syntax.ExpressionName> value) {
       this.value = value;
     }
     
@@ -83,13 +92,28 @@ public abstract class ExplicitConstructorInvocation_Variant implements Serializa
       if (!(other instanceof Super)) {
         return false;
       }
-      Super o = (Super) (other);
-      return value.equals(o.value);
+      Super o = (Super) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ExplicitConstructorInvocation_Variant other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Super o = (Super) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override
@@ -102,7 +126,6 @@ public abstract class ExplicitConstructorInvocation_Variant implements Serializa
     public final hydra.ext.java.syntax.Primary value;
     
     public Primary (hydra.ext.java.syntax.Primary value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -111,13 +134,26 @@ public abstract class ExplicitConstructorInvocation_Variant implements Serializa
       if (!(other instanceof Primary)) {
         return false;
       }
-      Primary o = (Primary) (other);
-      return value.equals(o.value);
+      Primary o = (Primary) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ExplicitConstructorInvocation_Variant other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Primary o = (Primary) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

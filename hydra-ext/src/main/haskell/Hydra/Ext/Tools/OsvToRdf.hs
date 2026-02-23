@@ -7,17 +7,18 @@ module Hydra.Ext.Tools.OsvToRdf (
 
 import Hydra.Kernel
 import Hydra.Tools.Monads
-import Hydra.Staging.Json.Serde
+import Hydra.Parsing (ParseResult(..), ParseSuccess(..), ParseError(..))
+import qualified Hydra.Json.Parser as JsonParser
 import Hydra.Ext.Org.Json.Coder
 import Hydra.Generation
 import Hydra.Formatting
-import qualified Hydra.Json as Json
+import qualified Hydra.Json.Model as Json
 import qualified Hydra.Ext.Staging.Shacl.Coder as Shacl
 import Hydra.Ext.Staging.Rdf.Serde
 import Hydra.Workflow
 import qualified Hydra.Ext.Staging.Rdf.Utils as RdfUt
 
-import Hydra.Ext.Sources.Other.Osv
+import qualified Hydra.Ext.Sources.Other.Osv as OsvSource
 import qualified Hydra.Ext.Dev.Osv.Schema as Osv
 
 import System.IO
@@ -29,6 +30,12 @@ import qualified Data.Set as S
 import System.FilePath.Posix
 import System.Directory
 
+
+-- | Parse a JSON string, returning Either for compatibility
+parseJsonEither :: String -> Either String Json.Value
+parseJsonEither s = case JsonParser.parseJson s of
+  ParseResultSuccess success -> Right (parseSuccessValue success)
+  ParseResultFailure err -> Left (parseErrorMessage err)
 
 emptyInstanceContext :: Graph -> Graph
 emptyInstanceContext scx = elementsToGraph scx (Just scx) []
@@ -72,14 +79,14 @@ osvJsonDirectoryToNtriples srcDir destDir = do
           osvJsonToNtriples coder (combine srcDir srcFile) (combine destDir destFile)
           return True
 
-osvContext = modulesToGraph [osvSchemaModule]
+osvContext = modulesToGraph [OsvSource.module_] [OsvSource.module_]
 
 osvInstanceContext = emptyInstanceContext osvContext
 
 osvJsonToNtriples :: Coder (Graph) (Graph) (Term) Json.Value -> FilePath -> FilePath -> IO ()
 osvJsonToNtriples coder inFile outFile = do
     contents <- readFile inFile
-    case stringToJsonValue contents of
+    case parseJsonEither contents of
       Left msg -> fail $ "Failed to read JSON value in file " ++ inFile ++ ": " ++ msg
       Right v -> do
         let v' = rewriteJsonFieldCase v

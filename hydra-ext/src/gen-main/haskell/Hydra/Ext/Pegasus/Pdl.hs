@@ -1,11 +1,14 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A model for PDL (Pegasus Data Language) schemas. Based on the specification at:
 -- |   https://linkedin.github.io/rest.li/pdl_schema
 
 module Hydra.Ext.Pegasus.Pdl where
 
 import qualified Hydra.Core as Core
-import qualified Hydra.Json as Json
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import qualified Hydra.Json.Model as Model
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -145,7 +148,7 @@ _PropertyKey = (Core.Name "hydra.ext.pegasus.pdl.PropertyKey")
 data Property = 
   Property {
     propertyKey :: PropertyKey,
-    propertyValue :: (Maybe Json.Value)}
+    propertyValue :: (Maybe Model.Value)}
   deriving (Eq, Ord, Read, Show)
 
 _Property = (Core.Name "hydra.ext.pegasus.pdl.Property")
@@ -166,12 +169,13 @@ _QualifiedName_name = (Core.Name "name")
 
 _QualifiedName_namespace = (Core.Name "namespace")
 
+-- | Note: the default value for an enum-valued must be one of the enumerated string symbols
 data RecordField = 
   RecordField {
     recordFieldName :: FieldName,
     recordFieldValue :: Schema,
     recordFieldOptional :: Bool,
-    recordFieldDefault :: (Maybe Json.Value),
+    recordFieldDefault :: (Maybe Model.Value),
     recordFieldAnnotations :: Annotations}
   deriving (Eq, Ord, Read, Show)
 
@@ -187,6 +191,7 @@ _RecordField_default = (Core.Name "default")
 
 _RecordField_annotations = (Core.Name "annotations")
 
+-- | Note: all included schemas must be record schemas
 data RecordSchema = 
   RecordSchema {
     recordSchemaFields :: [RecordField],
@@ -246,6 +251,7 @@ _SchemaFile_imports = (Core.Name "imports")
 
 _SchemaFile_schemas = (Core.Name "schemas")
 
+-- | Note: annotations are only available for aliased members
 data UnionMember = 
   UnionMember {
     unionMemberAlias :: (Maybe FieldName),
@@ -261,6 +267,7 @@ _UnionMember_value = (Core.Name "value")
 
 _UnionMember_annotations = (Core.Name "annotations")
 
+-- | Note: unions are not allowed as member types of other unions
 newtype UnionSchema = 
   UnionSchema {
     unUnionSchema :: [UnionMember]}

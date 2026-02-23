@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class ConstantExpression implements Serializable {
+public class ConstantExpression implements Serializable, Comparable<ConstantExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ConstantExpression");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class ConstantExpression implements Serializable {
   public final hydra.ext.java.syntax.Expression value;
   
   public ConstantExpression (hydra.ext.java.syntax.Expression value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,20 @@ public class ConstantExpression implements Serializable {
     if (!(other instanceof ConstantExpression)) {
       return false;
     }
-    ConstantExpression o = (ConstantExpression) (other);
-    return value.equals(o.value);
+    ConstantExpression o = (ConstantExpression) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(ConstantExpression other) {
+    return ((Comparable) value).compareTo(other.value);
   }
 }

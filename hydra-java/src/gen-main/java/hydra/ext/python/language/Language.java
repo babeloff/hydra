@@ -7,52 +7,73 @@ package hydra.ext.python.language;
  */
 public interface Language {
   static hydra.coders.Language pythonLanguage() {
-    return new hydra.coders.Language(new hydra.coders.LanguageName("hydra.ext.python"), new hydra.coders.LanguageConstraints(hydra.lib.sets.FromList.apply(java.util.Arrays.asList(
-      new hydra.mantle.EliminationVariant.List(),
-      new hydra.mantle.EliminationVariant.Optional(),
-      new hydra.mantle.EliminationVariant.Product(),
-      new hydra.mantle.EliminationVariant.Record(),
-      new hydra.mantle.EliminationVariant.Union(),
-      new hydra.mantle.EliminationVariant.Wrap())), hydra.lib.sets.FromList.apply(java.util.Arrays.asList(
-      new hydra.mantle.LiteralVariant.Binary(),
-      new hydra.mantle.LiteralVariant.Boolean_(),
-      new hydra.mantle.LiteralVariant.Float_(),
-      new hydra.mantle.LiteralVariant.Integer_(),
-      new hydra.mantle.LiteralVariant.String_())), hydra.lib.sets.FromList.apply(java.util.Arrays.asList(new hydra.core.FloatType.Float64())), hydra.lib.sets.FromList.apply(java.util.Arrays.asList(
-      new hydra.mantle.FunctionVariant.Elimination(),
-      new hydra.mantle.FunctionVariant.Lambda(),
-      new hydra.mantle.FunctionVariant.Primitive())), hydra.lib.sets.FromList.apply(java.util.Arrays.asList(new hydra.core.IntegerType.Bigint())), hydra.lib.sets.FromList.apply(java.util.Arrays.asList(
-      new hydra.mantle.TermVariant.Application(),
-      new hydra.mantle.TermVariant.Function(),
-      new hydra.mantle.TermVariant.Let(),
-      new hydra.mantle.TermVariant.List(),
-      new hydra.mantle.TermVariant.Literal(),
-      new hydra.mantle.TermVariant.Map(),
-      new hydra.mantle.TermVariant.Optional(),
-      new hydra.mantle.TermVariant.Product(),
-      new hydra.mantle.TermVariant.Record(),
-      new hydra.mantle.TermVariant.Set(),
-      new hydra.mantle.TermVariant.Union(),
-      new hydra.mantle.TermVariant.Variable(),
-      new hydra.mantle.TermVariant.Wrap())), hydra.lib.sets.FromList.apply(java.util.Arrays.asList(
-      new hydra.mantle.TypeVariant.Annotated(),
-      new hydra.mantle.TypeVariant.Application(),
-      new hydra.mantle.TypeVariant.Function(),
-      new hydra.mantle.TypeVariant.Lambda(),
-      new hydra.mantle.TypeVariant.List(),
-      new hydra.mantle.TypeVariant.Literal(),
-      new hydra.mantle.TypeVariant.Map(),
-      new hydra.mantle.TypeVariant.Optional(),
-      new hydra.mantle.TypeVariant.Product(),
-      new hydra.mantle.TypeVariant.Record(),
-      new hydra.mantle.TypeVariant.Set(),
-      new hydra.mantle.TypeVariant.Union(),
-      new hydra.mantle.TypeVariant.Variable(),
-      new hydra.mantle.TypeVariant.Wrap())), (java.util.function.Function<hydra.core.Type, Boolean>) (ignored -> true)));
+    hydra.util.Lazy<java.util.Set<hydra.variants.EliminationVariant>> eliminationVariants = new hydra.util.Lazy<>(() -> hydra.lib.sets.FromList.apply(java.util.List.of(
+      new hydra.variants.EliminationVariant.Record(),
+      new hydra.variants.EliminationVariant.Union(),
+      new hydra.variants.EliminationVariant.Wrap())));
+    hydra.util.Lazy<java.util.Set<hydra.core.FloatType>> floatTypes = new hydra.util.Lazy<>(() -> hydra.lib.sets.FromList.apply(java.util.List.of(
+      new hydra.core.FloatType.Bigfloat(),
+      new hydra.core.FloatType.Float64())));
+    hydra.util.Lazy<java.util.Set<hydra.variants.FunctionVariant>> functionVariants = new hydra.util.Lazy<>(() -> hydra.lib.sets.FromList.apply(java.util.List.of(
+      new hydra.variants.FunctionVariant.Elimination(),
+      new hydra.variants.FunctionVariant.Lambda(),
+      new hydra.variants.FunctionVariant.Primitive())));
+    hydra.util.Lazy<java.util.Set<hydra.core.IntegerType>> integerTypes = new hydra.util.Lazy<>(() -> hydra.lib.sets.FromList.apply(java.util.List.of(new hydra.core.IntegerType.Bigint())));
+    hydra.util.Lazy<java.util.Set<hydra.variants.LiteralVariant>> literalVariants = new hydra.util.Lazy<>(() -> hydra.lib.sets.FromList.apply(java.util.List.of(
+      new hydra.variants.LiteralVariant.Binary(),
+      new hydra.variants.LiteralVariant.Boolean_(),
+      new hydra.variants.LiteralVariant.Float_(),
+      new hydra.variants.LiteralVariant.Integer_(),
+      new hydra.variants.LiteralVariant.String_())));
+    hydra.util.Lazy<java.util.Set<hydra.variants.TermVariant>> termVariants = new hydra.util.Lazy<>(() -> hydra.lib.sets.FromList.apply(java.util.List.of(
+      new hydra.variants.TermVariant.Annotated(),
+      new hydra.variants.TermVariant.Application(),
+      new hydra.variants.TermVariant.Either(),
+      new hydra.variants.TermVariant.Function(),
+      new hydra.variants.TermVariant.Let(),
+      new hydra.variants.TermVariant.List(),
+      new hydra.variants.TermVariant.Literal(),
+      new hydra.variants.TermVariant.Map(),
+      new hydra.variants.TermVariant.Maybe(),
+      new hydra.variants.TermVariant.Pair(),
+      new hydra.variants.TermVariant.Record(),
+      new hydra.variants.TermVariant.Set(),
+      new hydra.variants.TermVariant.TypeApplication(),
+      new hydra.variants.TermVariant.TypeLambda(),
+      new hydra.variants.TermVariant.Union(),
+      new hydra.variants.TermVariant.Unit(),
+      new hydra.variants.TermVariant.Variable(),
+      new hydra.variants.TermVariant.Wrap())));
+    hydra.util.Lazy<java.util.Set<hydra.variants.TypeVariant>> typeVariants = new hydra.util.Lazy<>(() -> hydra.lib.sets.FromList.apply(java.util.List.of(
+      new hydra.variants.TypeVariant.Annotated(),
+      new hydra.variants.TypeVariant.Application(),
+      new hydra.variants.TypeVariant.Either(),
+      new hydra.variants.TypeVariant.Function(),
+      new hydra.variants.TypeVariant.Forall(),
+      new hydra.variants.TypeVariant.List(),
+      new hydra.variants.TypeVariant.Literal(),
+      new hydra.variants.TypeVariant.Map(),
+      new hydra.variants.TypeVariant.Maybe(),
+      new hydra.variants.TypeVariant.Pair(),
+      new hydra.variants.TypeVariant.Record(),
+      new hydra.variants.TypeVariant.Set(),
+      new hydra.variants.TypeVariant.Union(),
+      new hydra.variants.TypeVariant.Unit(),
+      new hydra.variants.TypeVariant.Variable(),
+      new hydra.variants.TypeVariant.Wrap())));
+    return new hydra.coders.Language(new hydra.coders.LanguageName("hydra.ext.python"), new hydra.coders.LanguageConstraints(eliminationVariants.get(), literalVariants.get(), floatTypes.get(), functionVariants.get(), integerTypes.get(), termVariants.get(), typeVariants.get(), p0 -> hydra.ext.python.language.Language.<hydra.core.Type>pythonLanguage_typePredicate(p0)));
+  }
+  
+  static <T0> Boolean pythonLanguage_typePredicate(T0 ignored) {
+    return true;
   }
   
   static java.util.Set<String> pythonReservedWords() {
-    java.util.List<String> keywords = java.util.Arrays.asList(
+    java.util.List<String> hydraPythonKeywords = java.util.List.of(
+      "Node",
+      "FrozenDict");
+    java.util.List<String> pythonBuiltInFunctions = java.util.List.of("range");
+    java.util.List<String> pythonKeywords = java.util.List.of(
       "False",
       "None",
       "True",
@@ -88,6 +109,9 @@ public interface Language {
       "while",
       "with",
       "yield");
-    return hydra.lib.sets.FromList.apply((keywords));
+    return hydra.lib.sets.FromList.apply(hydra.lib.lists.Concat.apply(java.util.List.of(
+      pythonKeywords,
+      pythonBuiltInFunctions,
+      hydraPythonKeywords)));
   }
 }

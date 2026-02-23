@@ -7,6 +7,7 @@ import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Expect;
 import hydra.dsl.Terms;
+import hydra.dsl.Types;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -18,6 +19,9 @@ import static hydra.dsl.Types.function;
 import static hydra.dsl.Types.list;
 import static hydra.dsl.Types.scheme;
 
+/**
+ * Inserts an element between list elements.
+ */
 public class Intersperse extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.lists.intersperse");
@@ -25,7 +29,7 @@ public class Intersperse extends PrimitiveFunction {
 
     @Override
     public TypeScheme type() {
-        return scheme("a", function("a", list("a"), list("a")));
+        return scheme("a", function(Types.var("a"), list("a"), list("a")));
     }
 
     @Override
@@ -35,12 +39,22 @@ public class Intersperse extends PrimitiveFunction {
             list -> Terms.list(apply(args.get(0), list)));
     }
 
+    /**
+     * Inserts an element between elements.
+     * @param <X> the element type
+     * @param delim the separator element to insert
+     * @return a function that intersperses the separator into a list
+     */
     public static <X> Function<List<X>, List<X>> apply(X delim) {
         return (list) -> apply(delim, list);
     }
 
     /**
      * Apply the function to both arguments.
+     * @param <X> the element type
+     * @param delim the separator element to insert
+     * @param list the list to intersperse
+     * @return the list with the separator inserted between elements
      */
     public static <X> List<X> apply(X delim, List<X> list) {
         List<X> result = new ArrayList<>();

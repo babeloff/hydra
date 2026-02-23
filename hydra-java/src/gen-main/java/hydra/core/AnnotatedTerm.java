@@ -7,21 +7,25 @@ import java.io.Serializable;
 /**
  * A term together with an annotation
  */
-public class AnnotatedTerm implements Serializable {
+public class AnnotatedTerm implements Serializable, Comparable<AnnotatedTerm> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.core.AnnotatedTerm");
   
-  public static final hydra.core.Name FIELD_NAME_SUBJECT = new hydra.core.Name("subject");
+  public static final hydra.core.Name FIELD_NAME_BODY = new hydra.core.Name("body");
   
   public static final hydra.core.Name FIELD_NAME_ANNOTATION = new hydra.core.Name("annotation");
   
-  public final hydra.core.Term subject;
+  /**
+   * The term being annotated
+   */
+  public final hydra.core.Term body;
   
+  /**
+   * The annotation as a map from keys to values
+   */
   public final java.util.Map<hydra.core.Name, hydra.core.Term> annotation;
   
-  public AnnotatedTerm (hydra.core.Term subject, java.util.Map<hydra.core.Name, hydra.core.Term> annotation) {
-    java.util.Objects.requireNonNull((subject));
-    java.util.Objects.requireNonNull((annotation));
-    this.subject = subject;
+  public AnnotatedTerm (hydra.core.Term body, java.util.Map<hydra.core.Name, hydra.core.Term> annotation) {
+    this.body = body;
     this.annotation = annotation;
   }
   
@@ -30,22 +34,37 @@ public class AnnotatedTerm implements Serializable {
     if (!(other instanceof AnnotatedTerm)) {
       return false;
     }
-    AnnotatedTerm o = (AnnotatedTerm) (other);
-    return subject.equals(o.subject) && annotation.equals(o.annotation);
+    AnnotatedTerm o = (AnnotatedTerm) other;
+    return java.util.Objects.equals(
+      this.body,
+      o.body) && java.util.Objects.equals(
+      this.annotation,
+      o.annotation);
   }
   
   @Override
   public int hashCode() {
-    return 2 * subject.hashCode() + 3 * annotation.hashCode();
+    return 2 * java.util.Objects.hashCode(body) + 3 * java.util.Objects.hashCode(annotation);
   }
   
-  public AnnotatedTerm withSubject(hydra.core.Term subject) {
-    java.util.Objects.requireNonNull((subject));
-    return new AnnotatedTerm(subject, annotation);
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(AnnotatedTerm other) {
+    int cmp = 0;
+    cmp = ((Comparable) body).compareTo(other.body);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      annotation.hashCode(),
+      other.annotation.hashCode());
+  }
+  
+  public AnnotatedTerm withBody(hydra.core.Term body) {
+    return new AnnotatedTerm(body, annotation);
   }
   
   public AnnotatedTerm withAnnotation(java.util.Map<hydra.core.Name, hydra.core.Term> annotation) {
-    java.util.Objects.requireNonNull((annotation));
-    return new AnnotatedTerm(subject, annotation);
+    return new AnnotatedTerm(body, annotation);
   }
 }

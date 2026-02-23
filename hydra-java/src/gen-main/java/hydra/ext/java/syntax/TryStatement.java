@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class TryStatement implements Serializable {
+public abstract class TryStatement implements Serializable, Comparable<TryStatement> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.TryStatement");
   
   public static final hydra.core.Name FIELD_NAME_SIMPLE = new hydra.core.Name("simple");
@@ -29,19 +29,19 @@ public abstract class TryStatement implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(TryStatement instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Simple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(WithFinally instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(WithResources instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -49,7 +49,6 @@ public abstract class TryStatement implements Serializable {
     public final hydra.ext.java.syntax.TryStatement_Simple value;
     
     public Simple (hydra.ext.java.syntax.TryStatement_Simple value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -58,13 +57,26 @@ public abstract class TryStatement implements Serializable {
       if (!(other instanceof Simple)) {
         return false;
       }
-      Simple o = (Simple) (other);
-      return value.equals(o.value);
+      Simple o = (Simple) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TryStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Simple o = (Simple) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -77,7 +89,6 @@ public abstract class TryStatement implements Serializable {
     public final hydra.ext.java.syntax.TryStatement_WithFinally value;
     
     public WithFinally (hydra.ext.java.syntax.TryStatement_WithFinally value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -86,13 +97,26 @@ public abstract class TryStatement implements Serializable {
       if (!(other instanceof WithFinally)) {
         return false;
       }
-      WithFinally o = (WithFinally) (other);
-      return value.equals(o.value);
+      WithFinally o = (WithFinally) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TryStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      WithFinally o = (WithFinally) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -105,7 +129,6 @@ public abstract class TryStatement implements Serializable {
     public final hydra.ext.java.syntax.TryWithResourcesStatement value;
     
     public WithResources (hydra.ext.java.syntax.TryWithResourcesStatement value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -114,13 +137,26 @@ public abstract class TryStatement implements Serializable {
       if (!(other instanceof WithResources)) {
         return false;
       }
-      WithResources o = (WithResources) (other);
-      return value.equals(o.value);
+      WithResources o = (WithResources) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(TryStatement other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      WithResources o = (WithResources) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class UnaryExpressionNotPlusMinus implements Serializable {
+public abstract class UnaryExpressionNotPlusMinus implements Serializable, Comparable<UnaryExpressionNotPlusMinus> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.UnaryExpressionNotPlusMinus");
   
   public static final hydra.core.Name FIELD_NAME_POSTFIX = new hydra.core.Name("postfix");
@@ -33,23 +33,23 @@ public abstract class UnaryExpressionNotPlusMinus implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(UnaryExpressionNotPlusMinus instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Postfix instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Tilde instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Not instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Cast instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -57,7 +57,6 @@ public abstract class UnaryExpressionNotPlusMinus implements Serializable {
     public final hydra.ext.java.syntax.PostfixExpression value;
     
     public Postfix (hydra.ext.java.syntax.PostfixExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -66,13 +65,26 @@ public abstract class UnaryExpressionNotPlusMinus implements Serializable {
       if (!(other instanceof Postfix)) {
         return false;
       }
-      Postfix o = (Postfix) (other);
-      return value.equals(o.value);
+      Postfix o = (Postfix) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(UnaryExpressionNotPlusMinus other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Postfix o = (Postfix) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -85,7 +97,6 @@ public abstract class UnaryExpressionNotPlusMinus implements Serializable {
     public final hydra.ext.java.syntax.UnaryExpression value;
     
     public Tilde (hydra.ext.java.syntax.UnaryExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -94,13 +105,26 @@ public abstract class UnaryExpressionNotPlusMinus implements Serializable {
       if (!(other instanceof Tilde)) {
         return false;
       }
-      Tilde o = (Tilde) (other);
-      return value.equals(o.value);
+      Tilde o = (Tilde) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(UnaryExpressionNotPlusMinus other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Tilde o = (Tilde) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -113,7 +137,6 @@ public abstract class UnaryExpressionNotPlusMinus implements Serializable {
     public final hydra.ext.java.syntax.UnaryExpression value;
     
     public Not (hydra.ext.java.syntax.UnaryExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -122,13 +145,26 @@ public abstract class UnaryExpressionNotPlusMinus implements Serializable {
       if (!(other instanceof Not)) {
         return false;
       }
-      Not o = (Not) (other);
-      return value.equals(o.value);
+      Not o = (Not) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(UnaryExpressionNotPlusMinus other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Not o = (Not) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -141,7 +177,6 @@ public abstract class UnaryExpressionNotPlusMinus implements Serializable {
     public final hydra.ext.java.syntax.CastExpression value;
     
     public Cast (hydra.ext.java.syntax.CastExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -150,13 +185,26 @@ public abstract class UnaryExpressionNotPlusMinus implements Serializable {
       if (!(other instanceof Cast)) {
         return false;
       }
-      Cast o = (Cast) (other);
-      return value.equals(o.value);
+      Cast o = (Cast) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(UnaryExpressionNotPlusMinus other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Cast o = (Cast) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

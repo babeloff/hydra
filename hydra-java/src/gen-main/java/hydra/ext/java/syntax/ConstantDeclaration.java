@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class ConstantDeclaration implements Serializable {
+public class ConstantDeclaration implements Serializable, Comparable<ConstantDeclaration> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ConstantDeclaration");
   
   public static final hydra.core.Name FIELD_NAME_MODIFIERS = new hydra.core.Name("modifiers");
@@ -20,9 +20,6 @@ public class ConstantDeclaration implements Serializable {
   public final java.util.List<hydra.ext.java.syntax.VariableDeclarator> variables;
   
   public ConstantDeclaration (java.util.List<hydra.ext.java.syntax.ConstantModifier> modifiers, hydra.ext.java.syntax.UnannType type, java.util.List<hydra.ext.java.syntax.VariableDeclarator> variables) {
-    java.util.Objects.requireNonNull((modifiers));
-    java.util.Objects.requireNonNull((type));
-    java.util.Objects.requireNonNull((variables));
     this.modifiers = modifiers;
     this.type = type;
     this.variables = variables;
@@ -33,27 +30,49 @@ public class ConstantDeclaration implements Serializable {
     if (!(other instanceof ConstantDeclaration)) {
       return false;
     }
-    ConstantDeclaration o = (ConstantDeclaration) (other);
-    return modifiers.equals(o.modifiers) && type.equals(o.type) && variables.equals(o.variables);
+    ConstantDeclaration o = (ConstantDeclaration) other;
+    return java.util.Objects.equals(
+      this.modifiers,
+      o.modifiers) && java.util.Objects.equals(
+      this.type,
+      o.type) && java.util.Objects.equals(
+      this.variables,
+      o.variables);
   }
   
   @Override
   public int hashCode() {
-    return 2 * modifiers.hashCode() + 3 * type.hashCode() + 5 * variables.hashCode();
+    return 2 * java.util.Objects.hashCode(modifiers) + 3 * java.util.Objects.hashCode(type) + 5 * java.util.Objects.hashCode(variables);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(ConstantDeclaration other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      modifiers.hashCode(),
+      other.modifiers.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) type).compareTo(other.type);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      variables.hashCode(),
+      other.variables.hashCode());
   }
   
   public ConstantDeclaration withModifiers(java.util.List<hydra.ext.java.syntax.ConstantModifier> modifiers) {
-    java.util.Objects.requireNonNull((modifiers));
     return new ConstantDeclaration(modifiers, type, variables);
   }
   
   public ConstantDeclaration withType(hydra.ext.java.syntax.UnannType type) {
-    java.util.Objects.requireNonNull((type));
     return new ConstantDeclaration(modifiers, type, variables);
   }
   
   public ConstantDeclaration withVariables(java.util.List<hydra.ext.java.syntax.VariableDeclarator> variables) {
-    java.util.Objects.requireNonNull((variables));
     return new ConstantDeclaration(modifiers, type, variables);
   }
 }

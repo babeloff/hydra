@@ -1,62 +1,80 @@
 module Hydra.Sources.Kernel.Terms.Literals where
 
--- Standard imports for term-level kernel modules
-import Hydra.Kernel
+-- Standard imports for kernel terms modules
+import Hydra.Kernel hiding (
+  bigfloatToFloatValue, bigintToIntegerValue, floatValueToBigfloat, integerValueToBigint)
 import Hydra.Sources.Libraries
-import qualified Hydra.Dsl.Accessors     as Accessors
-import qualified Hydra.Dsl.Ast           as Ast
-import qualified Hydra.Dsl.Coders        as Coders
-import qualified Hydra.Dsl.Compute       as Compute
-import qualified Hydra.Dsl.Core          as Core
-import qualified Hydra.Dsl.Grammar       as Grammar
-import qualified Hydra.Dsl.Graph         as Graph
-import qualified Hydra.Dsl.Json          as Json
-import qualified Hydra.Dsl.Lib.Chars     as Chars
-import qualified Hydra.Dsl.Lib.Equality  as Equality
-import qualified Hydra.Dsl.Lib.Flows     as Flows
-import qualified Hydra.Dsl.Lib.Lists     as Lists
-import qualified Hydra.Dsl.Lib.Literals  as Literals
-import qualified Hydra.Dsl.Lib.Logic     as Logic
-import qualified Hydra.Dsl.Lib.Maps      as Maps
-import qualified Hydra.Dsl.Lib.Math      as Math
-import qualified Hydra.Dsl.Lib.Optionals as Optionals
-import           Hydra.Dsl.Phantoms      as Phantoms
-import qualified Hydra.Dsl.Lib.Sets      as Sets
-import           Hydra.Dsl.Lib.Strings   as Strings
-import qualified Hydra.Dsl.Mantle        as Mantle
-import qualified Hydra.Dsl.Module        as Module
-import qualified Hydra.Dsl.TTerms        as TTerms
-import qualified Hydra.Dsl.TTypes        as TTypes
-import qualified Hydra.Dsl.Terms         as Terms
-import qualified Hydra.Dsl.Topology      as Topology
-import qualified Hydra.Dsl.Types         as Types
-import qualified Hydra.Dsl.Typing        as Typing
+import qualified Hydra.Dsl.Meta.Accessors    as Accessors
+import qualified Hydra.Dsl.Annotations       as Annotations
+import qualified Hydra.Dsl.Meta.Ast          as Ast
+import qualified Hydra.Dsl.Bootstrap         as Bootstrap
+import qualified Hydra.Dsl.Meta.Coders       as Coders
+import qualified Hydra.Dsl.Meta.Compute      as Compute
+import qualified Hydra.Dsl.Meta.Core         as Core
+import qualified Hydra.Dsl.Meta.Grammar      as Grammar
+import qualified Hydra.Dsl.Grammars          as Grammars
+import qualified Hydra.Dsl.Meta.Graph        as Graph
+import qualified Hydra.Dsl.Meta.Json         as Json
+import qualified Hydra.Dsl.Meta.Lib.Chars    as Chars
+import qualified Hydra.Dsl.Meta.Lib.Eithers  as Eithers
+import qualified Hydra.Dsl.Meta.Lib.Equality as Equality
+import qualified Hydra.Dsl.Meta.Lib.Flows    as Flows
+import qualified Hydra.Dsl.Meta.Lib.Lists    as Lists
+import qualified Hydra.Dsl.Meta.Lib.Literals as Literals
+import qualified Hydra.Dsl.Meta.Lib.Logic    as Logic
+import qualified Hydra.Dsl.Meta.Lib.Maps     as Maps
+import qualified Hydra.Dsl.Meta.Lib.Math     as Math
+import qualified Hydra.Dsl.Meta.Lib.Maybes   as Maybes
+import qualified Hydra.Dsl.Meta.Lib.Pairs    as Pairs
+import qualified Hydra.Dsl.Meta.Lib.Sets     as Sets
+import           Hydra.Dsl.Meta.Lib.Strings  as Strings
+import qualified Hydra.Dsl.Literals          as Literals
+import qualified Hydra.Dsl.LiteralTypes      as LiteralTypes
+import qualified Hydra.Dsl.Meta.Base         as MetaBase
+import qualified Hydra.Dsl.Meta.Terms        as MetaTerms
+import qualified Hydra.Dsl.Meta.Types        as MetaTypes
+import qualified Hydra.Dsl.Meta.Module       as Module
+import qualified Hydra.Dsl.Meta.Parsing      as Parsing
+import           Hydra.Dsl.Meta.Phantoms     as Phantoms
+import qualified Hydra.Dsl.Prims             as Prims
+import qualified Hydra.Dsl.Tabular           as Tabular
+import qualified Hydra.Dsl.Meta.Testing      as Testing
+import qualified Hydra.Dsl.Terms             as Terms
+import qualified Hydra.Dsl.Tests             as Tests
+import qualified Hydra.Dsl.Meta.Topology     as Topology
+import qualified Hydra.Dsl.Types             as Types
+import qualified Hydra.Dsl.Meta.Typing       as Typing
+import qualified Hydra.Dsl.Meta.Util         as Util
+import qualified Hydra.Dsl.Meta.Variants     as Variants
 import           Hydra.Sources.Kernel.Types.All
 import           Prelude hiding ((++))
-import qualified Data.Int                as I
-import qualified Data.List               as L
-import qualified Data.Map                as M
-import qualified Data.Set                as S
-import qualified Data.Maybe              as Y
+import qualified Data.Int                    as I
+import qualified Data.List                   as L
+import qualified Data.Map                    as M
+import qualified Data.Set                    as S
+import qualified Data.Maybe                  as Y
 
+
+ns :: Namespace
+ns = Namespace "hydra.literals"
 
 module_ :: Module
-module_ = Module (Namespace "hydra.literals") elements
+module_ = Module ns elements
     []
-    kernelTypesModules $
+    kernelTypesNamespaces $
     Just "Conversion functions for literal values."
   where
    elements = [
-     el bigfloatToFloatValueDef,
-     el bigintToIntegerValueDef,
-     el floatValueToBigfloatDef,
-     el integerValueToBigintDef]
+     toBinding bigfloatToFloatValue,
+     toBinding bigintToIntegerValue,
+     toBinding floatValueToBigfloat,
+     toBinding integerValueToBigint]
 
 define :: String -> TTerm a -> TBinding a
 define = definitionInModule module_
 
-bigfloatToFloatValueDef :: TBinding (FloatType -> Bigfloat -> FloatValue)
-bigfloatToFloatValueDef = define "bigfloatToFloatValue" $
+bigfloatToFloatValue :: TBinding (FloatType -> Bigfloat -> FloatValue)
+bigfloatToFloatValue = define "bigfloatToFloatValue" $
   doc "Convert a bigfloat to a floating-point value of a given type (note: lossy)" $
   "ft" ~> "bf" ~> cases _FloatType (var "ft")
     Nothing [
@@ -64,8 +82,8 @@ bigfloatToFloatValueDef = define "bigfloatToFloatValue" $
     _FloatType_float32>>: constant $ Core.floatValueFloat32 $ Literals.bigfloatToFloat32 $ var "bf",
     _FloatType_float64>>: constant $ Core.floatValueFloat64 $ Literals.bigfloatToFloat64 $ var "bf"]
 
-bigintToIntegerValueDef :: TBinding (IntegerType -> Integer -> IntegerValue)
-bigintToIntegerValueDef = define "bigintToIntegerValue" $
+bigintToIntegerValue :: TBinding (IntegerType -> Integer -> IntegerValue)
+bigintToIntegerValue = define "bigintToIntegerValue" $
   doc "Convert a bigint to an integer value of a given type (note: lossy)" $
   "it" ~> "bi" ~> cases _IntegerType (var "it")
     Nothing [
@@ -79,8 +97,8 @@ bigintToIntegerValueDef = define "bigintToIntegerValue" $
     _IntegerType_uint32>>: constant $ Core.integerValueUint32 $ Literals.bigintToUint32 $ var "bi",
     _IntegerType_uint64>>: constant $ Core.integerValueUint64 $ Literals.bigintToUint64 $ var "bi"]
 
-floatValueToBigfloatDef :: TBinding (FloatValue -> Bigfloat)
-floatValueToBigfloatDef = define "floatValueToBigfloat" $
+floatValueToBigfloat :: TBinding (FloatValue -> Bigfloat)
+floatValueToBigfloat = define "floatValueToBigfloat" $
   doc "Convert a floating-point value of any precision to a bigfloat" $
   match _FloatValue
     Nothing [
@@ -88,8 +106,8 @@ floatValueToBigfloatDef = define "floatValueToBigfloat" $
     _FloatValue_float32>>: "f32" ~> Literals.float32ToBigfloat $ var "f32",
     _FloatValue_float64>>: "f64" ~> Literals.float64ToBigfloat $ var "f64"]
 
-integerValueToBigintDef :: TBinding (IntegerValue -> Integer)
-integerValueToBigintDef = define "integerValueToBigint" $
+integerValueToBigint :: TBinding (IntegerValue -> Integer)
+integerValueToBigint = define "integerValueToBigint" $
   doc "Convert an integer value of any precision to a bigint" $
   match _IntegerValue
     Nothing [

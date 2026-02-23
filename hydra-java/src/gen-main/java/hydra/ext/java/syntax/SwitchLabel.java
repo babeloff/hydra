@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class SwitchLabel implements Serializable {
+public abstract class SwitchLabel implements Serializable, Comparable<SwitchLabel> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.SwitchLabel");
   
   public static final hydra.core.Name FIELD_NAME_CONSTANT = new hydra.core.Name("constant");
@@ -29,19 +29,19 @@ public abstract class SwitchLabel implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(SwitchLabel instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Constant instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(EnumConstant instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Default instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -49,7 +49,6 @@ public abstract class SwitchLabel implements Serializable {
     public final hydra.ext.java.syntax.ConstantExpression value;
     
     public Constant (hydra.ext.java.syntax.ConstantExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -58,13 +57,26 @@ public abstract class SwitchLabel implements Serializable {
       if (!(other instanceof Constant)) {
         return false;
       }
-      Constant o = (Constant) (other);
-      return value.equals(o.value);
+      Constant o = (Constant) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SwitchLabel other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Constant o = (Constant) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -77,7 +89,6 @@ public abstract class SwitchLabel implements Serializable {
     public final hydra.ext.java.syntax.EnumConstantName value;
     
     public EnumConstant (hydra.ext.java.syntax.EnumConstantName value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -86,13 +97,26 @@ public abstract class SwitchLabel implements Serializable {
       if (!(other instanceof EnumConstant)) {
         return false;
       }
-      EnumConstant o = (EnumConstant) (other);
-      return value.equals(o.value);
+      EnumConstant o = (EnumConstant) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SwitchLabel other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      EnumConstant o = (EnumConstant) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -111,12 +135,22 @@ public abstract class SwitchLabel implements Serializable {
       if (!(other instanceof Default)) {
         return false;
       }
-      Default o = (Default) (other);
+      Default o = (Default) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(SwitchLabel other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

@@ -8,12 +8,14 @@ import Hydra.Kernel
 import Hydra.Sources.Kernel.Types.Core
 import Hydra.Sources.Kernel.Types.All
 import Hydra.Sources.Kernel.Terms.All
-import Hydra.Staging.Json.Serde
+import qualified Hydra.Json.Writer as JsonWriter
+import qualified Data.List as L
 import Hydra.Tools.Monads
 import Hydra.Ext.Tools.Analysis.Dependencies
 import Hydra.Generation (modulesToGraph)
 import System.IO
 
+let jsonValuesToString = L.intercalate "\n" . fmap JsonWriter.printJson
 termModulesToGraphson withPrims modules outFile = flowToIo hydraCoreGraph (jsonValuesToString <$> termGraphToDependencyGraphson withPrims False (modulesToGraph modules)) >>= writeFile outFile
 typeModulesToGraphson modules outFile = flowToIo hydraCoreGraph (jsonValuesToString <$> typeGraphToDependencyGraphson (modulesToGraph modules)) >>= writeFile outFile
 combinedModulesToGraphson dataModules schemaModules outFile = flowToIo hydraCoreGraph (jsonValuesToString <$> combinedGraphToDependencyGraphson (modulesToGraph dataModules) (modulesToGraph schemaModules)) >>= writeFile outFile
@@ -44,14 +46,17 @@ import Hydra.Generation
 import Hydra.Sources.Kernel.Terms.All
 import Hydra.Sources.Libraries
 import qualified Hydra.Decode.Core as DecodeCore
-import qualified Hydra.Describe.Core as DescribeCore
-import qualified Hydra.Encode.Core as EncodeCore
 import qualified Hydra.Show.Core as ShowCore
-import qualified Hydra.Show.Mantle as ShowMantle
+import qualified Hydra.Encode.Core as EncodeCore
+import qualified Hydra.Monads as Monads
+import qualified Hydra.Show.Core as ShowCore
+import qualified Hydra.Show.Meta as ShowMeta
 import qualified Hydra.Pg.Model as PG
-import qualified Hydra.Json as Json
+import qualified Hydra.Json.Model as Json
+import qualified Hydra.Json.Writer as JsonWriter
+import qualified Hydra.Util as Util
 import Hydra.Ext.Staging.Pg.Utils
-import Hydra.Ext.Staging.Pg.Graphson.Utils
+import Hydra.Pg.Graphson.Utils
 
 import qualified Control.Monad as CM
 import qualified Data.List as L
@@ -84,7 +89,7 @@ propertyKey_typeVariant = PG.PropertyKey "typeVariant"
 combinedGraphToDependencyGraphson :: Graph -> Graph -> Flow Graph [Json.Value]
 combinedGraphToDependencyGraphson dataGraph schemaGraph = do
   pg <- combinedGraphToDependencyPropertyGraph dataGraph schemaGraph
-  pgElementsToGraphson stringGraphsonContext $ propertyGraphElements pg
+  pgElementsToGraphson encodeStringValue $ propertyGraphElements pg
 
 combinedGraphToDependencyPropertyGraph :: Graph -> Graph -> Flow Graph (PG.Graph String)
 combinedGraphToDependencyPropertyGraph dataGraph schemaGraph = do
@@ -111,7 +116,7 @@ nameToVertexId :: Name -> String
 nameToVertexId = unName
 
 termGraphToDependencyGraphson :: Bool -> Bool -> Graph -> Flow s [Json.Value]
-termGraphToDependencyGraphson withPrims withTypes g = pgElementsToGraphson stringGraphsonContext $
+termGraphToDependencyGraphson withPrims withTypes g = pgElementsToGraphson encodeStringValue $
   propertyGraphElements $ termGraphToDependencyPropertyGraph withPrims withTypes g
 
 -- | Given a Hydra graph, create a property graph in which the vertices are all elements of the graph
@@ -140,14 +145,14 @@ termGraphToDependencyPropertyGraph withPrims withTypes g = PG.Graph vertexMap ed
                     (propertyKey_typeExpression, ShowCore.typeScheme $ primitiveType prim)]
                   where
                     name = primitiveName prim
-            els = fmap toVertex $ M.elems elements
+            els = fmap toVertex elements
               where
                 toVertex el = PG.Vertex vertexLabel_Term (nameToVertexId $ bindingName el) $ M.fromList [
                     (propertyKey_localName, localNameOf name),
                     (propertyKey_name, unName name),
                     (propertyKey_namespace, nameToNamespace name),
                     (propertyKey_termExpression, ShowCore.term term),
-                    (propertyKey_termVariant, ShowMantle.termVariant $ termVariant term)]
+                    (propertyKey_termVariant, ShowMeta.termVariant $ termVariant term)]
                   where
                     name = bindingName el
                     term = bindingTerm el
@@ -162,7 +167,7 @@ termGraphToDependencyPropertyGraph withPrims withTypes g = PG.Graph vertexMap ed
                 edgesFrom el = fmap (namePairToEdge edgeLabel_hasType (bindingName el)) $
                   S.toList $ termDependencyNames False False True $ bindingTerm el
             primEdges = if withPrims
-                then L.concat $ fmap edgesFrom elements
+                then L.concat $ fmap edgesFrom $ graphElements g
                 else []
               where
                 edgesFrom el = fmap (namePairToEdge edgeLabel_usesPrimitive (bindingName el)) $
@@ -175,18 +180,18 @@ termGraphToDependencyPropertyGraph withPrims withTypes g = PG.Graph vertexMap ed
 typeGraphToDependencyGraphson :: Graph -> Flow Graph [Json.Value]
 typeGraphToDependencyGraphson g = do
   pg <- typeGraphToDependencyPropertyGraph g
-  pgElementsToGraphson stringGraphsonContext $ propertyGraphElements pg
+  pgElementsToGraphson encodeStringValue $ propertyGraphElements pg
 
 typeGraphToDependencyPropertyGraph :: Graph -> Flow Graph (PG.Graph String)
 typeGraphToDependencyPropertyGraph g = do
-    types <- CM.mapM DecodeCore.type_ terms
+    types <- CM.mapM (\t -> Monads.eitherToFlow Util.unDecodingError $ DecodeCore.type_ g t) terms
     let vertices = L.zipWith toVertex names types
     let edges = L.concat $ L.zipWith toEdges names $ fmap (S.toList . freeVariablesInType) types
     return $ PG.Graph
       (M.fromList $ fmap (\v -> (PG.vertexId v, v)) vertices)
       (M.fromList $ fmap (\e -> (PG.edgeId e, e)) edges)
   where
-    elements = M.elems $ graphElements g
+    elements = graphElements g
     terms = fmap bindingTerm elements
     names = fmap bindingName elements
     toEdges name deps = fmap (namePairToEdge edgeLabel_subtype name) deps
@@ -196,4 +201,4 @@ typeGraphToDependencyPropertyGraph g = do
         (propertyKey_name, unName name),
         (propertyKey_namespace, nameToNamespace name),
         (propertyKey_typeExpression, ShowCore.type_ typ),
-        (propertyKey_typeVariant, ShowMantle.typeVariant $ typeVariant typ)]
+        (propertyKey_typeVariant, ShowMeta.typeVariant $ typeVariant typ)]

@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class Factor implements Serializable {
+public abstract class Factor implements Serializable, Comparable<Factor> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Factor");
   
   public static final hydra.core.Name FIELD_NAME_POSITIVE = new hydra.core.Name("positive");
@@ -33,23 +33,23 @@ public abstract class Factor implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(Factor instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Positive instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Negative instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Complement instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Simple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -57,7 +57,6 @@ public abstract class Factor implements Serializable {
     public final hydra.ext.python.syntax.Factor value;
     
     public Positive (hydra.ext.python.syntax.Factor value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -66,13 +65,26 @@ public abstract class Factor implements Serializable {
       if (!(other instanceof Positive)) {
         return false;
       }
-      Positive o = (Positive) (other);
-      return value.equals(o.value);
+      Positive o = (Positive) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Factor other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Positive o = (Positive) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -85,7 +97,6 @@ public abstract class Factor implements Serializable {
     public final hydra.ext.python.syntax.Factor value;
     
     public Negative (hydra.ext.python.syntax.Factor value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -94,13 +105,26 @@ public abstract class Factor implements Serializable {
       if (!(other instanceof Negative)) {
         return false;
       }
-      Negative o = (Negative) (other);
-      return value.equals(o.value);
+      Negative o = (Negative) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Factor other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Negative o = (Negative) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -113,7 +137,6 @@ public abstract class Factor implements Serializable {
     public final hydra.ext.python.syntax.Factor value;
     
     public Complement (hydra.ext.python.syntax.Factor value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -122,13 +145,26 @@ public abstract class Factor implements Serializable {
       if (!(other instanceof Complement)) {
         return false;
       }
-      Complement o = (Complement) (other);
-      return value.equals(o.value);
+      Complement o = (Complement) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Factor other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Complement o = (Complement) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -141,7 +177,6 @@ public abstract class Factor implements Serializable {
     public final hydra.ext.python.syntax.Power value;
     
     public Simple (hydra.ext.python.syntax.Power value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -150,13 +185,26 @@ public abstract class Factor implements Serializable {
       if (!(other instanceof Simple)) {
         return false;
       }
-      Simple o = (Simple) (other);
-      return value.equals(o.value);
+      Simple o = (Simple) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Factor other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Simple o = (Simple) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

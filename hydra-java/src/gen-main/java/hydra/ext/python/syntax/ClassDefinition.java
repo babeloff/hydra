@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class ClassDefinition implements Serializable {
+public class ClassDefinition implements Serializable, Comparable<ClassDefinition> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.ClassDefinition");
   
   public static final hydra.core.Name FIELD_NAME_DECORATORS = new hydra.core.Name("decorators");
@@ -17,22 +17,17 @@ public class ClassDefinition implements Serializable {
   
   public static final hydra.core.Name FIELD_NAME_BODY = new hydra.core.Name("body");
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.Decorators> decorators;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.Decorators> decorators;
   
   public final hydra.ext.python.syntax.Name name;
   
   public final java.util.List<hydra.ext.python.syntax.TypeParameter> typeParams;
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.Args> arguments;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.Args> arguments;
   
   public final hydra.ext.python.syntax.Block body;
   
-  public ClassDefinition (hydra.util.Opt<hydra.ext.python.syntax.Decorators> decorators, hydra.ext.python.syntax.Name name, java.util.List<hydra.ext.python.syntax.TypeParameter> typeParams, hydra.util.Opt<hydra.ext.python.syntax.Args> arguments, hydra.ext.python.syntax.Block body) {
-    java.util.Objects.requireNonNull((decorators));
-    java.util.Objects.requireNonNull((name));
-    java.util.Objects.requireNonNull((typeParams));
-    java.util.Objects.requireNonNull((arguments));
-    java.util.Objects.requireNonNull((body));
+  public ClassDefinition (hydra.util.Maybe<hydra.ext.python.syntax.Decorators> decorators, hydra.ext.python.syntax.Name name, java.util.List<hydra.ext.python.syntax.TypeParameter> typeParams, hydra.util.Maybe<hydra.ext.python.syntax.Args> arguments, hydra.ext.python.syntax.Block body) {
     this.decorators = decorators;
     this.name = name;
     this.typeParams = typeParams;
@@ -45,37 +40,71 @@ public class ClassDefinition implements Serializable {
     if (!(other instanceof ClassDefinition)) {
       return false;
     }
-    ClassDefinition o = (ClassDefinition) (other);
-    return decorators.equals(o.decorators) && name.equals(o.name) && typeParams.equals(o.typeParams) && arguments.equals(o.arguments) && body.equals(o.body);
+    ClassDefinition o = (ClassDefinition) other;
+    return java.util.Objects.equals(
+      this.decorators,
+      o.decorators) && java.util.Objects.equals(
+      this.name,
+      o.name) && java.util.Objects.equals(
+      this.typeParams,
+      o.typeParams) && java.util.Objects.equals(
+      this.arguments,
+      o.arguments) && java.util.Objects.equals(
+      this.body,
+      o.body);
   }
   
   @Override
   public int hashCode() {
-    return 2 * decorators.hashCode() + 3 * name.hashCode() + 5 * typeParams.hashCode() + 7 * arguments.hashCode() + 11 * body.hashCode();
+    return 2 * java.util.Objects.hashCode(decorators) + 3 * java.util.Objects.hashCode(name) + 5 * java.util.Objects.hashCode(typeParams) + 7 * java.util.Objects.hashCode(arguments) + 11 * java.util.Objects.hashCode(body);
   }
   
-  public ClassDefinition withDecorators(hydra.util.Opt<hydra.ext.python.syntax.Decorators> decorators) {
-    java.util.Objects.requireNonNull((decorators));
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(ClassDefinition other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      decorators.hashCode(),
+      other.decorators.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) name).compareTo(other.name);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      typeParams.hashCode(),
+      other.typeParams.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      arguments.hashCode(),
+      other.arguments.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) body).compareTo(other.body);
+  }
+  
+  public ClassDefinition withDecorators(hydra.util.Maybe<hydra.ext.python.syntax.Decorators> decorators) {
     return new ClassDefinition(decorators, name, typeParams, arguments, body);
   }
   
   public ClassDefinition withName(hydra.ext.python.syntax.Name name) {
-    java.util.Objects.requireNonNull((name));
     return new ClassDefinition(decorators, name, typeParams, arguments, body);
   }
   
   public ClassDefinition withTypeParams(java.util.List<hydra.ext.python.syntax.TypeParameter> typeParams) {
-    java.util.Objects.requireNonNull((typeParams));
     return new ClassDefinition(decorators, name, typeParams, arguments, body);
   }
   
-  public ClassDefinition withArguments(hydra.util.Opt<hydra.ext.python.syntax.Args> arguments) {
-    java.util.Objects.requireNonNull((arguments));
+  public ClassDefinition withArguments(hydra.util.Maybe<hydra.ext.python.syntax.Args> arguments) {
     return new ClassDefinition(decorators, name, typeParams, arguments, body);
   }
   
   public ClassDefinition withBody(hydra.ext.python.syntax.Block body) {
-    java.util.Objects.requireNonNull((body));
     return new ClassDefinition(decorators, name, typeParams, arguments, body);
   }
 }

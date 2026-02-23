@@ -1,13 +1,18 @@
--- | A proxy for the Hydra kernel, i.e. the code which must be present in every Hydra implementation, and can be imported as a unit.
+-- | A proxy for the Hydra kernel, i.e. the code which must be present in every Hydra implementation.
 {-
 Note: the following modules are part of the kernel, but they are not default imports because of name collisions:
 - Hydra.Ast
 - Hydra.Decode.Core
-- Hydra.Describe.Core
 - Hydra.Encode.Core
 - Hydra.Extract.Core
+- Hydra.Extract.Helpers
+- Hydra.Extract.Util
 - Hydra.Grammar
 - Hydra.Grammars
+- Hydra.Json.Parser
+- Hydra.Json.Writer
+- Hydra.Parsers
+- Hydra.Show.Core
 - Hydra.Topology
 -}
 
@@ -20,6 +25,8 @@ module Hydra.Kernel (
   module Hydra.Adapt.Utils,
   module Hydra.Annotations,
   module Hydra.Arity,
+  module Hydra.Checking,
+  module Hydra.Classes,
   module Hydra.Coders,
   module Hydra.Compute,
   module Hydra.Constants,
@@ -32,12 +39,13 @@ module Hydra.Kernel (
   module Hydra.Inference,
   module Hydra.Lexical,
   module Hydra.Literals,
-  module Hydra.Mantle,
   module Hydra.Module,
+  module Hydra.Parsing,
   module Hydra.Phantoms,
   module Hydra.Names,
   module Hydra.Query,
   module Hydra.Reduction,
+  module Hydra.Reflect,
   module Hydra.Relational,
   module Hydra.Rewriting,
   module Hydra.Schemas,
@@ -47,8 +55,10 @@ module Hydra.Kernel (
   module Hydra.Substitution,
   module Hydra.Tabular,
   module Hydra.Templates,
+  module Hydra.Testing,
   module Hydra.Typing,
   module Hydra.Unification,
+  module Hydra.Util,
   module Hydra.Variants,
   module Hydra.Workflow,
 ) where
@@ -57,10 +67,12 @@ import Hydra.Accessors
 import Hydra.Adapt.Literals
 import Hydra.Adapt.Modules
 import Hydra.Adapt.Simple
-import Hydra.Adapt.Terms hiding (optionalToList)
+import Hydra.Adapt.Terms hiding (maybeToList)
 import Hydra.Adapt.Utils
 import Hydra.Annotations
 import Hydra.Arity
+import Hydra.Checking
+import Hydra.Classes
 import Hydra.Coders
 import Hydra.Compute
 import Hydra.Constants
@@ -73,12 +85,13 @@ import Hydra.Graph
 import Hydra.Inference
 import Hydra.Lexical
 import Hydra.Literals
-import Hydra.Mantle hiding (Either)
 import Hydra.Module
+import Hydra.Parsing
 import Hydra.Phantoms
 import Hydra.Names
 import Hydra.Query
 import Hydra.Reduction
+import Hydra.Reflect
 import Hydra.Relational
 import Hydra.Rewriting
 import Hydra.Schemas
@@ -88,7 +101,9 @@ import Hydra.Sorting
 import Hydra.Substitution
 import Hydra.Tabular
 import Hydra.Templates
+import Hydra.Testing
 import Hydra.Typing
 import Hydra.Unification
+import Hydra.Util
 import Hydra.Variants
 import Hydra.Workflow

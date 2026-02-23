@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class AnnotationTypeElementModifier implements Serializable {
+public abstract class AnnotationTypeElementModifier implements Serializable, Comparable<AnnotationTypeElementModifier> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.AnnotationTypeElementModifier");
   
   public static final hydra.core.Name FIELD_NAME_PUBLIC = new hydra.core.Name("public");
@@ -25,15 +25,15 @@ public abstract class AnnotationTypeElementModifier implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(AnnotationTypeElementModifier instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Public instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Abstract instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -41,7 +41,6 @@ public abstract class AnnotationTypeElementModifier implements Serializable {
     public final hydra.ext.java.syntax.Annotation value;
     
     public Public (hydra.ext.java.syntax.Annotation value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -50,13 +49,26 @@ public abstract class AnnotationTypeElementModifier implements Serializable {
       if (!(other instanceof Public)) {
         return false;
       }
-      Public o = (Public) (other);
-      return value.equals(o.value);
+      Public o = (Public) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AnnotationTypeElementModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Public o = (Public) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -75,12 +87,22 @@ public abstract class AnnotationTypeElementModifier implements Serializable {
       if (!(other instanceof Abstract)) {
         return false;
       }
-      Abstract o = (Abstract) (other);
+      Abstract o = (Abstract) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AnnotationTypeElementModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

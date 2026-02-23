@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class Listcomp implements Serializable {
+public class Listcomp implements Serializable, Comparable<Listcomp> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Listcomp");
   
   public static final hydra.core.Name FIELD_NAME_EXPRESSION = new hydra.core.Name("expression");
@@ -16,8 +16,6 @@ public class Listcomp implements Serializable {
   public final hydra.ext.python.syntax.ForIfClauses forIfClauses;
   
   public Listcomp (hydra.ext.python.syntax.NamedExpression expression, hydra.ext.python.syntax.ForIfClauses forIfClauses) {
-    java.util.Objects.requireNonNull((expression));
-    java.util.Objects.requireNonNull((forIfClauses));
     this.expression = expression;
     this.forIfClauses = forIfClauses;
   }
@@ -27,22 +25,35 @@ public class Listcomp implements Serializable {
     if (!(other instanceof Listcomp)) {
       return false;
     }
-    Listcomp o = (Listcomp) (other);
-    return expression.equals(o.expression) && forIfClauses.equals(o.forIfClauses);
+    Listcomp o = (Listcomp) other;
+    return java.util.Objects.equals(
+      this.expression,
+      o.expression) && java.util.Objects.equals(
+      this.forIfClauses,
+      o.forIfClauses);
   }
   
   @Override
   public int hashCode() {
-    return 2 * expression.hashCode() + 3 * forIfClauses.hashCode();
+    return 2 * java.util.Objects.hashCode(expression) + 3 * java.util.Objects.hashCode(forIfClauses);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Listcomp other) {
+    int cmp = 0;
+    cmp = ((Comparable) expression).compareTo(other.expression);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) forIfClauses).compareTo(other.forIfClauses);
   }
   
   public Listcomp withExpression(hydra.ext.python.syntax.NamedExpression expression) {
-    java.util.Objects.requireNonNull((expression));
     return new Listcomp(expression, forIfClauses);
   }
   
   public Listcomp withForIfClauses(hydra.ext.python.syntax.ForIfClauses forIfClauses) {
-    java.util.Objects.requireNonNull((forIfClauses));
     return new Listcomp(expression, forIfClauses);
   }
 }

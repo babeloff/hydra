@@ -7,6 +7,7 @@ import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Expect;
 import hydra.dsl.Terms;
+import hydra.dsl.Types;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -19,6 +20,9 @@ import static hydra.dsl.Types.function;
 import static hydra.dsl.Types.list;
 import static hydra.dsl.Types.scheme;
 
+/**
+ * Reverses a list.
+ */
 public class Reverse extends PrimitiveFunction {
     public static final Name NAME = new Name("hydra.lib.lists.reverse");
 
@@ -38,12 +42,14 @@ public class Reverse extends PrimitiveFunction {
     }
 
     /**
-     * Apply the function to the single argument.
+     * Reverses the order of elements in a list.
+     * @param <X> the element type
+     * @param list the list to reverse
+     * @return a new list with elements in reverse order
      */
     public static <X> List<X> apply(List<X> list) {
-        List<X> newList = new ArrayList<>();
-        newList.addAll(list);
-        Collections.reverse(list);
+        List<X> newList = new ArrayList<>(list);
+        Collections.reverse(newList);
         return newList;
     }
 }

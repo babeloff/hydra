@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class FloatingPointType implements Serializable {
+public abstract class FloatingPointType implements Serializable, Comparable<FloatingPointType> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.FloatingPointType");
   
   public static final hydra.core.Name FIELD_NAME_FLOAT = new hydra.core.Name("float");
@@ -25,15 +25,15 @@ public abstract class FloatingPointType implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(FloatingPointType instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Float_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Double_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -47,12 +47,22 @@ public abstract class FloatingPointType implements Serializable {
       if (!(other instanceof Float_)) {
         return false;
       }
-      Float_ o = (Float_) (other);
+      Float_ o = (Float_) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FloatingPointType other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -72,12 +82,22 @@ public abstract class FloatingPointType implements Serializable {
       if (!(other instanceof Double_)) {
         return false;
       }
-      Double_ o = (Double_) (other);
+      Double_ o = (Double_) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(FloatingPointType other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

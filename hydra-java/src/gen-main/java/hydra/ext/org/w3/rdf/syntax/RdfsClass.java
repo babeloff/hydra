@@ -10,8 +10,13 @@ import java.io.Serializable;
 public class RdfsClass implements Serializable {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.org.w3.rdf.syntax.RdfsClass");
   
-  public RdfsClass () {
+  public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
   
+  public final Boolean value;
+  
+  public RdfsClass (Boolean value) {
+    java.util.Objects.requireNonNull((value));
+    this.value = value;
   }
   
   @Override
@@ -20,11 +25,11 @@ public class RdfsClass implements Serializable {
       return false;
     }
     RdfsClass o = (RdfsClass) (other);
-    return true;
+    return other instanceof RdfsClass;
   }
   
   @Override
   public int hashCode() {
-    return 0;
+    return getClass().hashCode();
   }
 }

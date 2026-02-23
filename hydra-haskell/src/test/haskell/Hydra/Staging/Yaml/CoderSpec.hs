@@ -12,7 +12,6 @@ import qualified Hydra.Ext.Org.Yaml.Model as YM
 import qualified Hydra.Dsl.Types as Types
 import Hydra.Dsl.Tests
 
-import Hydra.TestData
 import Hydra.TestUtils
 
 import qualified Data.Bifunctor as BF
@@ -88,7 +87,7 @@ unsupportedTypesAreTransformed = H.describe "Verify that unsupported types are t
 
   H.it "Unions become YAML mappings (as records)" $
     QC.property $ \int -> checkYamlCoder stringOrIntType
-      (variant stringOrIntName (Name "right") $ int32 int)
+      (inject stringOrIntName (Name "right") $ int32 int)
       (yamlMap [(yamlStr "right", yamlInt int)])
 
 spec :: H.Spec

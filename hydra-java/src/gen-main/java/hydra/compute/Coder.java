@@ -2,23 +2,29 @@
 
 package hydra.compute;
 
+import java.io.Serializable;
+
 /**
  * An encoder and decoder; a bidirectional flow between two types
  */
-public class Coder<S1, S2, V1, V2> {
+public class Coder<S1, S2, V1, V2> implements Serializable, Comparable<Coder<S1, S2, V1, V2>> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.compute.Coder");
   
   public static final hydra.core.Name FIELD_NAME_ENCODE = new hydra.core.Name("encode");
   
   public static final hydra.core.Name FIELD_NAME_DECODE = new hydra.core.Name("decode");
   
+  /**
+   * A function from source values to a flow of target values
+   */
   public final java.util.function.Function<V1, hydra.compute.Flow<S1, V2>> encode;
   
+  /**
+   * A function from target values to a flow of source values
+   */
   public final java.util.function.Function<V2, hydra.compute.Flow<S2, V1>> decode;
   
   public Coder (java.util.function.Function<V1, hydra.compute.Flow<S1, V2>> encode, java.util.function.Function<V2, hydra.compute.Flow<S2, V1>> decode) {
-    java.util.Objects.requireNonNull((encode));
-    java.util.Objects.requireNonNull((decode));
     this.encode = encode;
     this.decode = decode;
   }
@@ -28,22 +34,39 @@ public class Coder<S1, S2, V1, V2> {
     if (!(other instanceof Coder)) {
       return false;
     }
-    Coder o = (Coder) (other);
-    return encode.equals(o.encode) && decode.equals(o.decode);
+    Coder o = (Coder) other;
+    return java.util.Objects.equals(
+      this.encode,
+      o.encode) && java.util.Objects.equals(
+      this.decode,
+      o.decode);
   }
   
   @Override
   public int hashCode() {
-    return 2 * encode.hashCode() + 3 * decode.hashCode();
+    return 2 * java.util.Objects.hashCode(encode) + 3 * java.util.Objects.hashCode(decode);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Coder other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      encode.hashCode(),
+      other.encode.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      decode.hashCode(),
+      other.decode.hashCode());
   }
   
   public Coder withEncode(java.util.function.Function<V1, hydra.compute.Flow<S1, V2>> encode) {
-    java.util.Objects.requireNonNull((encode));
     return new Coder(encode, decode);
   }
   
   public Coder withDecode(java.util.function.Function<V2, hydra.compute.Flow<S2, V1>> decode) {
-    java.util.Objects.requireNonNull((decode));
     return new Coder(encode, decode);
   }
 }

@@ -6,6 +6,12 @@
 -- Lightweight adaptation to Hydra by Joshua Shinavier.
 -- License: Apache 2.0 https://www.apache.org/licenses/LICENSE-2.0 
 
+{-
+  Usage:
+    testOne test1
+    testOne test2
+    etc.
+-}
 module Hydra.Reference.AlgorithmW where
 
 import Prelude
@@ -17,7 +23,7 @@ import Debug.Trace
 import Hydra.Minimal
 
 natType = TyLit $ LiteralTypeInteger IntegerTypeInt32
-constNeg = Const $ PrimTyped $ TypedPrimitive (Name "hydra.lib.math.neg") $ Forall [] $ TyFn natType natType
+constNeg = Const $ PrimTyped $ TypedPrimitive (Name "hydra.lib.math.negate") $ Forall [] $ TyFn natType natType
 -- Note: Hydra has no built-in pred or succ functions, but neg has the expected type
 constPred = constNeg
 constSucc = constNeg
@@ -92,7 +98,8 @@ data MTy = TyVar Var
   | TyFn MTy MTy
   | TyProd MTy MTy
   | TySum MTy MTy
-  | TyUnit 
+  | TyEither MTy MTy
+  | TyUnit
   | TyVoid
  deriving (Eq, Show)
  
@@ -106,6 +113,7 @@ showMTy (TyList t) = "(List " ++ (showMTy t) ++ ")"
 showMTy (TyFn t1 t2) = "(" ++ showMTy t1 ++ " -> " ++ showMTy t2 ++ ")"
 showMTy (TyProd t1 t2) = "(" ++ showMTy t1 ++ " * " ++ showMTy t2 ++  ")"
 showMTy (TySum t1 t2) = "(" ++ showMTy t1 ++ " + " ++ showMTy t2 ++  ")"
+showMTy (TyEither t1 t2) = "(Either " ++ showMTy t1 ++ " " ++ showMTy t2 ++  ")"
 showMTy TyUnit = "Unit"
 showMTy TyVoid = "Void"
   
@@ -142,13 +150,14 @@ showFExpr (FLetrec ab c) = "let " ++ d ++ showFExpr c
 showFExpr (FTyAbs ab c) = "(/\\" ++ d ++ showFExpr c ++ ")"
   where d = foldr (\p r -> p ++ " " ++ r) ". " ab
 
-data FTy = FTyVar Var 
+data FTy = FTyVar Var
   | FTyLit LiteralType
   | FTyList FTy
   | FTyFn FTy FTy
   | FTyProd FTy FTy
   | FTySum FTy FTy
-  | FTyUnit 
+  | FTyEither FTy FTy
+  | FTyUnit
   | FTyVoid
   | FForall [Var] FTy
  deriving (Eq, Show)
@@ -160,13 +169,14 @@ showFTy (FTyList t) = "(List " ++ (showFTy t) ++ ")"
 showFTy (FTyFn t1 t2) = "(" ++ showFTy t1 ++ " -> " ++ showFTy t2 ++ ")"
 showFTy (FTyProd t1 t2) = "(" ++ showFTy t1 ++ " * " ++ showFTy t2 ++  ")"
 showFTy (FTySum t1 t2) = "(" ++ showFTy t1 ++ " + " ++ showFTy t2 ++  ")"
+showFTy (FTyEither t1 t2) = "(Either " ++ showFTy t1 ++ " " ++ showFTy t2 ++  ")"
 showFTy FTyUnit = "Unit"
 showFTy FTyVoid = "Void"
 showFTy (FForall x t) = "(forall " ++ d ++ showFTy t ++ ")"
  where d = foldr (\p q -> p ++ " " ++ q) ", " x
 
-mTyToFTy :: MTy -> FTy 
-mTyToFTy (TyVar v) = FTyVar v 
+mTyToFTy :: MTy -> FTy
+mTyToFTy (TyVar v) = FTyVar v
 mTyToFTy (TyLit lt) = FTyLit lt
 mTyToFTy TyUnit = FTyUnit
 mTyToFTy TyVoid = FTyVoid
@@ -174,6 +184,7 @@ mTyToFTy (TyList x) = FTyList $ mTyToFTy x
 mTyToFTy (TyFn x y) = FTyFn (mTyToFTy x) (mTyToFTy y)
 mTyToFTy (TyProd x y) = FTyProd (mTyToFTy x) (mTyToFTy y)
 mTyToFTy (TySum x y) = FTySum (mTyToFTy x) (mTyToFTy y)
+mTyToFTy (TyEither x y) = FTyEither (mTyToFTy x) (mTyToFTy y)
 
 tyToFTy :: TypSch -> FTy 
 tyToFTy (Forall [] t) = mTyToFTy t
@@ -213,6 +224,7 @@ instance Vars MTy where
  vars TyVoid = []
  vars (TyProd t1 t2) = vars t1 ++ vars t2
  vars (TySum t1 t2) = vars t1 ++ vars t2
+ vars (TyEither t1 t2) = vars t1 ++ vars t2
  vars (TyLit _) = []
 
 primTy :: Prim -> TypSch
@@ -224,8 +236,8 @@ primTy Nil = Forall ["t"] $ TyList (TyVar "t")
 primTy Cons = Forall ["t"] $ TyFn (TyVar "t") (TyFn (TyList (TyVar "t")) (TyList (TyVar "t")))
 primTy TT = Forall [] TyUnit
 primTy FF = Forall ["t"] $ TyFn TyVoid (TyVar "t")
-primTy Inl = Forall ["x", "y"] $ (TyVar "x") `TyFn` (TyProd (TyVar "x") (TyVar "y"))  
-primTy Inr = Forall ["x", "y"] $ (TyVar "y") `TyFn` (TyProd (TyVar "x") (TyVar "y"))
+primTy Inl = Forall ["x", "y"] $ (TyVar "x") `TyFn` (TyEither (TyVar "x") (TyVar "y"))
+primTy Inr = Forall ["x", "y"] $ (TyVar "y") `TyFn` (TyEither (TyVar "x") (TyVar "y"))
 primTy Succ = Forall [] $ natType `TyFn` natType
 primTy Pred = Forall [] $ natType `TyFn` natType
 primTy Pair = Forall ["x", "y"] $ (TyFn (TyVar "x") (TyFn (TyVar "y") (TyProd (TyVar "x") (TyVar "y"))))
@@ -266,6 +278,7 @@ instance Substable MTy where
  subst f (TyFn t1 t2) = TyFn (subst f t1) (subst f t2)
  subst f (TyProd t1 t2) = TyProd  (subst f t1) (subst f t2)
  subst f (TySum t1 t2) = TySum  (subst f t1) (subst f t2)
+ subst f (TyEither t1 t2) = TyEither  (subst f t1) (subst f t2)
  subst f (TyVar v) = case lookup v f of
                       Nothing -> TyVar v
                       Just y -> y
@@ -274,14 +287,15 @@ instance Substable FTy where
  subst f (FTyLit lt) = FTyLit lt
  subst f FTyUnit = FTyUnit
  subst f FTyVoid = FTyVoid
- subst f (FTyList t) = FTyList $ subst f t 
- subst f (FTyFn t1 t2) = FTyFn (subst f t1) (subst f t2) 
+ subst f (FTyList t) = FTyList $ subst f t
+ subst f (FTyFn t1 t2) = FTyFn (subst f t1) (subst f t2)
  subst f (FTyProd t1 t2) = FTyProd  (subst f t1) (subst f t2)
  subst f (FTySum t1 t2) = FTySum  (subst f t1) (subst f t2)
+ subst f (FTyEither t1 t2) = FTyEither  (subst f t1) (subst f t2)
  subst f (FTyVar v) = case lookup v f of
                         Nothing -> FTyVar v
                         Just y -> mTyToFTy y
- subst f (FForall vs t) = FForall vs $ subst phi' t                        
+ subst f (FForall vs t) = FForall vs $ subst phi' t
   where phi' = filter (\(v,f')-> not (elem v vs)) f
 
 instance Substable TypSch where
@@ -301,18 +315,19 @@ instance Substable FExpr where
   where phi' = filter (\(v,f')-> not (elem v vs)) phi
  subst phi (FLetrec vs p) = FLetrec (map (\(k,t,v)->(k,subst phi t, subst phi v)) vs) (subst phi p)
 
-subst' :: [(Var,FTy)] -> FTy -> FTy 
+subst' :: [(Var,FTy)] -> FTy -> FTy
 subst' f (FTyLit lt) = FTyLit lt
 subst' f FTyUnit = FTyUnit
 subst' f FTyVoid = FTyVoid
-subst' f (FTyList t) = FTyList $ subst' f t 
-subst' f (FTyFn t1 t2) = FTyFn (subst' f t1) (subst' f t2) 
+subst' f (FTyList t) = FTyList $ subst' f t
+subst' f (FTyFn t1 t2) = FTyFn (subst' f t1) (subst' f t2)
 subst' f (FTyProd t1 t2) = FTyProd  (subst' f t1) (subst' f t2)
 subst' f (FTySum t1 t2) = FTySum  (subst' f t1) (subst' f t2)
+subst' f (FTyEither t1 t2) = FTyEither  (subst' f t1) (subst' f t2)
 subst' f (FTyVar v) = case lookup v f of
                         Nothing -> FTyVar v
                         Just y -> y
-subst' f (FForall vs t) = FForall vs $ subst' f' t                         
+subst' f (FForall vs t) = FForall vs $ subst' f' t
  where f' = filter (\(v,f')-> not (elem v vs)) f
  
 ------------------------------------
@@ -330,6 +345,7 @@ wfTy tvs x = case x of
                 FTyFn w v -> wfTy tvs w >> wfTy tvs v
                 FTyProd w v -> wfTy tvs w >> wfTy tvs v
                 FTySum w v -> wfTy tvs w >> wfTy tvs v
+                FTyEither w v -> wfTy tvs w >> wfTy tvs v
                 FTyUnit -> return ()
                 FTyVoid -> return ()
                 FForall vs y -> wfTy (vs++tvs) y
@@ -383,6 +399,7 @@ mgu TyUnit TyUnit = return []
 mgu TyVoid TyVoid = return []
 mgu (TyProd a b) (TyProd a' b') = do { s <- mgu a a' ; s' <- mgu (subst s b) (subst s b'); return $ s' `o` s }
 mgu (TySum  a b) (TySum  a' b') = do { s <- mgu a a' ; s' <- mgu (subst s b) (subst s b'); return $ s' `o` s }
+mgu (TyEither a b) (TyEither a' b') = do { s <- mgu a a' ; s' <- mgu (subst s b) (subst s b'); return $ s' `o` s }
 mgu (TyFn   a b) (TyFn   a' b') = do { s <- mgu a a' ; s' <- mgu (subst s b) (subst s b'); return $ s' `o` s }
 mgu (TyVar a) (TyVar b) | a == b = return []
 mgu (TyVar a) b = do { occurs a b; return [(a, b)] }
@@ -397,10 +414,11 @@ occurs :: Var -> MTy -> E ()
 occurs v (TyLit _) = return ()
 occurs v (TyList l) = occurs v l
 occurs v TyUnit = return ()
-occurs v TyVoid = return ()       
+occurs v TyVoid = return ()
 occurs v (TyFn   a b) = do { occurs v a; occurs v b }
 occurs v (TyProd a b) = do { occurs v a; occurs v b }
 occurs v (TySum  a b) = do { occurs v a; occurs v b }
+occurs v (TyEither a b) = do { occurs v a; occurs v b }
 occurs v (TyVar v') | v == v' = throwError $ "occurs check failed"
                     | otherwise = return ()
 
@@ -515,7 +533,7 @@ tests = [testJ, testM, testJ, testB'', testB' , testB, test4, testC, testA, test
 
 
 testOne t = do { putStrLn $ "Untyped input: "
-               ; putStrLn $ "\t" ++  show t
+               ; putStrLn $ "\t" ++  showExpr t
                ; let out = fst $ runState (runExceptT (w [] t)) 0
                ; case out of
                    Left  e -> putStrLn $ "\t" ++ "err: " ++ e
@@ -523,11 +541,11 @@ testOne t = do { putStrLn $ "Untyped input: "
                                             ; putStrLn $ "\nType inferred by Hindley-Milner: "
                                             ; putStrLn $ "\t" ++ show ty
                                             ; putStrLn "\nSystem F translation: "
-                                            ; putStrLn $ "\t" ++ show f
+                                            ; putStrLn $ "\t" ++ showFExpr f
                                             ; putStrLn "\nSystem F type: "
                                             ; case (typeOf (vars ty) [] f) of
                                                Left err -> putStrLn $ "\t" ++  "err: " ++ err
-                                               Right tt -> do { putStrLn $ " \t" ++ show tt
+                                               Right tt -> do { putStrLn $ " \t" ++ showFTy tt
                                                               ; if tt == mTyToFTy ty then return () else putStrLn "**** !!! NO MATCH" } }
                ; putStrLn ""
                ; putStrLn "------------------------"
@@ -650,9 +668,16 @@ test5 = Letrec [("f", f), ("g", g)] b
        f = Abs "x" $ Abs "y" $ App (App (Var "g") (nat 0)) (nat 0)
        g = Abs "u" $ Abs "v" $ App (App (Var "f") (Var "v")) (nat 0)
 
-
 test6 :: Expr
 test6 = Letrec [("f", f), ("g", g)] b
  where b = App (App (Const Pair) (Var "f")) (Var "g")
        f = Abs "x" $ Abs "y" $ App (App (Var "g") (nat 0)) (Var "x")
        g = Abs "u" $ Abs "v" $ App (App (Var "f") (nat 0)) (nat 0)
+
+
+
+
+-- For Hydra debugging
+
+test7 :: Expr
+test7 = letrec' "foo" (letrec' "id" (Abs "x" (Var "x")) (Var "id")) (str "whatever")

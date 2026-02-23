@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class RelationalExpression implements Serializable {
+public abstract class RelationalExpression implements Serializable, Comparable<RelationalExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.RelationalExpression");
   
   public static final hydra.core.Name FIELD_NAME_SIMPLE = new hydra.core.Name("simple");
@@ -41,31 +41,31 @@ public abstract class RelationalExpression implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(RelationalExpression instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Simple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(LessThan instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(GreaterThan instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(LessThanEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(GreaterThanEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Instanceof instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -73,7 +73,6 @@ public abstract class RelationalExpression implements Serializable {
     public final hydra.ext.java.syntax.ShiftExpression value;
     
     public Simple (hydra.ext.java.syntax.ShiftExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -82,13 +81,26 @@ public abstract class RelationalExpression implements Serializable {
       if (!(other instanceof Simple)) {
         return false;
       }
-      Simple o = (Simple) (other);
-      return value.equals(o.value);
+      Simple o = (Simple) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(RelationalExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Simple o = (Simple) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -101,7 +113,6 @@ public abstract class RelationalExpression implements Serializable {
     public final hydra.ext.java.syntax.RelationalExpression_LessThan value;
     
     public LessThan (hydra.ext.java.syntax.RelationalExpression_LessThan value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -110,13 +121,26 @@ public abstract class RelationalExpression implements Serializable {
       if (!(other instanceof LessThan)) {
         return false;
       }
-      LessThan o = (LessThan) (other);
-      return value.equals(o.value);
+      LessThan o = (LessThan) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(RelationalExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      LessThan o = (LessThan) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -129,7 +153,6 @@ public abstract class RelationalExpression implements Serializable {
     public final hydra.ext.java.syntax.RelationalExpression_GreaterThan value;
     
     public GreaterThan (hydra.ext.java.syntax.RelationalExpression_GreaterThan value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -138,13 +161,26 @@ public abstract class RelationalExpression implements Serializable {
       if (!(other instanceof GreaterThan)) {
         return false;
       }
-      GreaterThan o = (GreaterThan) (other);
-      return value.equals(o.value);
+      GreaterThan o = (GreaterThan) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(RelationalExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      GreaterThan o = (GreaterThan) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -157,7 +193,6 @@ public abstract class RelationalExpression implements Serializable {
     public final hydra.ext.java.syntax.RelationalExpression_LessThanEqual value;
     
     public LessThanEqual (hydra.ext.java.syntax.RelationalExpression_LessThanEqual value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -166,13 +201,26 @@ public abstract class RelationalExpression implements Serializable {
       if (!(other instanceof LessThanEqual)) {
         return false;
       }
-      LessThanEqual o = (LessThanEqual) (other);
-      return value.equals(o.value);
+      LessThanEqual o = (LessThanEqual) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(RelationalExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      LessThanEqual o = (LessThanEqual) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -185,7 +233,6 @@ public abstract class RelationalExpression implements Serializable {
     public final hydra.ext.java.syntax.RelationalExpression_GreaterThanEqual value;
     
     public GreaterThanEqual (hydra.ext.java.syntax.RelationalExpression_GreaterThanEqual value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -194,13 +241,26 @@ public abstract class RelationalExpression implements Serializable {
       if (!(other instanceof GreaterThanEqual)) {
         return false;
       }
-      GreaterThanEqual o = (GreaterThanEqual) (other);
-      return value.equals(o.value);
+      GreaterThanEqual o = (GreaterThanEqual) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(RelationalExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      GreaterThanEqual o = (GreaterThanEqual) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -213,7 +273,6 @@ public abstract class RelationalExpression implements Serializable {
     public final hydra.ext.java.syntax.RelationalExpression_InstanceOf value;
     
     public Instanceof (hydra.ext.java.syntax.RelationalExpression_InstanceOf value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -222,13 +281,26 @@ public abstract class RelationalExpression implements Serializable {
       if (!(other instanceof Instanceof)) {
         return false;
       }
-      Instanceof o = (Instanceof) (other);
-      return value.equals(o.value);
+      Instanceof o = (Instanceof) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(RelationalExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Instanceof o = (Instanceof) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

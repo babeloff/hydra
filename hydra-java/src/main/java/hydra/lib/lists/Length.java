@@ -7,6 +7,7 @@ import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Expect;
 import hydra.dsl.Terms;
+import hydra.dsl.Types;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -18,6 +19,9 @@ import static hydra.dsl.Types.int32;
 import static hydra.dsl.Types.list;
 import static hydra.dsl.Types.scheme;
 
+/**
+ * Returns the length of a list.
+ */
 public class Length extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.lists.length");
@@ -33,6 +37,12 @@ public class Length extends PrimitiveFunction {
         return args -> Flows.map(Expect.list(Flows::pure, args.get(0)), l -> Terms.int32(apply(l)));
     }
 
+    /**
+     * Returns the number of elements.
+     * @param <X> the element type
+     * @param list the list to get the length of
+     * @return the number of elements
+     */
     public static <X> int apply(List<X> list) {
         return list.size();
     }

@@ -98,13 +98,25 @@ convention = "numpy"
 typeCheckingMode = "strict"
 extraPaths = [
     "src/main/python",
-    "src/gen-main/python"
+    "src/gen-main/python",
+    "src/gen-test/python"
 ]
 
 [tool.pytest.ini_options]
 pythonpath = [
     "src/main/python",
-    "src/gen-main/python"
+    "src/gen-main/python",
+    "src/gen-test/python",
+    "src/test/python"
+]
+testpaths = [
+    "src/test/python",
+    "src/gen-test/python/generation"
+]
+# Suppress warnings about TestCase* and TestGroup classes in hydra.testing
+# (these are data classes, not pytest test classes)
+filterwarnings = [
+    "ignore::pytest.PytestCollectionWarning"
 ]
 
 [build-system]

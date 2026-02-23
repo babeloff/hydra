@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class SwitchBlockStatementGroup implements Serializable {
+public class SwitchBlockStatementGroup implements Serializable, Comparable<SwitchBlockStatementGroup> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.SwitchBlockStatementGroup");
   
   public static final hydra.core.Name FIELD_NAME_LABELS = new hydra.core.Name("labels");
@@ -16,8 +16,6 @@ public class SwitchBlockStatementGroup implements Serializable {
   public final java.util.List<hydra.ext.java.syntax.BlockStatement> statements;
   
   public SwitchBlockStatementGroup (java.util.List<hydra.ext.java.syntax.SwitchLabel> labels, java.util.List<hydra.ext.java.syntax.BlockStatement> statements) {
-    java.util.Objects.requireNonNull((labels));
-    java.util.Objects.requireNonNull((statements));
     this.labels = labels;
     this.statements = statements;
   }
@@ -27,22 +25,39 @@ public class SwitchBlockStatementGroup implements Serializable {
     if (!(other instanceof SwitchBlockStatementGroup)) {
       return false;
     }
-    SwitchBlockStatementGroup o = (SwitchBlockStatementGroup) (other);
-    return labels.equals(o.labels) && statements.equals(o.statements);
+    SwitchBlockStatementGroup o = (SwitchBlockStatementGroup) other;
+    return java.util.Objects.equals(
+      this.labels,
+      o.labels) && java.util.Objects.equals(
+      this.statements,
+      o.statements);
   }
   
   @Override
   public int hashCode() {
-    return 2 * labels.hashCode() + 3 * statements.hashCode();
+    return 2 * java.util.Objects.hashCode(labels) + 3 * java.util.Objects.hashCode(statements);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(SwitchBlockStatementGroup other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      labels.hashCode(),
+      other.labels.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      statements.hashCode(),
+      other.statements.hashCode());
   }
   
   public SwitchBlockStatementGroup withLabels(java.util.List<hydra.ext.java.syntax.SwitchLabel> labels) {
-    java.util.Objects.requireNonNull((labels));
     return new SwitchBlockStatementGroup(labels, statements);
   }
   
   public SwitchBlockStatementGroup withStatements(java.util.List<hydra.ext.java.syntax.BlockStatement> statements) {
-    java.util.Objects.requireNonNull((statements));
     return new SwitchBlockStatementGroup(labels, statements);
   }
 }

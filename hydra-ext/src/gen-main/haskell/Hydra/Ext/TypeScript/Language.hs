@@ -1,3 +1,5 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | Language constraints for TypeScript
 
 module Hydra.Ext.TypeScript.Language where
@@ -6,9 +8,10 @@ import qualified Hydra.Coders as Coders
 import qualified Hydra.Core as Core
 import qualified Hydra.Lib.Lists as Lists
 import qualified Hydra.Lib.Sets as Sets
-import qualified Hydra.Mantle as Mantle
 import qualified Hydra.Rewriting as Rewriting
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import qualified Hydra.Variants as Variants
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -30,32 +33,32 @@ typeScriptLanguage = Coders.Language {
   where 
     eliminationVariants = Sets.empty
     literalVariants = (Sets.fromList [
-      Mantle.LiteralVariantBoolean,
-      Mantle.LiteralVariantFloat,
-      Mantle.LiteralVariantInteger,
-      Mantle.LiteralVariantString])
+      Variants.LiteralVariantBoolean,
+      Variants.LiteralVariantFloat,
+      Variants.LiteralVariantInteger,
+      Variants.LiteralVariantString])
     floatTypes = (Sets.fromList [
       Core.FloatTypeFloat64])
     functionVariants = Sets.empty
     integerTypes = (Sets.fromList [
       Core.IntegerTypeBigint])
     termVariants = (Sets.fromList [
-      Mantle.TermVariantList,
-      Mantle.TermVariantLiteral,
-      Mantle.TermVariantMap,
-      Mantle.TermVariantOptional,
-      Mantle.TermVariantRecord,
-      Mantle.TermVariantUnion])
+      Variants.TermVariantList,
+      Variants.TermVariantLiteral,
+      Variants.TermVariantMap,
+      Variants.TermVariantMaybe,
+      Variants.TermVariantRecord,
+      Variants.TermVariantUnion])
     typeVariants = (Sets.fromList [
-      Mantle.TypeVariantList,
-      Mantle.TypeVariantLiteral,
-      Mantle.TypeVariantMap,
-      Mantle.TypeVariantOptional,
-      Mantle.TypeVariantRecord,
-      Mantle.TypeVariantUnion])
+      Variants.TypeVariantList,
+      Variants.TypeVariantLiteral,
+      Variants.TypeVariantMap,
+      Variants.TypeVariantMaybe,
+      Variants.TypeVariantRecord,
+      Variants.TypeVariantUnion])
     types = (\x -> case x of
       Core.TypeMap v1 -> ((\x -> case x of
-        Core.TypeOptional _ -> False
+        Core.TypeMaybe _ -> False
         _ -> True) (Rewriting.deannotateType (Core.mapTypeValues v1)))
       _ -> True)
 

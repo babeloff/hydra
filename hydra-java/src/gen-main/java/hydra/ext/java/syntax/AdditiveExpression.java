@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class AdditiveExpression implements Serializable {
+public abstract class AdditiveExpression implements Serializable, Comparable<AdditiveExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.AdditiveExpression");
   
   public static final hydra.core.Name FIELD_NAME_UNARY = new hydra.core.Name("unary");
@@ -29,19 +29,19 @@ public abstract class AdditiveExpression implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(AdditiveExpression instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Unary instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Plus instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Minus instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -49,7 +49,6 @@ public abstract class AdditiveExpression implements Serializable {
     public final hydra.ext.java.syntax.MultiplicativeExpression value;
     
     public Unary (hydra.ext.java.syntax.MultiplicativeExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -58,13 +57,26 @@ public abstract class AdditiveExpression implements Serializable {
       if (!(other instanceof Unary)) {
         return false;
       }
-      Unary o = (Unary) (other);
-      return value.equals(o.value);
+      Unary o = (Unary) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AdditiveExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Unary o = (Unary) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -77,7 +89,6 @@ public abstract class AdditiveExpression implements Serializable {
     public final hydra.ext.java.syntax.AdditiveExpression_Binary value;
     
     public Plus (hydra.ext.java.syntax.AdditiveExpression_Binary value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -86,13 +97,26 @@ public abstract class AdditiveExpression implements Serializable {
       if (!(other instanceof Plus)) {
         return false;
       }
-      Plus o = (Plus) (other);
-      return value.equals(o.value);
+      Plus o = (Plus) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AdditiveExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Plus o = (Plus) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -105,7 +129,6 @@ public abstract class AdditiveExpression implements Serializable {
     public final hydra.ext.java.syntax.AdditiveExpression_Binary value;
     
     public Minus (hydra.ext.java.syntax.AdditiveExpression_Binary value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -114,13 +137,26 @@ public abstract class AdditiveExpression implements Serializable {
       if (!(other instanceof Minus)) {
         return false;
       }
-      Minus o = (Minus) (other);
-      return value.equals(o.value);
+      Minus o = (Minus) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AdditiveExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Minus o = (Minus) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

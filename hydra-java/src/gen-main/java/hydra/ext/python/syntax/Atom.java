@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class Atom implements Serializable {
+public abstract class Atom implements Serializable, Comparable<Atom> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Atom");
   
   public static final hydra.core.Name FIELD_NAME_NAME = new hydra.core.Name("name");
@@ -81,71 +81,71 @@ public abstract class Atom implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(Atom instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Name instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(True instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(False instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(None instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(String_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Number_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Tuple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Group instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Genexp instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(List instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Listcomp instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Dict instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Set instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Dictcomp instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Setcomp instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Ellipsis instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -153,7 +153,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.Name value;
     
     public Name (hydra.ext.python.syntax.Name value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -162,13 +161,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof Name)) {
         return false;
       }
-      Name o = (Name) (other);
-      return value.equals(o.value);
+      Name o = (Name) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Name o = (Name) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -187,12 +199,22 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof True)) {
         return false;
       }
-      True o = (True) (other);
+      True o = (True) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -212,12 +234,22 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof False)) {
         return false;
       }
-      False o = (False) (other);
+      False o = (False) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -237,12 +269,22 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof None)) {
         return false;
       }
-      None o = (None) (other);
+      None o = (None) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -256,7 +298,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.String_ value;
     
     public String_ (hydra.ext.python.syntax.String_ value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -265,13 +306,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof String_)) {
         return false;
       }
-      String_ o = (String_) (other);
-      return value.equals(o.value);
+      String_ o = (String_) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      String_ o = (String_) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -284,7 +338,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.Number_ value;
     
     public Number_ (hydra.ext.python.syntax.Number_ value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -293,13 +346,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof Number_)) {
         return false;
       }
-      Number_ o = (Number_) (other);
-      return value.equals(o.value);
+      Number_ o = (Number_) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Number_ o = (Number_) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -312,7 +378,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.Tuple value;
     
     public Tuple (hydra.ext.python.syntax.Tuple value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -321,13 +386,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof Tuple)) {
         return false;
       }
-      Tuple o = (Tuple) (other);
-      return value.equals(o.value);
+      Tuple o = (Tuple) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Tuple o = (Tuple) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -340,7 +418,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.Group value;
     
     public Group (hydra.ext.python.syntax.Group value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -349,13 +426,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof Group)) {
         return false;
       }
-      Group o = (Group) (other);
-      return value.equals(o.value);
+      Group o = (Group) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Group o = (Group) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -368,7 +458,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.Genexp value;
     
     public Genexp (hydra.ext.python.syntax.Genexp value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -377,13 +466,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof Genexp)) {
         return false;
       }
-      Genexp o = (Genexp) (other);
-      return value.equals(o.value);
+      Genexp o = (Genexp) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Genexp o = (Genexp) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -396,7 +498,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.List value;
     
     public List (hydra.ext.python.syntax.List value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -405,13 +506,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof List)) {
         return false;
       }
-      List o = (List) (other);
-      return value.equals(o.value);
+      List o = (List) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      List o = (List) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -424,7 +538,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.Listcomp value;
     
     public Listcomp (hydra.ext.python.syntax.Listcomp value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -433,13 +546,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof Listcomp)) {
         return false;
       }
-      Listcomp o = (Listcomp) (other);
-      return value.equals(o.value);
+      Listcomp o = (Listcomp) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Listcomp o = (Listcomp) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -452,7 +578,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.Dict value;
     
     public Dict (hydra.ext.python.syntax.Dict value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -461,13 +586,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof Dict)) {
         return false;
       }
-      Dict o = (Dict) (other);
-      return value.equals(o.value);
+      Dict o = (Dict) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Dict o = (Dict) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -480,7 +618,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.Set value;
     
     public Set (hydra.ext.python.syntax.Set value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -489,13 +626,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof Set)) {
         return false;
       }
-      Set o = (Set) (other);
-      return value.equals(o.value);
+      Set o = (Set) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Set o = (Set) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -508,7 +658,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.Dictcomp value;
     
     public Dictcomp (hydra.ext.python.syntax.Dictcomp value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -517,13 +666,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof Dictcomp)) {
         return false;
       }
-      Dictcomp o = (Dictcomp) (other);
-      return value.equals(o.value);
+      Dictcomp o = (Dictcomp) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Dictcomp o = (Dictcomp) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -536,7 +698,6 @@ public abstract class Atom implements Serializable {
     public final hydra.ext.python.syntax.Setcomp value;
     
     public Setcomp (hydra.ext.python.syntax.Setcomp value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -545,13 +706,26 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof Setcomp)) {
         return false;
       }
-      Setcomp o = (Setcomp) (other);
-      return value.equals(o.value);
+      Setcomp o = (Setcomp) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Setcomp o = (Setcomp) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -570,12 +744,22 @@ public abstract class Atom implements Serializable {
       if (!(other instanceof Ellipsis)) {
         return false;
       }
-      Ellipsis o = (Ellipsis) (other);
+      Ellipsis o = (Ellipsis) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Atom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

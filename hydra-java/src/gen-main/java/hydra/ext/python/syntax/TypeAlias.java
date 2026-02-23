@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class TypeAlias implements Serializable {
+public class TypeAlias implements Serializable, Comparable<TypeAlias> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.TypeAlias");
   
   public static final hydra.core.Name FIELD_NAME_NAME = new hydra.core.Name("name");
@@ -20,9 +20,6 @@ public class TypeAlias implements Serializable {
   public final hydra.ext.python.syntax.Expression expression;
   
   public TypeAlias (hydra.ext.python.syntax.Name name, java.util.List<hydra.ext.python.syntax.TypeParameter> typeParams, hydra.ext.python.syntax.Expression expression) {
-    java.util.Objects.requireNonNull((name));
-    java.util.Objects.requireNonNull((typeParams));
-    java.util.Objects.requireNonNull((expression));
     this.name = name;
     this.typeParams = typeParams;
     this.expression = expression;
@@ -33,27 +30,47 @@ public class TypeAlias implements Serializable {
     if (!(other instanceof TypeAlias)) {
       return false;
     }
-    TypeAlias o = (TypeAlias) (other);
-    return name.equals(o.name) && typeParams.equals(o.typeParams) && expression.equals(o.expression);
+    TypeAlias o = (TypeAlias) other;
+    return java.util.Objects.equals(
+      this.name,
+      o.name) && java.util.Objects.equals(
+      this.typeParams,
+      o.typeParams) && java.util.Objects.equals(
+      this.expression,
+      o.expression);
   }
   
   @Override
   public int hashCode() {
-    return 2 * name.hashCode() + 3 * typeParams.hashCode() + 5 * expression.hashCode();
+    return 2 * java.util.Objects.hashCode(name) + 3 * java.util.Objects.hashCode(typeParams) + 5 * java.util.Objects.hashCode(expression);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(TypeAlias other) {
+    int cmp = 0;
+    cmp = ((Comparable) name).compareTo(other.name);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      typeParams.hashCode(),
+      other.typeParams.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) expression).compareTo(other.expression);
   }
   
   public TypeAlias withName(hydra.ext.python.syntax.Name name) {
-    java.util.Objects.requireNonNull((name));
     return new TypeAlias(name, typeParams, expression);
   }
   
   public TypeAlias withTypeParams(java.util.List<hydra.ext.python.syntax.TypeParameter> typeParams) {
-    java.util.Objects.requireNonNull((typeParams));
     return new TypeAlias(name, typeParams, expression);
   }
   
   public TypeAlias withExpression(hydra.ext.python.syntax.Expression expression) {
-    java.util.Objects.requireNonNull((expression));
     return new TypeAlias(name, typeParams, expression);
   }
 }

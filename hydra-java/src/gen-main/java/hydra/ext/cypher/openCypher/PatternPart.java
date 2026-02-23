@@ -11,11 +11,11 @@ public class PatternPart implements Serializable {
   
   public static final hydra.core.Name FIELD_NAME_PATTERN = new hydra.core.Name("pattern");
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.Variable> variable;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.Variable> variable;
   
   public final hydra.ext.cypher.openCypher.AnonymousPatternPart pattern;
   
-  public PatternPart (hydra.util.Opt<hydra.ext.cypher.openCypher.Variable> variable, hydra.ext.cypher.openCypher.AnonymousPatternPart pattern) {
+  public PatternPart (hydra.util.Maybe<hydra.ext.cypher.openCypher.Variable> variable, hydra.ext.cypher.openCypher.AnonymousPatternPart pattern) {
     java.util.Objects.requireNonNull((variable));
     java.util.Objects.requireNonNull((pattern));
     this.variable = variable;
@@ -36,7 +36,7 @@ public class PatternPart implements Serializable {
     return 2 * variable.hashCode() + 3 * pattern.hashCode();
   }
   
-  public PatternPart withVariable(hydra.util.Opt<hydra.ext.cypher.openCypher.Variable> variable) {
+  public PatternPart withVariable(hydra.util.Maybe<hydra.ext.cypher.openCypher.Variable> variable) {
     java.util.Objects.requireNonNull((variable));
     return new PatternPart(variable, pattern);
   }

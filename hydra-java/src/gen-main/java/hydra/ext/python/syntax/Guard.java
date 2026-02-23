@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class Guard implements Serializable {
+public class Guard implements Serializable, Comparable<Guard> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Guard");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class Guard implements Serializable {
   public final hydra.ext.python.syntax.NamedExpression value;
   
   public Guard (hydra.ext.python.syntax.NamedExpression value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,20 @@ public class Guard implements Serializable {
     if (!(other instanceof Guard)) {
       return false;
     }
-    Guard o = (Guard) (other);
-    return value.equals(o.value);
+    Guard o = (Guard) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Guard other) {
+    return ((Comparable) value).compareTo(other.value);
   }
 }

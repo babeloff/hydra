@@ -1,27 +1,80 @@
 """A collection of foundational typing constructs specific to Hydra-Python."""
 
 from __future__ import annotations
-
-from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
-from typing import Any, Generic, TypeVar, cast, override
+from typing import Any, Generic, TypeVar, cast, final, TypeAlias
 
-T = TypeVar("T")
+
 K = TypeVar("K")
+L = TypeVar("L")
+R = TypeVar("R")
+T = TypeVar("T")
 V = TypeVar("V")
 
 
-A = TypeVar("A")
-B = TypeVar("B")
-C = TypeVar("C")
+# Note: frozenlist is just a tuple at runtime, but we need a subscriptable alias
+# for runtime use in cast() calls under Python 3.10/PyPy
+class _FrozenListMeta(type):
+    """Metaclass that makes frozenlist subscriptable at runtime."""
+    def __getitem__(cls, item: Any) -> Any:
+        return tuple
 
-M = TypeVar("M", bound="Monad[Any]")
+class frozenlist(metaclass=_FrozenListMeta):
+    """A type alias for immutable lists (tuples). Subscriptable at runtime for cast() compatibility."""
+    pass
 
-S = TypeVar("S")
+
+@final
+@dataclass(frozen=True)
+class Just(Generic[T]):
+    value: T
+
+@final
+class Nothing:
+    __slots__ = ()
+    def __repr__(self) -> str:
+        return "Nothing"
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Nothing)
+    def __hash__(self) -> int:
+        return hash("Nothing")
+
+# Note: unused
+NOTHING = Nothing()
+
+# Maybe needs to be subscriptable at runtime for cast() compatibility in Python 3.10/PyPy
+class _MaybeMeta(type):
+    """Metaclass that makes Maybe subscriptable at runtime."""
+    def __getitem__(cls, item: Any) -> Any:
+        # Return a runtime-usable type for cast() - this is just for type checking
+        return object
+
+class Maybe(metaclass=_MaybeMeta):
+    """A type alias for optional values (Just[T] | Nothing). Subscriptable at runtime for cast() compatibility."""
+    pass
 
 
-type frozenlist[T] = tuple[T, ...]
+@final
+@dataclass(frozen=True)
+class Left(Generic[L]):
+    value: L
+
+@final
+@dataclass(frozen=True)
+class Right(Generic[R]):
+    value: R
+
+# Either needs to be subscriptable at runtime for cast() compatibility in Python 3.10/PyPy
+class _EitherMeta(type):
+    """Metaclass that makes Either subscriptable at runtime."""
+    def __getitem__(cls, item: Any) -> Any:
+        # Return a runtime-usable type for cast() - this is just for type checking
+        return object
+
+class Either(metaclass=_EitherMeta):
+    """A type alias for sum types (Left[L] | Right[R]). Subscriptable at runtime for cast() compatibility."""
+    pass
 
 
 @dataclass(frozen=True, unsafe_hash=True, eq=True, order=True)
@@ -94,146 +147,10 @@ class FrozenDict(Mapping[K, V]):
         return f"FrozenDict({dict(self.data)})"
 
 
-class Monad(ABC, Generic[A]):
-    """A monad is a type that supports a bind operation."""
+def unsupported(message: str) -> None:
+    """Raise NotImplementedError for unsupported features.
 
-    @classmethod
-    @abstractmethod
-    def pure(cls: type[M], value: A) -> Monad[A]:
-        """Construct a monad with a value."""
-        raise NotImplementedError("Not implemented")
-
-    @abstractmethod
-    def bind(self, f: Callable[[A], Monad[B]]) -> Monad[B]:
-        """Bind a function to a monad."""
-        raise NotImplementedError("Not implemented")
-
-    def then(self, f: Callable[[A], B]) -> Monad[B]:
-        """Compose a function with a monad."""
-        return self.lift(f)(self)
-
-    @classmethod
-    def map(cls: type[M], f: Callable[[A], B], ma: Monad[A]) -> Monad[B]:
-        """Map a function over a monadic value."""
-        return ma.bind(lambda x: cast(Monad[B], cls).pure(f(x)))
-
-    @classmethod
-    def join(cls: type[M], mma: Monad[Monad[A]]) -> Monad[A]:
-        """Flatten a nested monad."""
-        return mma.bind(lambda ma: ma)
-
-    @classmethod
-    def apply(cls, mf: Monad[Callable[[A], B]], ma: Monad[A]) -> Monad[B]:
-        """Apply a monadic function to a monadic value (Applicative functor operation)."""
-        return mf.bind(lambda f: ma.bind(lambda a: cast(Monad[B], cls).pure(f(a))))
-
-    @staticmethod
-    def compose(
-        f: Callable[[A], Monad[B]], g: Callable[[B], Monad[C]]
-    ) -> Callable[[A], Monad[C]]:
-        """Compose two monadic functions (Kleisli composition)."""
-        return lambda x: f(x).bind(g)
-
-    @classmethod
-    def lift(cls, f: Callable[[A], B]) -> Callable[[Monad[A]], Monad[B]]:
-        """Lift a function to a monadic function."""
-        return lambda ma: cls.map(f, ma)
-
-
-class MonadPlus(Monad[A], ABC):
-    """A monad that supports a plus operation."""
-
-    @classmethod
-    @abstractmethod
-    def empty(cls) -> MonadPlus[A]:
-        """Construct an empty monad."""
-        raise NotImplementedError("Not implemented")
-
-    @abstractmethod
-    def plus(self, other: MonadPlus[A]) -> MonadPlus[A]:
-        """Combine two monads."""
-        raise NotImplementedError("Not implemented")
-
-    def __add__(self, other: MonadPlus[A]) -> MonadPlus[A]:
-        """Combine two monads."""
-        return self.plus(other)
-
-
-@dataclass
-class Maybe(MonadPlus[A]):
-    """A monad that represents an optional value."""
-
-    value: A | None
-
-    @classmethod
-    @override
-    def pure(cls, value: A) -> Maybe[A]:
-        return cls(value)
-
-    @override
-    def bind(self, f: Callable[[A], Monad[B]]) -> Monad[B]:
-        return f(self.value) if self.value is not None else Maybe(None)
-
-    @classmethod
-    @override
-    def empty(cls) -> Maybe[A]:
-        return cls(None)
-
-    @override
-    def plus(self, other: MonadPlus[A]) -> MonadPlus[A]:
-        other = cast(Maybe[A], other)
-        return Maybe[A](self.value if self.value is not None else other.value)
-
-
-@dataclass
-class Either(Generic[A, B], MonadPlus[A]):
-    """A monad that represents an either value."""
-
-
-@dataclass
-class List(MonadPlus[A]):
-    """A monad that represents a list."""
-
-    value: list[A]
-
-    @classmethod
-    @override
-    def pure(cls, value: A) -> List[A]:
-        return List[A]([value])
-
-    @override
-    def bind(self, f: Callable[[A], Monad[B]]) -> List[B]:
-        return List[B]([b for a in self.value for b in cast(List[B], f(a)).value])
-
-    @classmethod
-    @override
-    def empty(cls) -> List[A]:
-        return List[A]([])
-
-    @override
-    def plus(self, other: MonadPlus[A]) -> MonadPlus[A]:
-        other = cast(List[A], other)
-        return List[A](self.value + other.value)
-
-
-@dataclass
-class State(Monad[A], Generic[A, S]):
-    """A monad that represents a stateful computation."""
-
-    run: Callable[[S], tuple[S, A]]
-
-    @classmethod
-    @override
-    def pure(cls, value: A) -> State[A, S]:
-        def run(s: S) -> tuple[S, A]:
-            return (s, value)
-
-        return State[A, S](run)
-
-    @override
-    def bind(self, f: Callable[[A], Monad[B]]) -> State[B, S]:
-        def run(s: S) -> tuple[S, B]:
-            s, a = self.run(s)
-            return cast(State[B, S], f(a)).run(s)
-
-        return State[B, S](run)
+    This function is called by generated code when a feature is not yet supported
+    in the Python backend (e.g., inline match expressions).
+    """
+    raise NotImplementedError(message)

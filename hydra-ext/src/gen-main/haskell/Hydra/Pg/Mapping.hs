@@ -1,3 +1,5 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A model for property graph mapping specifications. See https://github.com/CategoricalData/hydra/wiki/Property-graphs
 
 module Hydra.Pg.Mapping where
@@ -5,7 +7,8 @@ module Hydra.Pg.Mapping where
 import qualified Hydra.Compute as Compute
 import qualified Hydra.Core as Core
 import qualified Hydra.Pg.Model as Model
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M

@@ -7,7 +7,6 @@ import Hydra.Dsl.Terms as Terms
 import qualified Hydra.Dsl.Types as Types
 import Hydra.Dsl.Tests
 
-import Hydra.TestData
 import Hydra.TestUtils
 
 import qualified Test.Hspec as H
@@ -83,7 +82,7 @@ supportedConstructorsAreUnchanged = H.describe "Verify that supported term const
 
   H.it "Optionals (when supported) pass through without change" $
     QC.property $ \mi -> checkDataAdapter
-      [TypeVariantLiteral, TypeVariantOptional]
+      [TypeVariantLiteral, TypeVariantMaybe]
       optionalInt8Type
       optionalInt16Type
       False
@@ -105,8 +104,8 @@ supportedConstructorsAreUnchanged = H.describe "Verify that supported term const
       stringOrIntType
       stringOrIntType
       False
-      (variant stringOrIntName (Name "right") $ int32 int)
-      (variant stringOrIntName (Name "right") $ int32 int)
+      (inject stringOrIntName (Name "right") $ int32 int)
+      (inject stringOrIntName (Name "right") $ int32 int)
 
   H.it "Sets (when supported) pass through without change" $
     QC.property $ \strings -> checkDataAdapter
@@ -150,22 +149,22 @@ unsupportedConstructorsAreModified = H.describe "Verify that unsupported term co
   H.it "Optionals (when unsupported) become lists" $
     QC.property $ \ms -> checkDataAdapter
       [TypeVariantLiteral, TypeVariantList]
-      (Types.optional Types.string)
+      (Types.maybe Types.string)
       (Types.list Types.string)
       False
       (optional $ string <$> ms)
       (list $ Y.maybe [] (\s -> [string s]) ms)
 
-  H.it "Primitive function references (when unsupported) become variant terms" $
+  H.it "Primitive function references (when unsupported) become inject terms" $
     QC.property $ \name -> checkDataAdapter
       [TypeVariantLiteral, TypeVariantUnion, TypeVariantRecord]
       concatType
       (functionProxyType Types.string)
       False
       (primitive name)
-      (inject functionProxyName $ field "primitive" $ string $ unName name) -- Note: the function name is not dereferenced
+      (inject functionProxyName (Name "primitive") (string $ unName name)) -- Note: the function name is not dereferenced
 
---  H.it "Projections (when unsupported) become variant terms" $
+--  H.it "Projections (when unsupported) become inject terms" $
 --    QC.property $ \fname -> checkDataAdapter
 --      [TypeVariantLiteral, TypeVariantUnion, TypeVariantRecord]
 --      exampleProjectionType
@@ -187,13 +186,13 @@ unsupportedConstructorsAreModified = H.describe "Verify that unsupported term co
 
   H.it "Unions (when unsupported) become records" $
     QC.property $ \i -> checkDataAdapter
-      [TypeVariantLiteral, TypeVariantOptional, TypeVariantRecord]
+      [TypeVariantLiteral, TypeVariantMaybe, TypeVariantRecord]
       eitherStringOrInt8Type
       (TypeRecord $ RowType eitherStringOrInt8TypeName [
-        Types.field "left" $ Types.optional Types.string,
-        Types.field "right" $ Types.optional Types.int16])
+        Types.field "left" $ Types.maybe Types.string,
+        Types.field "right" $ Types.maybe Types.int16])
       False
-      (inject eitherStringOrInt8TypeName $ field "right" $ int8 i)
+      (inject eitherStringOrInt8TypeName (Name "right") (int8 i))
       (record eitherStringOrInt8TypeName [
         field "left" $ optional Nothing,
         field "right" $ optional $ Just $ int16 $ fromIntegral i])
@@ -255,7 +254,7 @@ roundTripsPreserveSelectedTypes = H.describe "Verify that the adapter is informa
 --roundTripsPreserveArbitraryTypes = H.describe "Verify that the adapter is information preserving for arbitrary typed terms" $ do
 --
 --  H.it "Check arbitrary type/term pairs" $
---    QC.property $ \(TypedTerm term typ) -> roundTripIsNoop typ term
+--    QC.property $ \(TypeApplicationTerm term typ) -> roundTripIsNoop typ term
 
 fieldAdaptersAreAsExpected :: H.SpecWith ()
 fieldAdaptersAreAsExpected = H.describe "Check that field adapters are as expected" $ do
@@ -288,7 +287,7 @@ roundTripIsNoop typ term = shouldSucceedWith
       languageConstraintsTypeVariants = S.fromList [
         TypeVariantAnnotated, TypeVariantLiteral, TypeVariantList, TypeVariantMap, TypeVariantRecord, TypeVariantUnion],
       languageConstraintsTypes = \typ -> case deannotateType typ of
-        TypeOptional (TypeOptional _) -> False
+        TypeMaybe (TypeMaybe _) -> False
         _ -> True }
 
     -- Note: in a real application, you wouldn't create the adapter just to use it once;

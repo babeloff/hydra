@@ -1,52 +1,62 @@
+-- | Aggregates all Hydra source modules (kernel, test, and extension modules)
+
 module Hydra.Sources.All(
   module Hydra.Sources.All,
   module Hydra.Sources.Kernel.Terms.All,
   module Hydra.Sources.Kernel.Types.All,
+  module Hydra.Sources.Test.All,
 ) where
 
 import Hydra.Kernel
 import Hydra.Sources.Kernel.Terms.All
 import Hydra.Sources.Kernel.Types.All
+import Hydra.Sources.Test.All
 
-import Hydra.Sources.Haskell.Ast
-import Hydra.Sources.Haskell.Coder
-import Hydra.Sources.Haskell.Language
-import Hydra.Sources.Haskell.Operators
-import Hydra.Sources.Haskell.Serde
-import Hydra.Sources.Haskell.Utils
+import qualified Hydra.Sources.CoderUtils as CoderUtils
+import qualified Hydra.Sources.Haskell.Ast as HaskellAst
+import qualified Hydra.Sources.Haskell.Coder as HaskellCoder
+import qualified Hydra.Sources.Haskell.Language as HaskellLanguage
+import qualified Hydra.Sources.Haskell.Operators as HaskellOperators
+import qualified Hydra.Sources.Haskell.Serde as HaskellSerde
+import qualified Hydra.Sources.Haskell.Utils as HaskellUtils
 import qualified Hydra.Sources.Json.Coder as JsonCoder
+import qualified Hydra.Sources.Json.Decode as JsonDecode
 import qualified Hydra.Sources.Json.Decoding as JsonDecoding
+import qualified Hydra.Sources.Json.Encode as JsonEncode
 import qualified Hydra.Sources.Json.Extract as JsonExtract
 import qualified Hydra.Sources.Json.Language as JsonLanguage
-import Hydra.Sources.Test.TestGraph
-import Hydra.Sources.Test.TestSuite
-import Hydra.Sources.Yaml.Model
+import qualified Hydra.Sources.Json.Parser as JsonParser
+import qualified Hydra.Sources.Json.Writer as JsonWriter
+import qualified Hydra.Sources.Yaml.Model as YamlModel
 
 
 mainModules :: [Module]
-mainModules = kernelModules ++ jsonModules ++ otherModules
+mainModules = kernelModules ++ haskellModules ++ jsonModules ++ otherModules
+
+kernelModules :: [Module]
+kernelModules = kernelTypesModules ++ kernelTermsModules ++ jsonModules
+
+haskellModules :: [Module]
+haskellModules = [
+  HaskellAst.module_,
+  HaskellCoder.module_,
+  HaskellLanguage.module_,
+  HaskellOperators.module_,
+  HaskellSerde.module_,
+  HaskellUtils.module_]
 
 jsonModules :: [Module]
 jsonModules = [
   JsonCoder.module_,
+  JsonDecode.module_,
   JsonDecoding.module_,
+  JsonEncode.module_,
   JsonExtract.module_,
-  JsonLanguage.module_]
+  JsonLanguage.module_,
+  JsonParser.module_,
+  JsonWriter.module_]
 
 otherModules :: [Module]
 otherModules = [
-  haskellAstModule,
-  haskellCoderModule,
-  haskellLanguageModule,
-  haskellOperatorsModule,
-  haskellSerdeModule,
-  haskellUtilsModule,
-  yamlModelModule]
-
-testModules :: [Module]
-testModules = [
-  testGraphModule,
-  testSuiteModule]
-
-kernelModules :: [Module]
-kernelModules = kernelTypesModules ++ kernelTermsModules
+  CoderUtils.module_,
+  YamlModel.module_]

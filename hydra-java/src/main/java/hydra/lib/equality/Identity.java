@@ -14,6 +14,9 @@ import java.util.function.Function;
 import static hydra.dsl.Types.function;
 import static hydra.dsl.Types.scheme;
 
+/**
+ * Returns its argument unchanged.
+ */
 public class Identity extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.equality.identity");
@@ -29,6 +32,12 @@ public class Identity extends PrimitiveFunction {
         return args -> Flows.pure(args.get(0));
     }
 
+    /**
+     * Identity function.
+     * @param <X> the type
+     * @param object the value
+     * @return the same value
+     */
     public static <X> X apply(X object) {
         return object;
     }

@@ -13,9 +13,9 @@ public class YieldItems implements Serializable {
   
   public final java.util.List<hydra.ext.cypher.openCypher.YieldItem> items;
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.Where> where;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.Where> where;
   
-  public YieldItems (java.util.List<hydra.ext.cypher.openCypher.YieldItem> items, hydra.util.Opt<hydra.ext.cypher.openCypher.Where> where) {
+  public YieldItems (java.util.List<hydra.ext.cypher.openCypher.YieldItem> items, hydra.util.Maybe<hydra.ext.cypher.openCypher.Where> where) {
     java.util.Objects.requireNonNull((items));
     java.util.Objects.requireNonNull((where));
     this.items = items;
@@ -41,7 +41,7 @@ public class YieldItems implements Serializable {
     return new YieldItems(items, where);
   }
   
-  public YieldItems withWhere(hydra.util.Opt<hydra.ext.cypher.openCypher.Where> where) {
+  public YieldItems withWhere(hydra.util.Maybe<hydra.ext.cypher.openCypher.Where> where) {
     java.util.Objects.requireNonNull((where));
     return new YieldItems(items, where);
   }

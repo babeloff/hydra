@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class QuoteStyle implements Serializable {
+public abstract class QuoteStyle implements Serializable, Comparable<QuoteStyle> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.QuoteStyle");
   
   public static final hydra.core.Name FIELD_NAME_SINGLE = new hydra.core.Name("single");
@@ -29,19 +29,19 @@ public abstract class QuoteStyle implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(QuoteStyle instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Single instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Double_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Triple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -55,12 +55,22 @@ public abstract class QuoteStyle implements Serializable {
       if (!(other instanceof Single)) {
         return false;
       }
-      Single o = (Single) (other);
+      Single o = (Single) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(QuoteStyle other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -80,12 +90,22 @@ public abstract class QuoteStyle implements Serializable {
       if (!(other instanceof Double_)) {
         return false;
       }
-      Double_ o = (Double_) (other);
+      Double_ o = (Double_) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(QuoteStyle other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -105,12 +125,22 @@ public abstract class QuoteStyle implements Serializable {
       if (!(other instanceof Triple)) {
         return false;
       }
-      Triple o = (Triple) (other);
+      Triple o = (Triple) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(QuoteStyle other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

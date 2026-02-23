@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class ShiftExpression implements Serializable {
+public abstract class ShiftExpression implements Serializable, Comparable<ShiftExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ShiftExpression");
   
   public static final hydra.core.Name FIELD_NAME_UNARY = new hydra.core.Name("unary");
@@ -33,23 +33,23 @@ public abstract class ShiftExpression implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(ShiftExpression instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Unary instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ShiftLeft instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ShiftRight instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ShiftRightZeroFill instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -57,7 +57,6 @@ public abstract class ShiftExpression implements Serializable {
     public final hydra.ext.java.syntax.AdditiveExpression value;
     
     public Unary (hydra.ext.java.syntax.AdditiveExpression value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -66,13 +65,26 @@ public abstract class ShiftExpression implements Serializable {
       if (!(other instanceof Unary)) {
         return false;
       }
-      Unary o = (Unary) (other);
-      return value.equals(o.value);
+      Unary o = (Unary) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ShiftExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Unary o = (Unary) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -85,7 +97,6 @@ public abstract class ShiftExpression implements Serializable {
     public final hydra.ext.java.syntax.ShiftExpression_Binary value;
     
     public ShiftLeft (hydra.ext.java.syntax.ShiftExpression_Binary value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -94,13 +105,26 @@ public abstract class ShiftExpression implements Serializable {
       if (!(other instanceof ShiftLeft)) {
         return false;
       }
-      ShiftLeft o = (ShiftLeft) (other);
-      return value.equals(o.value);
+      ShiftLeft o = (ShiftLeft) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ShiftExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ShiftLeft o = (ShiftLeft) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -113,7 +137,6 @@ public abstract class ShiftExpression implements Serializable {
     public final hydra.ext.java.syntax.ShiftExpression_Binary value;
     
     public ShiftRight (hydra.ext.java.syntax.ShiftExpression_Binary value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -122,13 +145,26 @@ public abstract class ShiftExpression implements Serializable {
       if (!(other instanceof ShiftRight)) {
         return false;
       }
-      ShiftRight o = (ShiftRight) (other);
-      return value.equals(o.value);
+      ShiftRight o = (ShiftRight) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ShiftExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ShiftRight o = (ShiftRight) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -141,7 +177,6 @@ public abstract class ShiftExpression implements Serializable {
     public final hydra.ext.java.syntax.ShiftExpression_Binary value;
     
     public ShiftRightZeroFill (hydra.ext.java.syntax.ShiftExpression_Binary value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -150,13 +185,26 @@ public abstract class ShiftExpression implements Serializable {
       if (!(other instanceof ShiftRightZeroFill)) {
         return false;
       }
-      ShiftRightZeroFill o = (ShiftRightZeroFill) (other);
-      return value.equals(o.value);
+      ShiftRightZeroFill o = (ShiftRightZeroFill) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ShiftExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ShiftRightZeroFill o = (ShiftRightZeroFill) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

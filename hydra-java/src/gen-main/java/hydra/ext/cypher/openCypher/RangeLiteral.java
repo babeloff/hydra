@@ -11,11 +11,11 @@ public class RangeLiteral implements Serializable {
   
   public static final hydra.core.Name FIELD_NAME_END = new hydra.core.Name("end");
   
-  public final hydra.util.Opt<java.math.BigInteger> start;
+  public final hydra.util.Maybe<java.math.BigInteger> start;
   
-  public final hydra.util.Opt<java.math.BigInteger> end;
+  public final hydra.util.Maybe<java.math.BigInteger> end;
   
-  public RangeLiteral (hydra.util.Opt<java.math.BigInteger> start, hydra.util.Opt<java.math.BigInteger> end) {
+  public RangeLiteral (hydra.util.Maybe<java.math.BigInteger> start, hydra.util.Maybe<java.math.BigInteger> end) {
     java.util.Objects.requireNonNull((start));
     java.util.Objects.requireNonNull((end));
     this.start = start;
@@ -36,12 +36,12 @@ public class RangeLiteral implements Serializable {
     return 2 * start.hashCode() + 3 * end.hashCode();
   }
   
-  public RangeLiteral withStart(hydra.util.Opt<java.math.BigInteger> start) {
+  public RangeLiteral withStart(hydra.util.Maybe<java.math.BigInteger> start) {
     java.util.Objects.requireNonNull((start));
     return new RangeLiteral(start, end);
   }
   
-  public RangeLiteral withEnd(hydra.util.Opt<java.math.BigInteger> end) {
+  public RangeLiteral withEnd(hydra.util.Maybe<java.math.BigInteger> end) {
     java.util.Objects.requireNonNull((end));
     return new RangeLiteral(start, end);
   }

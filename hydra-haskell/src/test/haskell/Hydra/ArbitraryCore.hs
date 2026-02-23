@@ -7,11 +7,18 @@ import Hydra.Dsl.Terms
 import qualified Hydra.Dsl.Types as Types
 
 import qualified Control.Monad as CM
+import qualified Data.ByteString as B
 import qualified Data.List as L
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Maybe as Y
 import qualified Test.QuickCheck as QC
+
+
+-- Arbitrary instance for ByteString
+instance QC.Arbitrary B.ByteString where
+  arbitrary = B.pack <$> QC.arbitrary
+  shrink bs = B.pack <$> QC.shrink (B.unpack bs)
 
 
 instance QC.Arbitrary LiteralType
@@ -73,7 +80,7 @@ instance QC.Arbitrary IntegerValue
       IntegerValueUint64 <$> QC.arbitrary]
 
 instance QC.Arbitrary Term where
-  arbitrary = (\(TypedTerm term _) -> term) <$> QC.sized arbitraryTypedTerm
+  arbitrary = (\(TypeApplicationTerm term _) -> term) <$> QC.sized arbitraryTypeApplicationTerm
 
 instance QC.Arbitrary Name
   where
@@ -89,9 +96,9 @@ instance QC.Arbitrary Type where
       _ -> []
     _ -> [] -- TODO
 
-instance QC.Arbitrary TypedTerm where
-  arbitrary = QC.sized arbitraryTypedTerm
-  shrink (TypedTerm term typ) = L.concat ((\(t, m) -> TypedTerm <$> m term <*> pure t) <$> shrinkers typ)
+instance QC.Arbitrary TypeApplicationTerm where
+  arbitrary = QC.sized arbitraryTypeApplicationTerm
+  shrink (TypeApplicationTerm term typ) = L.concat ((\(t, m) -> TypeApplicationTerm <$> m term <*> pure t) <$> shrinkers typ)
 
 arbitraryLiteral :: LiteralType -> QC.Gen Literal
 arbitraryLiteral at = case at of
@@ -181,14 +188,15 @@ arbitraryTerm typ n = case typ of
             return (k, v)
           where
             n' = div n 2
-    TypeOptional ot -> optional <$> arbitraryOptional (arbitraryTerm ot) n'
+    TypeMaybe ot -> optional <$> arbitraryOptional (arbitraryTerm ot) n'
     TypeRecord (RowType n sfields) -> record n <$> arbitraryFields sfields
     TypeSet st -> set <$> (S.fromList <$> arbitraryList False (arbitraryTerm st) n')
-    TypeUnion (RowType n sfields) -> inject n <$> do
+    TypeUnion (RowType n sfields) -> do
       f <- QC.elements sfields
       let fn = fieldTypeName f
+      let Name fnStr = fn
       ft <- arbitraryTerm (fieldTypeType f) n'
-      return $ Field fn ft
+      return $ inject n (Name fnStr) ft
     TypeUnit -> pure TermUnit
   where
     n' = decr n
@@ -205,17 +213,17 @@ arbitraryType n = if n == 0 then pure Types.unit else QC.oneof [
     TypeFunction <$> arbitraryPair FunctionType arbitraryType n',
     TypeList <$> arbitraryType n',
     TypeMap <$> arbitraryPair MapType arbitraryType n',
-    TypeOptional <$> arbitraryType n',
+    TypeMaybe <$> arbitraryType n',
 --    TypeRecord <$> arbitraryList False arbitraryFieldType n', -- TODO: avoid duplicate field names
     TypeSet <$> arbitraryType n']
 --    TypeUnion <$> arbitraryList True arbitraryFieldType n'] -- TODO: avoid duplicate field names
   where n' = decr n
 
-arbitraryTypedTerm :: Int -> QC.Gen TypedTerm
-arbitraryTypedTerm n = do
+arbitraryTypeApplicationTerm :: Int -> QC.Gen TypeApplicationTerm
+arbitraryTypeApplicationTerm n = do
     typ <- arbitraryType n'
     term <- arbitraryTerm typ n'
-    return $ TypedTerm term typ
+    return $ TypeApplicationTerm term typ
   where
     n' = div n 2 -- TODO: a term is usually bigger than its type
 
@@ -248,12 +256,12 @@ shrinkers typ = trivialShrinker ++ case typ of
           where
             shrinkPair m (km, vm) = (\vm' -> (km, vm')) <$> m vm
         dropPairs = [(Types.map kt vt, \(TermMap m) -> TermMap . M.fromList <$> dropAny (M.toList m))]
-    TypeOptional ot -> toNothing : promoteType : shrinkType
+    TypeMaybe ot -> toNothing : promoteType : shrinkType
       where
-        toNothing = (Types.optional ot, \(TermOptional m) -> optional <$> Y.maybe [] (const [Nothing]) m)
-        promoteType = (ot, \(TermOptional m) -> Y.maybeToList m)
-        shrinkType = (\(t, m) -> (Types.optional t,
-          \(TermOptional mb) -> Y.maybe [] (fmap (optional . Just) . m) mb)) <$> shrinkers ot
+        toNothing = (Types.maybe ot, \(TermMaybe m) -> optional <$> Y.maybe [] (const [Nothing]) m)
+        promoteType = (ot, \(TermMaybe m) -> Y.maybeToList m)
+        shrinkType = (\(t, m) -> (Types.maybe t,
+          \(TermMaybe mb) -> Y.maybe [] (fmap (optional . Just) . m) mb)) <$> shrinkers ot
     TypeRecord (RowType name sfields) -> dropFields
         ++ shrinkFieldNames (TypeRecord . RowType name) (record name) (\(TermRecord (Record _ dfields)) -> dfields) sfields
         ++ promoteTypes ++ shrinkTypes
@@ -274,7 +282,7 @@ shrinkers typ = trivialShrinker ++ case typ of
         promoteType = (st, \(TermSet els) -> S.toList els)
         shrinkType = (\(t, m) -> (Types.set t, \(TermSet els) -> set . S.fromList <$> CM.mapM m (S.toList els))) <$> shrinkers st
     TypeUnion (RowType name sfields) -> dropFields
-        ++ shrinkFieldNames (TypeUnion . RowType name) (inject name . L.head) (\(TermUnion (Injection _ f)) -> [f]) sfields
+        ++ shrinkFieldNames (TypeUnion . RowType name) (\fs -> let Field (Name fn) ft = L.head fs in inject name (Name fn) ft) (\(TermUnion (Injection _ f)) -> [f]) sfields
         ++ promoteTypes ++ shrinkTypes
       where
         dropFields = [] -- TODO

@@ -4,13 +4,14 @@ import Hydra.Kernel
 import Hydra.Ext.Staging.Pg.Graphson.Coder
 import Hydra.Ext.Org.Json.Coder
 import Hydra.Ext.Dsl.Pg.Mappings
-import qualified Hydra.Json as Json
+import qualified Hydra.Json.Model as Json
+import qualified Hydra.Lib.Literals as Literals
 import qualified Hydra.Pg.Graphson.Syntax as G
 import qualified Hydra.Pg.Model as PG
 import qualified Hydra.Pg.Mapping as PGM
 import qualified Hydra.Show.Core as ShowCore
-import Hydra.Ext.Staging.Pg.Utils
-import Hydra.Staging.Json.Serde
+import Hydra.Ext.Staging.Pg.Utils hiding (pgElementToJson, pgElementsToJson, lazyGraphToElements)
+import qualified Hydra.Json.Writer as JsonWriter
 
 import qualified Control.Monad as CM
 import qualified Data.Either as E
@@ -86,8 +87,8 @@ pgElementToJson schema el = case el of
           json <- coderDecode (PGM.schemaPropertyValues schema) v >>= untypedTermToJson
           return (key, json)
 
-lazyGraphToElements :: LazyGraph v -> [PG.Element v]
-lazyGraphToElements (LazyGraph vertices edges) = fmap PG.ElementVertex vertices ++ fmap PG.ElementEdge edges
+lazyGraphToElements :: PG.LazyGraph v -> [PG.Element v]
+lazyGraphToElements (PG.LazyGraph vertices edges) = fmap PG.ElementVertex vertices ++ fmap PG.ElementEdge edges
 
 pgElementsToGraphson :: (Ord v, Show v) => GraphsonContext s v -> [PG.Element v] -> Flow s [Json.Value]
 pgElementsToGraphson ctx els = CM.mapM encode vertices
@@ -100,11 +101,13 @@ pgElementsToJson schema els = Json.ValueArray <$> CM.mapM (pgElementToJson schem
 
 propertyGraphGraphsonLastMile :: (Ord v, Show t, Show v) => GraphsonContext Graph v -> PGM.Schema Graph t v -> t -> t -> LastMile Graph (PG.Element v)
 propertyGraphGraphsonLastMile ctx schema vidType eidType =
-  LastMile (\typ -> typedTermToPropertyGraph schema typ vidType eidType) (\els -> jsonValuesToString <$> pgElementsToGraphson ctx els) "jsonl"
+  LastMile (\typ -> typeApplicationTermToPropertyGraph schema typ vidType eidType) (\els -> jsonValuesToString <$> pgElementsToGraphson ctx els) "jsonl"
+  where
+    jsonValuesToString = L.intercalate "\n" . fmap JsonWriter.printJson
 
 propertyGraphJsonLastMile :: (Show t, Show v) => PGM.Schema Graph t v -> t -> t -> LastMile Graph (PG.Element v)
 propertyGraphJsonLastMile schema vidType eidType =
-  LastMile (\typ -> typedTermToPropertyGraph schema typ vidType eidType) (\els -> jsonValueToString <$> pgElementsToJson schema els) "json"
+  LastMile (\typ -> typeApplicationTermToPropertyGraph schema typ vidType eidType) (\els -> JsonWriter.printJson <$> pgElementsToJson schema els) "json"
 
 stringGraphsonContext :: GraphsonContext s String
 stringGraphsonContext = GraphsonContext $ Coder encodeString decodeString
@@ -119,7 +122,7 @@ termGraphsonContext = GraphsonContext $ Coder encodeTerm decodeTerm
   where
     encodeTerm term = case deannotateTerm term of
         TermLiteral lv -> case lv of
-          LiteralBinary s -> pure $ G.ValueBinary s
+          LiteralBinary s -> pure $ G.ValueBinary $ Literals.binaryToStringBS s
           LiteralBoolean b -> pure $ G.ValueBoolean b
           LiteralFloat fv -> case fv of
             FloatValueBigfloat f -> pure $ G.ValueBigDecimal $ G.BigDecimalValue $ show f

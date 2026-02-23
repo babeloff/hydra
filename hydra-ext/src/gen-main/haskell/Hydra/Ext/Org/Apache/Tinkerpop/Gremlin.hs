@@ -1,9 +1,12 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A Gremlin model, based on the Gremlin ANTLR grammar (master branch, as of 2024-06-30).
 
 module Hydra.Ext.Org.Apache.Tinkerpop.Gremlin where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -1128,6 +1131,18 @@ _OptionalStringArgumentAndNestedTraversal_string = (Core.Name "string")
 
 _OptionalStringArgumentAndNestedTraversal_traversal = (Core.Name "traversal")
 
+data OptionalTraversalScopeArgumentAndIntegerArgument = 
+  OptionalTraversalScopeArgumentAndIntegerArgument {
+    optionalTraversalScopeArgumentAndIntegerArgumentScope :: (Maybe TraversalScopeArgument),
+    optionalTraversalScopeArgumentAndIntegerArgumentLong :: IntegerArgument}
+  deriving (Eq, Ord, Read, Show)
+
+_OptionalTraversalScopeArgumentAndIntegerArgument = (Core.Name "hydra.ext.org.apache.tinkerpop.gremlin.OptionalTraversalScopeArgumentAndIntegerArgument")
+
+_OptionalTraversalScopeArgumentAndIntegerArgument_scope = (Core.Name "scope")
+
+_OptionalTraversalScopeArgumentAndIntegerArgument_long = (Core.Name "long")
+
 data SelectArgs = 
   SelectArgsColumn TraversalColumnArgument |
   SelectArgsPopStrings PopStringsArgument |
@@ -1171,18 +1186,6 @@ _TraversalPopArgumentAndNestedTraversal = (Core.Name "hydra.ext.org.apache.tinke
 _TraversalPopArgumentAndNestedTraversal_pop = (Core.Name "pop")
 
 _TraversalPopArgumentAndNestedTraversal_traversal = (Core.Name "traversal")
-
-data OptionalTraversalScopeArgumentAndIntegerArgument = 
-  OptionalTraversalScopeArgumentAndIntegerArgument {
-    optionalTraversalScopeArgumentAndIntegerArgumentScope :: (Maybe TraversalScopeArgument),
-    optionalTraversalScopeArgumentAndIntegerArgumentLong :: IntegerArgument}
-  deriving (Eq, Ord, Read, Show)
-
-_OptionalTraversalScopeArgumentAndIntegerArgument = (Core.Name "hydra.ext.org.apache.tinkerpop.gremlin.OptionalTraversalScopeArgumentAndIntegerArgument")
-
-_OptionalTraversalScopeArgumentAndIntegerArgument_scope = (Core.Name "scope")
-
-_OptionalTraversalScopeArgumentAndIntegerArgument_long = (Core.Name "long")
 
 data TailArgs = 
   TailArgs {

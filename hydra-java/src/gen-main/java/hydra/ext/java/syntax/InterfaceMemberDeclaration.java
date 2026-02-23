@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class InterfaceMemberDeclaration implements Serializable {
+public abstract class InterfaceMemberDeclaration implements Serializable, Comparable<InterfaceMemberDeclaration> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.InterfaceMemberDeclaration");
   
   public static final hydra.core.Name FIELD_NAME_CONSTANT = new hydra.core.Name("constant");
@@ -33,23 +33,23 @@ public abstract class InterfaceMemberDeclaration implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(InterfaceMemberDeclaration instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Constant instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(InterfaceMethod instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Class_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Interface instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -57,7 +57,6 @@ public abstract class InterfaceMemberDeclaration implements Serializable {
     public final hydra.ext.java.syntax.ConstantDeclaration value;
     
     public Constant (hydra.ext.java.syntax.ConstantDeclaration value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -66,13 +65,26 @@ public abstract class InterfaceMemberDeclaration implements Serializable {
       if (!(other instanceof Constant)) {
         return false;
       }
-      Constant o = (Constant) (other);
-      return value.equals(o.value);
+      Constant o = (Constant) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(InterfaceMemberDeclaration other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Constant o = (Constant) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -85,7 +97,6 @@ public abstract class InterfaceMemberDeclaration implements Serializable {
     public final hydra.ext.java.syntax.InterfaceMethodDeclaration value;
     
     public InterfaceMethod (hydra.ext.java.syntax.InterfaceMethodDeclaration value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -94,13 +105,26 @@ public abstract class InterfaceMemberDeclaration implements Serializable {
       if (!(other instanceof InterfaceMethod)) {
         return false;
       }
-      InterfaceMethod o = (InterfaceMethod) (other);
-      return value.equals(o.value);
+      InterfaceMethod o = (InterfaceMethod) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(InterfaceMemberDeclaration other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      InterfaceMethod o = (InterfaceMethod) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -113,7 +137,6 @@ public abstract class InterfaceMemberDeclaration implements Serializable {
     public final hydra.ext.java.syntax.ClassDeclaration value;
     
     public Class_ (hydra.ext.java.syntax.ClassDeclaration value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -122,13 +145,26 @@ public abstract class InterfaceMemberDeclaration implements Serializable {
       if (!(other instanceof Class_)) {
         return false;
       }
-      Class_ o = (Class_) (other);
-      return value.equals(o.value);
+      Class_ o = (Class_) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(InterfaceMemberDeclaration other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Class_ o = (Class_) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -141,7 +177,6 @@ public abstract class InterfaceMemberDeclaration implements Serializable {
     public final hydra.ext.java.syntax.InterfaceDeclaration value;
     
     public Interface (hydra.ext.java.syntax.InterfaceDeclaration value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -150,13 +185,26 @@ public abstract class InterfaceMemberDeclaration implements Serializable {
       if (!(other instanceof Interface)) {
         return false;
       }
-      Interface o = (Interface) (other);
-      return value.equals(o.value);
+      Interface o = (Interface) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(InterfaceMemberDeclaration other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Interface o = (Interface) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

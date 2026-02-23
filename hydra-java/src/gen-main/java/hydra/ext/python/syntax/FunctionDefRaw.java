@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class FunctionDefRaw implements Serializable {
+public class FunctionDefRaw implements Serializable, Comparable<FunctionDefRaw> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.FunctionDefRaw");
   
   public static final hydra.core.Name FIELD_NAME_ASYNC = new hydra.core.Name("async");
@@ -27,22 +27,15 @@ public class FunctionDefRaw implements Serializable {
   
   public final java.util.List<hydra.ext.python.syntax.TypeParameter> typeParams;
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.Parameters> params;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.Parameters> params;
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.Expression> returnType;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.Expression> returnType;
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.FuncTypeComment> funcTypeComment;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.FuncTypeComment> funcTypeComment;
   
   public final hydra.ext.python.syntax.Block block;
   
-  public FunctionDefRaw (Boolean async, hydra.ext.python.syntax.Name name, java.util.List<hydra.ext.python.syntax.TypeParameter> typeParams, hydra.util.Opt<hydra.ext.python.syntax.Parameters> params, hydra.util.Opt<hydra.ext.python.syntax.Expression> returnType, hydra.util.Opt<hydra.ext.python.syntax.FuncTypeComment> funcTypeComment, hydra.ext.python.syntax.Block block) {
-    java.util.Objects.requireNonNull((async));
-    java.util.Objects.requireNonNull((name));
-    java.util.Objects.requireNonNull((typeParams));
-    java.util.Objects.requireNonNull((params));
-    java.util.Objects.requireNonNull((returnType));
-    java.util.Objects.requireNonNull((funcTypeComment));
-    java.util.Objects.requireNonNull((block));
+  public FunctionDefRaw (Boolean async, hydra.ext.python.syntax.Name name, java.util.List<hydra.ext.python.syntax.TypeParameter> typeParams, hydra.util.Maybe<hydra.ext.python.syntax.Parameters> params, hydra.util.Maybe<hydra.ext.python.syntax.Expression> returnType, hydra.util.Maybe<hydra.ext.python.syntax.FuncTypeComment> funcTypeComment, hydra.ext.python.syntax.Block block) {
     this.async = async;
     this.name = name;
     this.typeParams = typeParams;
@@ -57,47 +50,93 @@ public class FunctionDefRaw implements Serializable {
     if (!(other instanceof FunctionDefRaw)) {
       return false;
     }
-    FunctionDefRaw o = (FunctionDefRaw) (other);
-    return async.equals(o.async) && name.equals(o.name) && typeParams.equals(o.typeParams) && params.equals(o.params) && returnType.equals(o.returnType) && funcTypeComment.equals(o.funcTypeComment) && block.equals(o.block);
+    FunctionDefRaw o = (FunctionDefRaw) other;
+    return java.util.Objects.equals(
+      this.async,
+      o.async) && java.util.Objects.equals(
+      this.name,
+      o.name) && java.util.Objects.equals(
+      this.typeParams,
+      o.typeParams) && java.util.Objects.equals(
+      this.params,
+      o.params) && java.util.Objects.equals(
+      this.returnType,
+      o.returnType) && java.util.Objects.equals(
+      this.funcTypeComment,
+      o.funcTypeComment) && java.util.Objects.equals(
+      this.block,
+      o.block);
   }
   
   @Override
   public int hashCode() {
-    return 2 * async.hashCode() + 3 * name.hashCode() + 5 * typeParams.hashCode() + 7 * params.hashCode() + 11 * returnType.hashCode() + 13 * funcTypeComment.hashCode() + 17 * block.hashCode();
+    return 2 * java.util.Objects.hashCode(async) + 3 * java.util.Objects.hashCode(name) + 5 * java.util.Objects.hashCode(typeParams) + 7 * java.util.Objects.hashCode(params) + 11 * java.util.Objects.hashCode(returnType) + 13 * java.util.Objects.hashCode(funcTypeComment) + 17 * java.util.Objects.hashCode(block);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(FunctionDefRaw other) {
+    int cmp = 0;
+    cmp = ((Comparable) async).compareTo(other.async);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = ((Comparable) name).compareTo(other.name);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      typeParams.hashCode(),
+      other.typeParams.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      params.hashCode(),
+      other.params.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      returnType.hashCode(),
+      other.returnType.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      funcTypeComment.hashCode(),
+      other.funcTypeComment.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) block).compareTo(other.block);
   }
   
   public FunctionDefRaw withAsync(Boolean async) {
-    java.util.Objects.requireNonNull((async));
     return new FunctionDefRaw(async, name, typeParams, params, returnType, funcTypeComment, block);
   }
   
   public FunctionDefRaw withName(hydra.ext.python.syntax.Name name) {
-    java.util.Objects.requireNonNull((name));
     return new FunctionDefRaw(async, name, typeParams, params, returnType, funcTypeComment, block);
   }
   
   public FunctionDefRaw withTypeParams(java.util.List<hydra.ext.python.syntax.TypeParameter> typeParams) {
-    java.util.Objects.requireNonNull((typeParams));
     return new FunctionDefRaw(async, name, typeParams, params, returnType, funcTypeComment, block);
   }
   
-  public FunctionDefRaw withParams(hydra.util.Opt<hydra.ext.python.syntax.Parameters> params) {
-    java.util.Objects.requireNonNull((params));
+  public FunctionDefRaw withParams(hydra.util.Maybe<hydra.ext.python.syntax.Parameters> params) {
     return new FunctionDefRaw(async, name, typeParams, params, returnType, funcTypeComment, block);
   }
   
-  public FunctionDefRaw withReturnType(hydra.util.Opt<hydra.ext.python.syntax.Expression> returnType) {
-    java.util.Objects.requireNonNull((returnType));
+  public FunctionDefRaw withReturnType(hydra.util.Maybe<hydra.ext.python.syntax.Expression> returnType) {
     return new FunctionDefRaw(async, name, typeParams, params, returnType, funcTypeComment, block);
   }
   
-  public FunctionDefRaw withFuncTypeComment(hydra.util.Opt<hydra.ext.python.syntax.FuncTypeComment> funcTypeComment) {
-    java.util.Objects.requireNonNull((funcTypeComment));
+  public FunctionDefRaw withFuncTypeComment(hydra.util.Maybe<hydra.ext.python.syntax.FuncTypeComment> funcTypeComment) {
     return new FunctionDefRaw(async, name, typeParams, params, returnType, funcTypeComment, block);
   }
   
   public FunctionDefRaw withBlock(hydra.ext.python.syntax.Block block) {
-    java.util.Objects.requireNonNull((block));
     return new FunctionDefRaw(async, name, typeParams, params, returnType, funcTypeComment, block);
   }
 }

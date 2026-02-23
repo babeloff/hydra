@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class ArrayCreationExpression implements Serializable {
+public abstract class ArrayCreationExpression implements Serializable, Comparable<ArrayCreationExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.ArrayCreationExpression");
   
   public static final hydra.core.Name FIELD_NAME_PRIMITIVE = new hydra.core.Name("primitive");
@@ -33,23 +33,23 @@ public abstract class ArrayCreationExpression implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(ArrayCreationExpression instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Primitive instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ClassOrInterface instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(PrimitiveArray instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ClassOrInterfaceArray instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -57,7 +57,6 @@ public abstract class ArrayCreationExpression implements Serializable {
     public final hydra.ext.java.syntax.ArrayCreationExpression_Primitive value;
     
     public Primitive (hydra.ext.java.syntax.ArrayCreationExpression_Primitive value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -66,13 +65,26 @@ public abstract class ArrayCreationExpression implements Serializable {
       if (!(other instanceof Primitive)) {
         return false;
       }
-      Primitive o = (Primitive) (other);
-      return value.equals(o.value);
+      Primitive o = (Primitive) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ArrayCreationExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Primitive o = (Primitive) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -85,7 +97,6 @@ public abstract class ArrayCreationExpression implements Serializable {
     public final hydra.ext.java.syntax.ArrayCreationExpression_ClassOrInterface value;
     
     public ClassOrInterface (hydra.ext.java.syntax.ArrayCreationExpression_ClassOrInterface value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -94,13 +105,26 @@ public abstract class ArrayCreationExpression implements Serializable {
       if (!(other instanceof ClassOrInterface)) {
         return false;
       }
-      ClassOrInterface o = (ClassOrInterface) (other);
-      return value.equals(o.value);
+      ClassOrInterface o = (ClassOrInterface) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ArrayCreationExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ClassOrInterface o = (ClassOrInterface) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -113,7 +137,6 @@ public abstract class ArrayCreationExpression implements Serializable {
     public final hydra.ext.java.syntax.ArrayCreationExpression_PrimitiveArray value;
     
     public PrimitiveArray (hydra.ext.java.syntax.ArrayCreationExpression_PrimitiveArray value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -122,13 +145,26 @@ public abstract class ArrayCreationExpression implements Serializable {
       if (!(other instanceof PrimitiveArray)) {
         return false;
       }
-      PrimitiveArray o = (PrimitiveArray) (other);
-      return value.equals(o.value);
+      PrimitiveArray o = (PrimitiveArray) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ArrayCreationExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      PrimitiveArray o = (PrimitiveArray) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -141,7 +177,6 @@ public abstract class ArrayCreationExpression implements Serializable {
     public final hydra.ext.java.syntax.ArrayCreationExpression_ClassOrInterfaceArray value;
     
     public ClassOrInterfaceArray (hydra.ext.java.syntax.ArrayCreationExpression_ClassOrInterfaceArray value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -150,13 +185,26 @@ public abstract class ArrayCreationExpression implements Serializable {
       if (!(other instanceof ClassOrInterfaceArray)) {
         return false;
       }
-      ClassOrInterfaceArray o = (ClassOrInterfaceArray) (other);
-      return value.equals(o.value);
+      ClassOrInterfaceArray o = (ClassOrInterfaceArray) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ArrayCreationExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ClassOrInterfaceArray o = (ClassOrInterfaceArray) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class MatchStatement implements Serializable {
+public class MatchStatement implements Serializable, Comparable<MatchStatement> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.MatchStatement");
   
   public static final hydra.core.Name FIELD_NAME_SUBJECT = new hydra.core.Name("subject");
@@ -16,8 +16,6 @@ public class MatchStatement implements Serializable {
   public final java.util.List<hydra.ext.python.syntax.CaseBlock> cases;
   
   public MatchStatement (hydra.ext.python.syntax.SubjectExpression subject, java.util.List<hydra.ext.python.syntax.CaseBlock> cases) {
-    java.util.Objects.requireNonNull((subject));
-    java.util.Objects.requireNonNull((cases));
     this.subject = subject;
     this.cases = cases;
   }
@@ -27,22 +25,37 @@ public class MatchStatement implements Serializable {
     if (!(other instanceof MatchStatement)) {
       return false;
     }
-    MatchStatement o = (MatchStatement) (other);
-    return subject.equals(o.subject) && cases.equals(o.cases);
+    MatchStatement o = (MatchStatement) other;
+    return java.util.Objects.equals(
+      this.subject,
+      o.subject) && java.util.Objects.equals(
+      this.cases,
+      o.cases);
   }
   
   @Override
   public int hashCode() {
-    return 2 * subject.hashCode() + 3 * cases.hashCode();
+    return 2 * java.util.Objects.hashCode(subject) + 3 * java.util.Objects.hashCode(cases);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(MatchStatement other) {
+    int cmp = 0;
+    cmp = ((Comparable) subject).compareTo(other.subject);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      cases.hashCode(),
+      other.cases.hashCode());
   }
   
   public MatchStatement withSubject(hydra.ext.python.syntax.SubjectExpression subject) {
-    java.util.Objects.requireNonNull((subject));
     return new MatchStatement(subject, cases);
   }
   
   public MatchStatement withCases(java.util.List<hydra.ext.python.syntax.CaseBlock> cases) {
-    java.util.Objects.requireNonNull((cases));
     return new MatchStatement(subject, cases);
   }
 }

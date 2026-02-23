@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class StarAtom implements Serializable {
+public abstract class StarAtom implements Serializable, Comparable<StarAtom> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.StarAtom");
   
   public static final hydra.core.Name FIELD_NAME_NAME = new hydra.core.Name("name");
@@ -33,23 +33,23 @@ public abstract class StarAtom implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(StarAtom instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Name instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(TargetWithStarAtom instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(StarTargetsTupleSeq instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(StarTargetsListSeq instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -57,7 +57,6 @@ public abstract class StarAtom implements Serializable {
     public final hydra.ext.python.syntax.Name value;
     
     public Name (hydra.ext.python.syntax.Name value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -66,13 +65,26 @@ public abstract class StarAtom implements Serializable {
       if (!(other instanceof Name)) {
         return false;
       }
-      Name o = (Name) (other);
-      return value.equals(o.value);
+      Name o = (Name) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarAtom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Name o = (Name) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -85,7 +97,6 @@ public abstract class StarAtom implements Serializable {
     public final hydra.ext.python.syntax.TargetWithStarAtom value;
     
     public TargetWithStarAtom (hydra.ext.python.syntax.TargetWithStarAtom value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -94,13 +105,26 @@ public abstract class StarAtom implements Serializable {
       if (!(other instanceof TargetWithStarAtom)) {
         return false;
       }
-      TargetWithStarAtom o = (TargetWithStarAtom) (other);
-      return value.equals(o.value);
+      TargetWithStarAtom o = (TargetWithStarAtom) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarAtom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      TargetWithStarAtom o = (TargetWithStarAtom) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -110,10 +134,9 @@ public abstract class StarAtom implements Serializable {
   }
   
   public static final class StarTargetsTupleSeq extends hydra.ext.python.syntax.StarAtom implements Serializable {
-    public final hydra.util.Opt<hydra.ext.python.syntax.StarTargetsTupleSeq> value;
+    public final hydra.util.Maybe<hydra.ext.python.syntax.StarTargetsTupleSeq> value;
     
-    public StarTargetsTupleSeq (hydra.util.Opt<hydra.ext.python.syntax.StarTargetsTupleSeq> value) {
-      java.util.Objects.requireNonNull((value));
+    public StarTargetsTupleSeq (hydra.util.Maybe<hydra.ext.python.syntax.StarTargetsTupleSeq> value) {
       this.value = value;
     }
     
@@ -122,13 +145,28 @@ public abstract class StarAtom implements Serializable {
       if (!(other instanceof StarTargetsTupleSeq)) {
         return false;
       }
-      StarTargetsTupleSeq o = (StarTargetsTupleSeq) (other);
-      return value.equals(o.value);
+      StarTargetsTupleSeq o = (StarTargetsTupleSeq) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarAtom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      StarTargetsTupleSeq o = (StarTargetsTupleSeq) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override
@@ -138,10 +176,9 @@ public abstract class StarAtom implements Serializable {
   }
   
   public static final class StarTargetsListSeq extends hydra.ext.python.syntax.StarAtom implements Serializable {
-    public final hydra.util.Opt<hydra.ext.python.syntax.StarTargetsListSeq> value;
+    public final hydra.util.Maybe<hydra.ext.python.syntax.StarTargetsListSeq> value;
     
-    public StarTargetsListSeq (hydra.util.Opt<hydra.ext.python.syntax.StarTargetsListSeq> value) {
-      java.util.Objects.requireNonNull((value));
+    public StarTargetsListSeq (hydra.util.Maybe<hydra.ext.python.syntax.StarTargetsListSeq> value) {
       this.value = value;
     }
     
@@ -150,13 +187,28 @@ public abstract class StarAtom implements Serializable {
       if (!(other instanceof StarTargetsListSeq)) {
         return false;
       }
-      StarTargetsListSeq o = (StarTargetsListSeq) (other);
-      return value.equals(o.value);
+      StarTargetsListSeq o = (StarTargetsListSeq) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(StarAtom other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      StarTargetsListSeq o = (StarTargetsListSeq) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override

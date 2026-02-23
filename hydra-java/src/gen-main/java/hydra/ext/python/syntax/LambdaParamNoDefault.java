@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class LambdaParamNoDefault implements Serializable {
+public class LambdaParamNoDefault implements Serializable, Comparable<LambdaParamNoDefault> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.LambdaParamNoDefault");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class LambdaParamNoDefault implements Serializable {
   public final hydra.ext.python.syntax.Name value;
   
   public LambdaParamNoDefault (hydra.ext.python.syntax.Name value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,20 @@ public class LambdaParamNoDefault implements Serializable {
     if (!(other instanceof LambdaParamNoDefault)) {
       return false;
     }
-    LambdaParamNoDefault o = (LambdaParamNoDefault) (other);
-    return value.equals(o.value);
+    LambdaParamNoDefault o = (LambdaParamNoDefault) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(LambdaParamNoDefault other) {
+    return ((Comparable) value).compareTo(other.value);
   }
 }

@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class SingleTypeImportDeclaration implements Serializable {
+public class SingleTypeImportDeclaration implements Serializable, Comparable<SingleTypeImportDeclaration> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.SingleTypeImportDeclaration");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class SingleTypeImportDeclaration implements Serializable {
   public final hydra.ext.java.syntax.TypeName value;
   
   public SingleTypeImportDeclaration (hydra.ext.java.syntax.TypeName value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,20 @@ public class SingleTypeImportDeclaration implements Serializable {
     if (!(other instanceof SingleTypeImportDeclaration)) {
       return false;
     }
-    SingleTypeImportDeclaration o = (SingleTypeImportDeclaration) (other);
-    return value.equals(o.value);
+    SingleTypeImportDeclaration o = (SingleTypeImportDeclaration) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(SingleTypeImportDeclaration other) {
+    return ((Comparable) value).compareTo(other.value);
   }
 }

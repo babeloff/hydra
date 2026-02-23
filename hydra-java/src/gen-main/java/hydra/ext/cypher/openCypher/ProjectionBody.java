@@ -21,13 +21,13 @@ public class ProjectionBody implements Serializable {
   
   public final hydra.ext.cypher.openCypher.ProjectionItems projectionItems;
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.Order> order;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.Order> order;
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.Skip> skip;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.Skip> skip;
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.Limit> limit;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.Limit> limit;
   
-  public ProjectionBody (Boolean distinct, hydra.ext.cypher.openCypher.ProjectionItems projectionItems, hydra.util.Opt<hydra.ext.cypher.openCypher.Order> order, hydra.util.Opt<hydra.ext.cypher.openCypher.Skip> skip, hydra.util.Opt<hydra.ext.cypher.openCypher.Limit> limit) {
+  public ProjectionBody (Boolean distinct, hydra.ext.cypher.openCypher.ProjectionItems projectionItems, hydra.util.Maybe<hydra.ext.cypher.openCypher.Order> order, hydra.util.Maybe<hydra.ext.cypher.openCypher.Skip> skip, hydra.util.Maybe<hydra.ext.cypher.openCypher.Limit> limit) {
     java.util.Objects.requireNonNull((distinct));
     java.util.Objects.requireNonNull((projectionItems));
     java.util.Objects.requireNonNull((order));
@@ -64,17 +64,17 @@ public class ProjectionBody implements Serializable {
     return new ProjectionBody(distinct, projectionItems, order, skip, limit);
   }
   
-  public ProjectionBody withOrder(hydra.util.Opt<hydra.ext.cypher.openCypher.Order> order) {
+  public ProjectionBody withOrder(hydra.util.Maybe<hydra.ext.cypher.openCypher.Order> order) {
     java.util.Objects.requireNonNull((order));
     return new ProjectionBody(distinct, projectionItems, order, skip, limit);
   }
   
-  public ProjectionBody withSkip(hydra.util.Opt<hydra.ext.cypher.openCypher.Skip> skip) {
+  public ProjectionBody withSkip(hydra.util.Maybe<hydra.ext.cypher.openCypher.Skip> skip) {
     java.util.Objects.requireNonNull((skip));
     return new ProjectionBody(distinct, projectionItems, order, skip, limit);
   }
   
-  public ProjectionBody withLimit(hydra.util.Opt<hydra.ext.cypher.openCypher.Limit> limit) {
+  public ProjectionBody withLimit(hydra.util.Maybe<hydra.ext.cypher.openCypher.Limit> limit) {
     java.util.Objects.requireNonNull((limit));
     return new ProjectionBody(distinct, projectionItems, order, skip, limit);
   }

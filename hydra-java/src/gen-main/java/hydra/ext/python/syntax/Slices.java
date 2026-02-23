@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class Slices implements Serializable {
+public class Slices implements Serializable, Comparable<Slices> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Slices");
   
   public static final hydra.core.Name FIELD_NAME_HEAD = new hydra.core.Name("head");
@@ -16,8 +16,6 @@ public class Slices implements Serializable {
   public final java.util.List<hydra.ext.python.syntax.SliceOrStarredExpression> tail;
   
   public Slices (hydra.ext.python.syntax.Slice head, java.util.List<hydra.ext.python.syntax.SliceOrStarredExpression> tail) {
-    java.util.Objects.requireNonNull((head));
-    java.util.Objects.requireNonNull((tail));
     this.head = head;
     this.tail = tail;
   }
@@ -27,22 +25,37 @@ public class Slices implements Serializable {
     if (!(other instanceof Slices)) {
       return false;
     }
-    Slices o = (Slices) (other);
-    return head.equals(o.head) && tail.equals(o.tail);
+    Slices o = (Slices) other;
+    return java.util.Objects.equals(
+      this.head,
+      o.head) && java.util.Objects.equals(
+      this.tail,
+      o.tail);
   }
   
   @Override
   public int hashCode() {
-    return 2 * head.hashCode() + 3 * tail.hashCode();
+    return 2 * java.util.Objects.hashCode(head) + 3 * java.util.Objects.hashCode(tail);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Slices other) {
+    int cmp = 0;
+    cmp = ((Comparable) head).compareTo(other.head);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      tail.hashCode(),
+      other.tail.hashCode());
   }
   
   public Slices withHead(hydra.ext.python.syntax.Slice head) {
-    java.util.Objects.requireNonNull((head));
     return new Slices(head, tail);
   }
   
   public Slices withTail(java.util.List<hydra.ext.python.syntax.SliceOrStarredExpression> tail) {
-    java.util.Objects.requireNonNull((tail));
     return new Slices(head, tail);
   }
 }

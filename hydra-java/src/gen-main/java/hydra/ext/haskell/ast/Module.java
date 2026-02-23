@@ -4,7 +4,10 @@ package hydra.ext.haskell.ast;
 
 import java.io.Serializable;
 
-public class Module implements Serializable {
+/**
+ * A Haskell module
+ */
+public class Module implements Serializable, Comparable<Module> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.haskell.ast.Module");
   
   public static final hydra.core.Name FIELD_NAME_HEAD = new hydra.core.Name("head");
@@ -13,16 +16,22 @@ public class Module implements Serializable {
   
   public static final hydra.core.Name FIELD_NAME_DECLARATIONS = new hydra.core.Name("declarations");
   
-  public final hydra.util.Opt<hydra.ext.haskell.ast.ModuleHead> head;
+  /**
+   * Optional module head
+   */
+  public final hydra.util.Maybe<hydra.ext.haskell.ast.ModuleHead> head;
   
+  /**
+   * Import statements
+   */
   public final java.util.List<hydra.ext.haskell.ast.Import> imports;
   
+  /**
+   * Module declarations
+   */
   public final java.util.List<hydra.ext.haskell.ast.DeclarationWithComments> declarations;
   
-  public Module (hydra.util.Opt<hydra.ext.haskell.ast.ModuleHead> head, java.util.List<hydra.ext.haskell.ast.Import> imports, java.util.List<hydra.ext.haskell.ast.DeclarationWithComments> declarations) {
-    java.util.Objects.requireNonNull((head));
-    java.util.Objects.requireNonNull((imports));
-    java.util.Objects.requireNonNull((declarations));
+  public Module (hydra.util.Maybe<hydra.ext.haskell.ast.ModuleHead> head, java.util.List<hydra.ext.haskell.ast.Import> imports, java.util.List<hydra.ext.haskell.ast.DeclarationWithComments> declarations) {
     this.head = head;
     this.imports = imports;
     this.declarations = declarations;
@@ -33,27 +42,51 @@ public class Module implements Serializable {
     if (!(other instanceof Module)) {
       return false;
     }
-    Module o = (Module) (other);
-    return head.equals(o.head) && imports.equals(o.imports) && declarations.equals(o.declarations);
+    Module o = (Module) other;
+    return java.util.Objects.equals(
+      this.head,
+      o.head) && java.util.Objects.equals(
+      this.imports,
+      o.imports) && java.util.Objects.equals(
+      this.declarations,
+      o.declarations);
   }
   
   @Override
   public int hashCode() {
-    return 2 * head.hashCode() + 3 * imports.hashCode() + 5 * declarations.hashCode();
+    return 2 * java.util.Objects.hashCode(head) + 3 * java.util.Objects.hashCode(imports) + 5 * java.util.Objects.hashCode(declarations);
   }
   
-  public Module withHead(hydra.util.Opt<hydra.ext.haskell.ast.ModuleHead> head) {
-    java.util.Objects.requireNonNull((head));
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Module other) {
+    int cmp = 0;
+    cmp = Integer.compare(
+      head.hashCode(),
+      other.head.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      imports.hashCode(),
+      other.imports.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      declarations.hashCode(),
+      other.declarations.hashCode());
+  }
+  
+  public Module withHead(hydra.util.Maybe<hydra.ext.haskell.ast.ModuleHead> head) {
     return new Module(head, imports, declarations);
   }
   
   public Module withImports(java.util.List<hydra.ext.haskell.ast.Import> imports) {
-    java.util.Objects.requireNonNull((imports));
     return new Module(head, imports, declarations);
   }
   
   public Module withDeclarations(java.util.List<hydra.ext.haskell.ast.DeclarationWithComments> declarations) {
-    java.util.Objects.requireNonNull((declarations));
     return new Module(head, imports, declarations);
   }
 }

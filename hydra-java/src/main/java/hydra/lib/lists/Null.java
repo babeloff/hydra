@@ -7,6 +7,7 @@ import hydra.core.Term;
 import hydra.core.TypeScheme;
 import hydra.dsl.Expect;
 import hydra.dsl.Terms;
+import hydra.dsl.Types;
 import hydra.graph.Graph;
 import hydra.tools.PrimitiveFunction;
 
@@ -19,6 +20,9 @@ import static hydra.dsl.Types.int32;
 import static hydra.dsl.Types.list;
 import static hydra.dsl.Types.scheme;
 
+/**
+ * Checks if a list is empty.
+ */
 public class Null extends PrimitiveFunction {
     public Name name() {
         return new Name("hydra.lib.lists.null");
@@ -34,6 +38,12 @@ public class Null extends PrimitiveFunction {
         return args -> map(Expect.list(Flows::pure, args.get(0)), l -> Terms.boolean_(apply(l)));
     }
 
+    /**
+     * Checks if the list is empty.
+     * @param <X> the element type
+     * @param list the list to check
+     * @return true if empty, false otherwise
+     */
     public static <X> boolean apply(List<X> list) {
         return list.isEmpty();
     }

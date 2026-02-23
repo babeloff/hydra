@@ -1,13 +1,14 @@
 package hydra.pg;
 
 import hydra.dsl.Flows;
-import hydra.basics.Basics;
+// import hydra.basics.Basics; // TODO: restore when kernel terms modules are generated
 import hydra.compute.Flow;
 import hydra.compute.StatelessAdapter;
 import hydra.compute.StatelessCoder;
 import hydra.core.Literal;
 import hydra.core.LiteralType;
-import hydra.core.Unit;
+import hydra.util.Maybe;
+import hydra.util.Unit;
 import hydra.dsl.LiteralTypes;
 import hydra.dsl.Literals;
 import hydra.pg.model.Edge;
@@ -18,7 +19,7 @@ import hydra.pg.model.PropertyType;
 import hydra.pg.model.Vertex;
 import hydra.pg.model.VertexLabel;
 import hydra.pg.model.VertexType;
-import hydra.util.Opt;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,6 +61,13 @@ public class Merging {
 
     /**
      * Create a vertex adapter based on a list of vertex types and given id adapters.
+     *
+     * @param <T> the type parameter for vertex types
+     * @param <V> the value type for vertex properties
+     * @param types the list of vertex types to merge
+     * @param idAdapters the id adapters for encoding/decoding vertex and edge ids
+     * @param unifyIdenticalTypes whether to unify identical property types across vertex types
+     * @return a flow producing a stateless adapter for the merged vertex type
      */
     public static <T, V> Flow<Unit, StatelessAdapter<List<VertexType<T>>, VertexType<T>, Vertex<V>, Vertex<V>>>
     createVertexAdapter(List<VertexType<T>> types,
@@ -77,6 +85,13 @@ public class Merging {
 
     /**
      * Create an edge adapter based on a list of edge types and given id adapters.
+     *
+     * @param <T> the type parameter for edge types
+     * @param <V> the value type for edge properties
+     * @param types the list of edge types to merge
+     * @param idAdapters the id adapters for encoding/decoding vertex and edge ids
+     * @param unifyIdenticalTypes whether to unify identical property types across edge types
+     * @return a flow producing a stateless adapter for the merged edge type
      */
     public static <T, V> Flow<Unit, StatelessAdapter<List<EdgeType<T>>, EdgeType<T>, Edge<V>, Edge<V>>>
     createEdgeAdapter(List<EdgeType<T>> types,
@@ -92,30 +107,30 @@ public class Merging {
         });
     }
 
-    private static <A> Opt<String> checkNontrivial(List<A> types) {
+    private static <A> Maybe<String> checkNontrivial(List<A> types) {
         return types.isEmpty()
-            ? Opt.of("No types provided")
-            : Opt.empty();
+            ? Maybe.just("No types provided")
+            : Maybe.nothing();
     }
 
-    private static <T> Opt<String> checkNoDuplicatedVertexLabels(List<VertexType<T>> types) {
+    private static <T> Maybe<String> checkNoDuplicatedVertexLabels(List<VertexType<T>> types) {
         Set<VertexLabel> labels = new HashSet<>();
         for (VertexType<T> type : types) {
             if (!labels.add(type.label)) {
-                return Opt.of("Duplicate vertex label: " + type.label);
+                return Maybe.just("Duplicate vertex label: " + type.label);
             }
         }
-        return Opt.empty();
+        return Maybe.nothing();
     }
 
-    private static <T> Opt<String> checkNoDuplicatedEdgeLabels(List<EdgeType<T>> types) {
+    private static <T> Maybe<String> checkNoDuplicatedEdgeLabels(List<EdgeType<T>> types) {
         Set<EdgeLabel> labels = new HashSet<>();
         for (EdgeType<T> type : types) {
             if (!labels.add(type.label)) {
-                return Opt.of("Duplicate edge label: " + type.label);
+                return Maybe.just("Duplicate edge label: " + type.label);
             }
         }
-        return Opt.empty();
+        return Maybe.nothing();
     }
 
     private static <T, V> StatelessCoder<Vertex<V>, Vertex<V>> constructMergedVertexCoder(
@@ -233,7 +248,7 @@ public class Merging {
         if (unifiedPropertyKeys.contains(key)) {
             return key;
         } else {
-            String prefix = Basics.decapitalize(label) + "_";
+            String prefix = decapitalize(label) + "_";
             return new PropertyKey(prefix + key.value);
         }
     }
@@ -364,6 +379,9 @@ public class Merging {
 
     /**
      * A helper object which defines merged vertex and edge id types, and a value coder for each vertex and edge label.
+     *
+     * @param <T> the type parameter for id types
+     * @param <V> the value type for ids
      */
     public static class IdAdapters<T, V> {
         public final T mergedVertexIdType;
@@ -373,6 +391,11 @@ public class Merging {
 
         /**
          * Construct the helper object.
+         *
+         * @param mergedVertexIdType the merged type for vertex ids
+         * @param mergedEdgeIdType the merged type for edge ids
+         * @param forVertexId function to get a coder for a given vertex label
+         * @param forEdgeId function to get a coder for a given edge label
          */
         public IdAdapters(
             T mergedVertexIdType,
@@ -386,6 +409,16 @@ public class Merging {
         }
     }
 
+    /**
+     * Create string-based id adapters for merging vertex and edge types.
+     *
+     * @param <T> the type parameter for id types
+     * @param <V> the value type for ids
+     * @param stringType the string type to use for merged ids
+     * @param fromLiteral function to extract a string from a literal value
+     * @param toLiteral function to create a literal value from a string
+     * @return id adapters configured for string-based ids
+     */
     public static <T, V> Merging.IdAdapters<T, V> stringIdAdapters(
         T stringType,
         Function<V, Flow<Unit, String>> fromLiteral,
@@ -395,12 +428,12 @@ public class Merging {
             stringType,
             label -> StatelessCoder.of(
                 literal -> Flows.map(fromLiteral.apply(literal),
-                    s -> toLiteral.apply(Basics.decapitalize(label.value) + "_" + s)),
+                    s -> toLiteral.apply(decapitalize(label.value) + "_" + s)),
                 literal -> Flows.map(fromLiteral.apply(literal),
                     id -> toLiteral.apply(id.substring(label.value.length() + 1)))),
             label -> StatelessCoder.of(
                 literal -> Flows.map(fromLiteral.apply(literal),
-                    s -> toLiteral.apply(Basics.decapitalize(label.value) + "_" + s)),
+                    s -> toLiteral.apply(decapitalize(label.value) + "_" + s)),
                 literal -> Flows.map(fromLiteral.apply(literal),
                     id -> toLiteral.apply(id.substring(label.value.length() + 1)))));
     }
@@ -413,5 +446,13 @@ public class Merging {
             this.entity = entity;
             this.unifiedProperties = unifiedProperties;
         }
+    }
+
+    // TODO: inline implementation until hydra.basics.Basics is generated
+    private static String decapitalize(String s) {
+        if (s == null || s.isEmpty()) {
+            return s;
+        }
+        return Character.toLowerCase(s.charAt(0)) + s.substring(1);
     }
 }

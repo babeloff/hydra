@@ -1,9 +1,12 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A model for language-agnostic graph pattern queries
 
 module Hydra.Query where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -147,7 +150,9 @@ _Query_patterns = (Core.Name "patterns")
 -- | A range from min to max, inclusive
 data Range = 
   Range {
+    -- | The minimum value (inclusive)
     rangeMin :: Int,
+    -- | The maximum value (inclusive)
     rangeMax :: Int}
   deriving (Eq, Ord, Read, Show)
 
@@ -194,7 +199,9 @@ _RegexQuantifier_range = (Core.Name "range")
 -- | A path with a regex quantifier
 data RegexSequence = 
   RegexSequence {
+    -- | The path to which the quantifier applies
     regexSequencePath :: Path,
+    -- | The quantifier
     regexSequenceQuantifier :: RegexQuantifier}
   deriving (Eq, Ord, Read, Show)
 
@@ -225,8 +232,11 @@ _Step_compare = (Core.Name "compare")
 -- | A subject/predicate/object pattern
 data TriplePattern = 
   TriplePattern {
+    -- | The subject of the pattern
     triplePatternSubject :: Node,
+    -- | The predicate (property) of the pattern
     triplePatternPredicate :: Path,
+    -- | The object of the pattern
     triplePatternObject :: Node}
   deriving (Eq, Ord, Read, Show)
 

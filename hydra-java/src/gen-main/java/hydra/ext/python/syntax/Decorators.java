@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class Decorators implements Serializable {
+public class Decorators implements Serializable, Comparable<Decorators> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Decorators");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class Decorators implements Serializable {
   public final java.util.List<hydra.ext.python.syntax.NamedExpression> value;
   
   public Decorators (java.util.List<hydra.ext.python.syntax.NamedExpression> value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,22 @@ public class Decorators implements Serializable {
     if (!(other instanceof Decorators)) {
       return false;
     }
-    Decorators o = (Decorators) (other);
-    return value.equals(o.value);
+    Decorators o = (Decorators) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Decorators other) {
+    return Integer.compare(
+      value.hashCode(),
+      other.value.hashCode());
   }
 }

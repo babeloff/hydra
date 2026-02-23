@@ -1,25 +1,36 @@
-package hydra.ext.json;
+package hydra.json;
 
 import com.cedarsoftware.util.io.JsonObject;
 import hydra.dsl.Flows;
 import hydra.compute.Coder;
 import hydra.compute.Flow;
-import hydra.json.Value;
+import hydra.json.model.Value;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 /**
  * A bidirectional coder between Hydra's native JSON values and the JSON objects supported by json-io.
+ *
+ * @param <S1> the state type for encoding
+ * @param <S2> the state type for decoding
  */
 public class JsonIoCoder<S1, S2> extends Coder<S1, S2, Value, Object> {
+    /**
+     * Constructs a new JsonIoCoder.
+     */
     public JsonIoCoder() {
         super(JsonIoCoder::encode, JsonIoCoder::decode);
     }
 
     /**
      * Encode a JSON value as a json-io object.
+     *
+     * @param <S> the state type
+     * @param value the JSON value to encode
+     * @return a flow containing the encoded json-io object
      */
     public static <S> Flow<S, Object> encode(Value value) {
         return value.accept(new Value.Visitor<Flow<S, Object>>() {
@@ -43,7 +54,12 @@ public class JsonIoCoder<S1, S2> extends Coder<S1, S2, Value, Object> {
 
             @Override
             public Flow<S, Object> visit(Value.Number_ instance) {
-                return Flows.pure(instance.value);
+                // Value.Number_ now stores the number as a String, so we parse it back to Double
+                try {
+                    return Flows.pure(instance.value.doubleValue());
+                } catch (NumberFormatException e) {
+                    return Flows.fail("Invalid number format: " + instance.value, e);
+                }
             }
 
             @Override
@@ -64,6 +80,10 @@ public class JsonIoCoder<S1, S2> extends Coder<S1, S2, Value, Object> {
 
     /**
      * Decode a json-io object as a JSON value.
+     *
+     * @param <S> the state type
+     * @param value the json-io object to decode
+     * @return a flow containing the decoded JSON value
      */
     public static <S> Flow<S, Value> decode(Object value) {
         if (value == null) {
@@ -79,7 +99,7 @@ public class JsonIoCoder<S1, S2> extends Coder<S1, S2, Value, Object> {
         } else if (value instanceof Boolean) {
             return Flows.pure(new Value.Boolean_((Boolean) value));
         } else if (value instanceof Number) {
-            return Flows.pure(new Value.Number_(((Number) value).doubleValue()));
+            return Flows.pure(new Value.Number_(BigDecimal.valueOf(((Number) value).doubleValue())));
         } else {
             return Flows.unexpected("object, array, string, boolean, or number", value.getClass().getName());
         }
@@ -87,6 +107,9 @@ public class JsonIoCoder<S1, S2> extends Coder<S1, S2, Value, Object> {
 
     /**
      * Normalize an already-encoded json-io object.
+     *
+     * @param raw the raw json-io object to normalize
+     * @return the normalized json-io object
      */
     public static Object normalizeEncoded(Object raw) {
         if (raw instanceof Value.Null) {
@@ -111,6 +134,13 @@ public class JsonIoCoder<S1, S2> extends Coder<S1, S2, Value, Object> {
         }
     }
 
+    /**
+     * Decode a json-io object key as a string.
+     *
+     * @param <S> the state type
+     * @param key the key object to decode
+     * @return a flow containing the decoded string key
+     */
     private static <S> Flow<S, String> decodeKey(Object key) {
         if (key instanceof String) {
             return Flows.pure((String) key);

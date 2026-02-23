@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class WithItem implements Serializable {
+public class WithItem implements Serializable, Comparable<WithItem> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.WithItem");
   
   public static final hydra.core.Name FIELD_NAME_EXPRESSION = new hydra.core.Name("expression");
@@ -13,11 +13,9 @@ public class WithItem implements Serializable {
   
   public final hydra.ext.python.syntax.Expression expression;
   
-  public final hydra.util.Opt<hydra.ext.python.syntax.StarTarget> as;
+  public final hydra.util.Maybe<hydra.ext.python.syntax.StarTarget> as;
   
-  public WithItem (hydra.ext.python.syntax.Expression expression, hydra.util.Opt<hydra.ext.python.syntax.StarTarget> as) {
-    java.util.Objects.requireNonNull((expression));
-    java.util.Objects.requireNonNull((as));
+  public WithItem (hydra.ext.python.syntax.Expression expression, hydra.util.Maybe<hydra.ext.python.syntax.StarTarget> as) {
     this.expression = expression;
     this.as = as;
   }
@@ -27,22 +25,37 @@ public class WithItem implements Serializable {
     if (!(other instanceof WithItem)) {
       return false;
     }
-    WithItem o = (WithItem) (other);
-    return expression.equals(o.expression) && as.equals(o.as);
+    WithItem o = (WithItem) other;
+    return java.util.Objects.equals(
+      this.expression,
+      o.expression) && java.util.Objects.equals(
+      this.as,
+      o.as);
   }
   
   @Override
   public int hashCode() {
-    return 2 * expression.hashCode() + 3 * as.hashCode();
+    return 2 * java.util.Objects.hashCode(expression) + 3 * java.util.Objects.hashCode(as);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(WithItem other) {
+    int cmp = 0;
+    cmp = ((Comparable) expression).compareTo(other.expression);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      as.hashCode(),
+      other.as.hashCode());
   }
   
   public WithItem withExpression(hydra.ext.python.syntax.Expression expression) {
-    java.util.Objects.requireNonNull((expression));
     return new WithItem(expression, as);
   }
   
-  public WithItem withAs(hydra.util.Opt<hydra.ext.python.syntax.StarTarget> as) {
-    java.util.Objects.requireNonNull((as));
+  public WithItem withAs(hydra.util.Maybe<hydra.ext.python.syntax.StarTarget> as) {
     return new WithItem(expression, as);
   }
 }

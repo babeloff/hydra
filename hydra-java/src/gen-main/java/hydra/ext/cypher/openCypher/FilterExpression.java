@@ -13,9 +13,9 @@ public class FilterExpression implements Serializable {
   
   public final hydra.ext.cypher.openCypher.IdInColl idInColl;
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.Where> where;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.Where> where;
   
-  public FilterExpression (hydra.ext.cypher.openCypher.IdInColl idInColl, hydra.util.Opt<hydra.ext.cypher.openCypher.Where> where) {
+  public FilterExpression (hydra.ext.cypher.openCypher.IdInColl idInColl, hydra.util.Maybe<hydra.ext.cypher.openCypher.Where> where) {
     java.util.Objects.requireNonNull((idInColl));
     java.util.Objects.requireNonNull((where));
     this.idInColl = idInColl;
@@ -41,7 +41,7 @@ public class FilterExpression implements Serializable {
     return new FilterExpression(idInColl, where);
   }
   
-  public FilterExpression withWhere(hydra.util.Opt<hydra.ext.cypher.openCypher.Where> where) {
+  public FilterExpression withWhere(hydra.util.Maybe<hydra.ext.cypher.openCypher.Where> where) {
     java.util.Objects.requireNonNull((where));
     return new FilterExpression(idInColl, where);
   }

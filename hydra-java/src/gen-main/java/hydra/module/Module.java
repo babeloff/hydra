@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * A logical collection of elements in the same namespace, having dependencies on zero or more other modules
  */
-public class Module implements Serializable {
+public class Module implements Serializable, Comparable<Module> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.module.Module");
   
   public static final hydra.core.Name FIELD_NAME_NAMESPACE = new hydra.core.Name("namespace");
@@ -28,29 +28,24 @@ public class Module implements Serializable {
   /**
    * The elements defined in this module
    */
-  public final java.util.List<hydra.graph.Element> elements;
+  public final java.util.List<hydra.core.Binding> elements;
   
   /**
    * Any modules which the term expressions of this module directly depend upon
    */
-  public final java.util.List<hydra.module.Module> termDependencies;
+  public final java.util.List<hydra.module.Namespace> termDependencies;
   
   /**
    * Any modules which the type expressions of this module directly depend upon
    */
-  public final java.util.List<hydra.module.Module> typeDependencies;
+  public final java.util.List<hydra.module.Namespace> typeDependencies;
   
   /**
    * An optional human-readable description of the module
    */
-  public final hydra.util.Opt<String> description;
+  public final hydra.util.Maybe<String> description;
   
-  public Module (hydra.module.Namespace namespace, java.util.List<hydra.graph.Element> elements, java.util.List<hydra.module.Module> termDependencies, java.util.List<hydra.module.Module> typeDependencies, hydra.util.Opt<String> description) {
-    java.util.Objects.requireNonNull((namespace));
-    java.util.Objects.requireNonNull((elements));
-    java.util.Objects.requireNonNull((termDependencies));
-    java.util.Objects.requireNonNull((typeDependencies));
-    java.util.Objects.requireNonNull((description));
+  public Module (hydra.module.Namespace namespace, java.util.List<hydra.core.Binding> elements, java.util.List<hydra.module.Namespace> termDependencies, java.util.List<hydra.module.Namespace> typeDependencies, hydra.util.Maybe<String> description) {
     this.namespace = namespace;
     this.elements = elements;
     this.termDependencies = termDependencies;
@@ -63,37 +58,73 @@ public class Module implements Serializable {
     if (!(other instanceof Module)) {
       return false;
     }
-    Module o = (Module) (other);
-    return namespace.equals(o.namespace) && elements.equals(o.elements) && termDependencies.equals(o.termDependencies) && typeDependencies.equals(o.typeDependencies) && description.equals(o.description);
+    Module o = (Module) other;
+    return java.util.Objects.equals(
+      this.namespace,
+      o.namespace) && java.util.Objects.equals(
+      this.elements,
+      o.elements) && java.util.Objects.equals(
+      this.termDependencies,
+      o.termDependencies) && java.util.Objects.equals(
+      this.typeDependencies,
+      o.typeDependencies) && java.util.Objects.equals(
+      this.description,
+      o.description);
   }
   
   @Override
   public int hashCode() {
-    return 2 * namespace.hashCode() + 3 * elements.hashCode() + 5 * termDependencies.hashCode() + 7 * typeDependencies.hashCode() + 11 * description.hashCode();
+    return 2 * java.util.Objects.hashCode(namespace) + 3 * java.util.Objects.hashCode(elements) + 5 * java.util.Objects.hashCode(termDependencies) + 7 * java.util.Objects.hashCode(typeDependencies) + 11 * java.util.Objects.hashCode(description);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Module other) {
+    int cmp = 0;
+    cmp = ((Comparable) namespace).compareTo(other.namespace);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      elements.hashCode(),
+      other.elements.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      termDependencies.hashCode(),
+      other.termDependencies.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = Integer.compare(
+      typeDependencies.hashCode(),
+      other.typeDependencies.hashCode());
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      description.hashCode(),
+      other.description.hashCode());
   }
   
   public Module withNamespace(hydra.module.Namespace namespace) {
-    java.util.Objects.requireNonNull((namespace));
     return new Module(namespace, elements, termDependencies, typeDependencies, description);
   }
   
-  public Module withElements(java.util.List<hydra.graph.Element> elements) {
-    java.util.Objects.requireNonNull((elements));
+  public Module withElements(java.util.List<hydra.core.Binding> elements) {
     return new Module(namespace, elements, termDependencies, typeDependencies, description);
   }
   
-  public Module withTermDependencies(java.util.List<hydra.module.Module> termDependencies) {
-    java.util.Objects.requireNonNull((termDependencies));
+  public Module withTermDependencies(java.util.List<hydra.module.Namespace> termDependencies) {
     return new Module(namespace, elements, termDependencies, typeDependencies, description);
   }
   
-  public Module withTypeDependencies(java.util.List<hydra.module.Module> typeDependencies) {
-    java.util.Objects.requireNonNull((typeDependencies));
+  public Module withTypeDependencies(java.util.List<hydra.module.Namespace> typeDependencies) {
     return new Module(namespace, elements, termDependencies, typeDependencies, description);
   }
   
-  public Module withDescription(hydra.util.Opt<String> description) {
-    java.util.Objects.requireNonNull((description));
+  public Module withDescription(hydra.util.Maybe<String> description) {
     return new Module(namespace, elements, termDependencies, typeDependencies, description);
   }
 }

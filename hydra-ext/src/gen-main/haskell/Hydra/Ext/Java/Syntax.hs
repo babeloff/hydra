@@ -1,3 +1,5 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A Java syntax module. Based on the Oracle Java SE 12 BNF:
 -- |   https://docs.oracle.com/javase/specs/jls/se12/html/jls-19.html
 -- | Note: all *WithComments types were added manually, rather than derived from the BNF, which does not allow for comments.
@@ -5,7 +7,8 @@
 module Hydra.Ext.Java.Syntax where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M

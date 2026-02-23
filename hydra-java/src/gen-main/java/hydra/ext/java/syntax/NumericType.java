@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class NumericType implements Serializable {
+public abstract class NumericType implements Serializable, Comparable<NumericType> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.NumericType");
   
   public static final hydra.core.Name FIELD_NAME_INTEGRAL = new hydra.core.Name("integral");
@@ -25,15 +25,15 @@ public abstract class NumericType implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(NumericType instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Integral instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(FloatingPoint instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -41,7 +41,6 @@ public abstract class NumericType implements Serializable {
     public final hydra.ext.java.syntax.IntegralType value;
     
     public Integral (hydra.ext.java.syntax.IntegralType value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -50,13 +49,26 @@ public abstract class NumericType implements Serializable {
       if (!(other instanceof Integral)) {
         return false;
       }
-      Integral o = (Integral) (other);
-      return value.equals(o.value);
+      Integral o = (Integral) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(NumericType other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Integral o = (Integral) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -69,7 +81,6 @@ public abstract class NumericType implements Serializable {
     public final hydra.ext.java.syntax.FloatingPointType value;
     
     public FloatingPoint (hydra.ext.java.syntax.FloatingPointType value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -78,13 +89,26 @@ public abstract class NumericType implements Serializable {
       if (!(other instanceof FloatingPoint)) {
         return false;
       }
-      FloatingPoint o = (FloatingPoint) (other);
-      return value.equals(o.value);
+      FloatingPoint o = (FloatingPoint) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(NumericType other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      FloatingPoint o = (FloatingPoint) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

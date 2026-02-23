@@ -1,3 +1,5 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | Abstractions for paired transformations between languages
 
 module Hydra.Coders where
@@ -5,8 +7,9 @@ module Hydra.Coders where
 import qualified Hydra.Compute as Compute
 import qualified Hydra.Core as Core
 import qualified Hydra.Graph as Graph
-import qualified Hydra.Mantle as Mantle
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import qualified Hydra.Variants as Variants
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -15,8 +18,11 @@ import qualified Data.Set as S
 -- | An evaluation context together with a source language and a target language
 data AdapterContext = 
   AdapterContext {
+    -- | The underlying graph of elements and primitives
     adapterContextGraph :: Graph.Graph,
+    -- | The language being encoded or decoded
     adapterContextLanguage :: Language,
+    -- | A map of type names to adapters for those types
     adapterContextAdapters :: (M.Map Core.Name (Compute.Adapter AdapterContext AdapterContext Core.Type Core.Type Core.Term Core.Term))}
 
 _AdapterContext = (Core.Name "hydra.coders.AdapterContext")
@@ -42,7 +48,9 @@ _CoderDirection_decode = (Core.Name "decode")
 -- | A named language together with language-specific constraints
 data Language = 
   Language {
+    -- | The unique name of the language
     languageName :: LanguageName,
+    -- | The constraints which characterize the language
     languageConstraints :: LanguageConstraints}
 
 _Language = (Core.Name "hydra.coders.Language")
@@ -55,19 +63,19 @@ _Language_constraints = (Core.Name "constraints")
 data LanguageConstraints = 
   LanguageConstraints {
     -- | All supported elimination variants
-    languageConstraintsEliminationVariants :: (S.Set Mantle.EliminationVariant),
+    languageConstraintsEliminationVariants :: (S.Set Variants.EliminationVariant),
     -- | All supported literal variants
-    languageConstraintsLiteralVariants :: (S.Set Mantle.LiteralVariant),
+    languageConstraintsLiteralVariants :: (S.Set Variants.LiteralVariant),
     -- | All supported float types
     languageConstraintsFloatTypes :: (S.Set Core.FloatType),
     -- | All supported function variants
-    languageConstraintsFunctionVariants :: (S.Set Mantle.FunctionVariant),
+    languageConstraintsFunctionVariants :: (S.Set Variants.FunctionVariant),
     -- | All supported integer types
     languageConstraintsIntegerTypes :: (S.Set Core.IntegerType),
     -- | All supported term variants
-    languageConstraintsTermVariants :: (S.Set Mantle.TermVariant),
+    languageConstraintsTermVariants :: (S.Set Variants.TermVariant),
     -- | All supported type variants
-    languageConstraintsTypeVariants :: (S.Set Mantle.TypeVariant),
+    languageConstraintsTypeVariants :: (S.Set Variants.TypeVariant),
     -- | A logical set of types, as a predicate which tests a type for inclusion
     languageConstraintsTypes :: (Core.Type -> Bool)}
 

@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public class Block implements Serializable {
+public class Block implements Serializable, Comparable<Block> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.Block");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class Block implements Serializable {
   public final java.util.List<hydra.ext.java.syntax.BlockStatement> value;
   
   public Block (java.util.List<hydra.ext.java.syntax.BlockStatement> value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,22 @@ public class Block implements Serializable {
     if (!(other instanceof Block)) {
       return false;
     }
-    Block o = (Block) (other);
-    return value.equals(o.value);
+    Block o = (Block) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Block other) {
+    return Integer.compare(
+      value.hashCode(),
+      other.value.hashCode());
   }
 }

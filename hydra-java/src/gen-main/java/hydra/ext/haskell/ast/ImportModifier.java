@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * An import modifier ('pattern' or 'type')
  */
-public abstract class ImportModifier implements Serializable {
+public abstract class ImportModifier implements Serializable, Comparable<ImportModifier> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.haskell.ast.ImportModifier");
   
   public static final hydra.core.Name FIELD_NAME_PATTERN = new hydra.core.Name("pattern");
@@ -28,15 +28,15 @@ public abstract class ImportModifier implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(ImportModifier instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Pattern instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Type instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -50,12 +50,22 @@ public abstract class ImportModifier implements Serializable {
       if (!(other instanceof Pattern)) {
         return false;
       }
-      Pattern o = (Pattern) (other);
+      Pattern o = (Pattern) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ImportModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -75,12 +85,22 @@ public abstract class ImportModifier implements Serializable {
       if (!(other instanceof Type)) {
         return false;
       }
-      Type o = (Type) (other);
+      Type o = (Type) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(ImportModifier other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

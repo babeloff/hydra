@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class TPrimaryAndName implements Serializable {
+public class TPrimaryAndName implements Serializable, Comparable<TPrimaryAndName> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.TPrimaryAndName");
   
   public static final hydra.core.Name FIELD_NAME_PRIMARY = new hydra.core.Name("primary");
@@ -16,8 +16,6 @@ public class TPrimaryAndName implements Serializable {
   public final hydra.ext.python.syntax.Name name;
   
   public TPrimaryAndName (hydra.ext.python.syntax.TPrimary primary, hydra.ext.python.syntax.Name name) {
-    java.util.Objects.requireNonNull((primary));
-    java.util.Objects.requireNonNull((name));
     this.primary = primary;
     this.name = name;
   }
@@ -27,22 +25,35 @@ public class TPrimaryAndName implements Serializable {
     if (!(other instanceof TPrimaryAndName)) {
       return false;
     }
-    TPrimaryAndName o = (TPrimaryAndName) (other);
-    return primary.equals(o.primary) && name.equals(o.name);
+    TPrimaryAndName o = (TPrimaryAndName) other;
+    return java.util.Objects.equals(
+      this.primary,
+      o.primary) && java.util.Objects.equals(
+      this.name,
+      o.name);
   }
   
   @Override
   public int hashCode() {
-    return 2 * primary.hashCode() + 3 * name.hashCode();
+    return 2 * java.util.Objects.hashCode(primary) + 3 * java.util.Objects.hashCode(name);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(TPrimaryAndName other) {
+    int cmp = 0;
+    cmp = ((Comparable) primary).compareTo(other.primary);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return ((Comparable) name).compareTo(other.name);
   }
   
   public TPrimaryAndName withPrimary(hydra.ext.python.syntax.TPrimary primary) {
-    java.util.Objects.requireNonNull((primary));
     return new TPrimaryAndName(primary, name);
   }
   
   public TPrimaryAndName withName(hydra.ext.python.syntax.Name name) {
-    java.util.Objects.requireNonNull((name));
     return new TPrimaryAndName(primary, name);
   }
 }

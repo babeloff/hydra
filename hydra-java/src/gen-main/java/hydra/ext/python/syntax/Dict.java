@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public class Dict implements Serializable {
+public class Dict implements Serializable, Comparable<Dict> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Dict");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -12,7 +12,6 @@ public class Dict implements Serializable {
   public final java.util.List<hydra.ext.python.syntax.DoubleStarredKvpair> value;
   
   public Dict (java.util.List<hydra.ext.python.syntax.DoubleStarredKvpair> value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -21,12 +20,22 @@ public class Dict implements Serializable {
     if (!(other instanceof Dict)) {
       return false;
     }
-    Dict o = (Dict) (other);
-    return value.equals(o.value);
+    Dict o = (Dict) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(Dict other) {
+    return Integer.compare(
+      value.hashCode(),
+      other.value.hashCode());
   }
 }

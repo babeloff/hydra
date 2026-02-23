@@ -1,10 +1,13 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A model for Coq core and extensions. Based on the Coq 8.15 grammar:
 -- |   https://coq.github.io/doc/v8.15/refman/language/core/basic.html#essential-vocabulary
 
 module Hydra.Ext.Fr.Inria.Coq.Syntax where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -399,7 +402,7 @@ _Let_bindings = (Core.Name "bindings")
 
 _Let_in = (Core.Name "in")
 
--- | Some constructions allow the binding of a variable to value. This is called a “let-binder”.
+-- | Some constructions allow the binding of a variable to value. This is called a 'let-binder'.
 data LetBinder = 
   LetBinder {
     letBinderName :: Name,

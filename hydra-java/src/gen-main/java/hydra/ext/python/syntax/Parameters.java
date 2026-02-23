@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class Parameters implements Serializable {
+public abstract class Parameters implements Serializable, Comparable<Parameters> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.Parameters");
   
   public static final hydra.core.Name FIELD_NAME_SLASH_NO_DEFAULT = new hydra.core.Name("slashNoDefault");
@@ -37,27 +37,27 @@ public abstract class Parameters implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(Parameters instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(SlashNoDefault instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(SlashWithDefault instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ParamNoDefault instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ParamWithDefault instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(StarEtc instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -65,7 +65,6 @@ public abstract class Parameters implements Serializable {
     public final hydra.ext.python.syntax.SlashNoDefaultParameters value;
     
     public SlashNoDefault (hydra.ext.python.syntax.SlashNoDefaultParameters value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -74,13 +73,26 @@ public abstract class Parameters implements Serializable {
       if (!(other instanceof SlashNoDefault)) {
         return false;
       }
-      SlashNoDefault o = (SlashNoDefault) (other);
-      return value.equals(o.value);
+      SlashNoDefault o = (SlashNoDefault) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Parameters other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      SlashNoDefault o = (SlashNoDefault) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -93,7 +105,6 @@ public abstract class Parameters implements Serializable {
     public final hydra.ext.python.syntax.SlashWithDefaultParameters value;
     
     public SlashWithDefault (hydra.ext.python.syntax.SlashWithDefaultParameters value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -102,13 +113,26 @@ public abstract class Parameters implements Serializable {
       if (!(other instanceof SlashWithDefault)) {
         return false;
       }
-      SlashWithDefault o = (SlashWithDefault) (other);
-      return value.equals(o.value);
+      SlashWithDefault o = (SlashWithDefault) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Parameters other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      SlashWithDefault o = (SlashWithDefault) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -121,7 +145,6 @@ public abstract class Parameters implements Serializable {
     public final hydra.ext.python.syntax.ParamNoDefaultParameters value;
     
     public ParamNoDefault (hydra.ext.python.syntax.ParamNoDefaultParameters value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -130,13 +153,26 @@ public abstract class Parameters implements Serializable {
       if (!(other instanceof ParamNoDefault)) {
         return false;
       }
-      ParamNoDefault o = (ParamNoDefault) (other);
-      return value.equals(o.value);
+      ParamNoDefault o = (ParamNoDefault) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Parameters other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ParamNoDefault o = (ParamNoDefault) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -149,7 +185,6 @@ public abstract class Parameters implements Serializable {
     public final hydra.ext.python.syntax.ParamWithDefaultParameters value;
     
     public ParamWithDefault (hydra.ext.python.syntax.ParamWithDefaultParameters value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -158,13 +193,26 @@ public abstract class Parameters implements Serializable {
       if (!(other instanceof ParamWithDefault)) {
         return false;
       }
-      ParamWithDefault o = (ParamWithDefault) (other);
-      return value.equals(o.value);
+      ParamWithDefault o = (ParamWithDefault) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Parameters other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ParamWithDefault o = (ParamWithDefault) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -177,7 +225,6 @@ public abstract class Parameters implements Serializable {
     public final hydra.ext.python.syntax.StarEtc value;
     
     public StarEtc (hydra.ext.python.syntax.StarEtc value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -186,13 +233,26 @@ public abstract class Parameters implements Serializable {
       if (!(other instanceof StarEtc)) {
         return false;
       }
-      StarEtc o = (StarEtc) (other);
-      return value.equals(o.value);
+      StarEtc o = (StarEtc) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(Parameters other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      StarEtc o = (StarEtc) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

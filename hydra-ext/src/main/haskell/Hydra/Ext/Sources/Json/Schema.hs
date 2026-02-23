@@ -1,44 +1,33 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Hydra.Ext.Sources.Json.Schema where
 
-import Hydra.Kernel
-import Hydra.Dsl.Annotations
-import Hydra.Dsl.Bootstrap
-import Hydra.Dsl.Types as Types
+-- Standard imports for type-level sources outside of the kernel
+import           Hydra.Kernel
+import           Hydra.Dsl.Annotations
+import           Hydra.Dsl.Bootstrap
+import           Hydra.Dsl.Types                 ((>:))
+import qualified Hydra.Dsl.Types                 as T
+import qualified Hydra.Sources.Kernel.Types.Core as Core
+import qualified Data.List                       as L
+import qualified Data.Map                        as M
+import qualified Data.Set                        as S
+import qualified Data.Maybe                      as Y
 
-import qualified Hydra.Sources.Kernel.Types.Accessors   as Accessors
-import qualified Hydra.Sources.Kernel.Types.Ast         as Ast
-import qualified Hydra.Sources.Kernel.Types.Coders      as Coders
-import qualified Hydra.Sources.Kernel.Types.Compute     as Compute
-import qualified Hydra.Sources.Kernel.Types.Constraints as Constraints
-import qualified Hydra.Sources.Kernel.Types.Core        as Core
-import qualified Hydra.Sources.Kernel.Types.Grammar     as Grammar
-import qualified Hydra.Sources.Kernel.Types.Graph       as Graph
-import qualified Hydra.Sources.Kernel.Types.Json        as Json
-import qualified Hydra.Sources.Kernel.Types.Mantle      as Mantle
-import qualified Hydra.Sources.Kernel.Types.Module      as Module
-import qualified Hydra.Sources.Kernel.Types.Phantoms    as Phantoms
-import qualified Hydra.Sources.Kernel.Types.Relational  as Relational
-import qualified Hydra.Sources.Kernel.Types.Query       as Query
-import qualified Hydra.Sources.Kernel.Types.Tabular     as Tabular
-import qualified Hydra.Sources.Kernel.Types.Testing     as Testing
-import qualified Hydra.Sources.Kernel.Types.Topology    as Topology
-import qualified Hydra.Sources.Kernel.Types.Typing      as Typing
-import qualified Hydra.Sources.Kernel.Types.Workflow    as Workflow
+-- Additional imports
+import qualified Hydra.Sources.Json.Model        as JsonModel
+
 
 module_ :: Module
-module_ = Module ns elements [Json.module_] [Core.module_] $
+module_ = Module ns elements [JsonModel.ns] [Core.ns] $
     Just ("A model for JSON Schema. Based on https://cswr.github.io/JsonSchema/spec/grammar")
   where
     ns = Namespace "hydra.ext.org.json.schema"
     def = datatype ns
     js = typeref ns
-    json = typeref $ moduleNamespace Json.module_
+    json = typeref $ JsonModel.ns
 
-    keywordSchemaMap = Types.map (js "Keyword") (js "Schema")
-    keywordSchemaOrArrayMap = Types.map (js "Keyword") (js "SchemaOrArray")
-    regexSchemaMap = Types.map (js "RegularExpression") (js "Schema")
+    keywordSchemaMap = T.map (js "Keyword") (js "Schema")
+    keywordSchemaOrArrayMap = T.map (js "Keyword") (js "SchemaOrArray")
+    regexSchemaMap = T.map (js "RegularExpression") (js "Schema")
 
     elements = [
 -- Json Documents and Schemas
@@ -46,9 +35,9 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 --
 -- JSDoc := { ( id, )? ( defs, )? JSch }
 
-      def "Document" $ record [
-        "id">: optional string,
-        "definitions">: optional keywordSchemaMap,
+      def "Document" $ T.record [
+        "id">: T.maybe T.string,
+        "definitions">: T.maybe keywordSchemaMap,
         "root">: js "Schema"],
 
 -- id := "id": "uri"
@@ -56,16 +45,16 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 -- kSch := kword: { JSch }
 
       def "Keyword" $
-        wrap string,
+        T.wrap T.string,
 
 -- JSch := ( res (, res)*)
       def "Schema" $
-        wrap $ nonemptyList $ js "Restriction",
+        T.wrap $ nonemptyList $ js "Restriction",
 
 -- res := type | strRes | numRes | arrRes | objRes | multRes | refSch | title | description
 
       def "Restriction" $
-        union [
+        T.union [
           "type">: js "Type",
           "string">: js "StringRestriction",
           "number">: js "NumericRestriction",
@@ -73,20 +62,20 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
           "object">: js "ObjectRestriction",
           "multiple">: js "MultipleRestriction",
           "reference">: js "SchemaReference",
-          "title">: string,
-          "description">: string],
+          "title">: T.string,
+          "description">: T.string],
 
 -- type := "type" : ([typename (, typename)*] | typename)
 
       def "Type" $
-        union [
+        T.union [
           "single">: js "TypeName",
           "multiple">: nonemptyList $ js "TypeName"],
 
 -- typename := "string" | "integer" | "number" | "boolean" | "null" | "array" | "object"
 
       def "TypeName" $
-        enum ["string", "integer", "number", "boolean", "null", "array", "object"],
+        T.enum ["string", "integer", "number", "boolean", "null", "array", "object"],
 
 -- title := "title":  string
 -- description := "description":  string
@@ -101,9 +90,9 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 -- strRes :=  minLen | maxLen | pattern
 
       def "StringRestriction" $
-        union [
-          "minLength">: int32,
-          "maxLength">: int32,
+        T.union [
+          "minLength">: T.int32,
+          "maxLength">: T.int32,
           "pattern">: js "RegularExpression"],
 
 -- minLen := "minLength": n
@@ -111,7 +100,7 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 -- pattern := "pattern": "regExp"
 
       def "RegularExpression" $
-        wrap string,
+        T.wrap T.string,
 
 -- Here n is a natural number and r is a regular expression.
 --
@@ -119,15 +108,15 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 -- numRes := min | max | multiple
 
       def "NumericRestriction" $
-        union [
+        T.union [
           "minimum">: js "Limit",
           "maximum">: js "Limit",
-          "multipleOf">: nonNegativeInt32],
+          "multipleOf">: T.nonNegativeInt32],
 
      def "Limit" $
-       record [
-         "value">: int32,
-         "exclusive">: boolean],
+       T.record [
+         "value">: T.int32,
+         "exclusive">: T.boolean],
 
 -- min := "minimum": r (,exMin)?
 -- exMin := "exclusiveMinimum": bool
@@ -140,17 +129,17 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 --  arrRes := items | additems | minitems | maxitems  | unique
 
       def "ArrayRestriction" $
-        union [
+        T.union [
           "items">: js "Items",
           "additionalItems">: js "AdditionalItems",
-          "minItems">: nonNegativeInt32,
-          "maxItems">: nonNegativeInt32,
-          "uniqueItems">: boolean],
+          "minItems">: T.nonNegativeInt32,
+          "maxItems">: T.nonNegativeInt32,
+          "uniqueItems">: T.boolean],
 
 --  items := ( sameitems |  varitems )
 
       def "Items" $
-        union [
+        T.union [
           "sameItems">: js "Schema",
           "varItems">: nonemptyList $ js "Schema"],
 
@@ -159,8 +148,8 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 --  additems :=  "additionalItems": (bool | { JSch })
 
       def "AdditionalItems" $
-        union [
-          "any">: boolean,
+        T.union [
+          "any">: T.boolean,
           "schema">: js "Schema"],
 
 --  minitems := "minItems": n
@@ -172,12 +161,12 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 -- objRes := prop | addprop | req | minprop | maxprop | dep | pattprop
 
       def "ObjectRestriction" $
-        union [
+        T.union [
           "properties">: keywordSchemaMap,
           "additionalProperties">: js "AdditionalItems",
           "required">: nonemptyList $ js "Keyword",
-          "minProperties">: nonNegativeInt32,
-          "maxProperties">: nonNegativeInt32,
+          "minProperties">: T.nonNegativeInt32,
+          "maxProperties">: T.nonNegativeInt32,
           "dependencies">: keywordSchemaOrArrayMap,
           "patternProperties">: regexSchemaMap],
 
@@ -191,9 +180,9 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 -- kDep := (kArr | kSch)
 
       def "SchemaOrArray" $
-        union [
+        T.union [
           "schema">: js "Schema",
-          "array">: list $ js "Keyword"],
+          "array">: T.list $ js "Keyword"],
 
 -- kArr := kword: [ kword (, kword)*]
 -- pattprop := "patternProperties": { patSch (, patSch)*}
@@ -204,7 +193,7 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 -- multRes := allOf | anyOf| oneOf | not | enum
 
       def "MultipleRestriction" $
-        union [
+        T.union [
           "allOf">: nonemptyList $ js "Schema",
           "anyOf">: nonemptyList $ js "Schema",
           "oneOf">: nonemptyList $ js "Schema",
@@ -224,7 +213,7 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 -- refSch := "$ref": "uriRef"
 
          def "SchemaReference" $
-            wrap string]
+            T.wrap T.string]
 
 -- uriRef := ( address )? ( # / JPointer )?
 -- JPointer := ( / path )
@@ -233,6 +222,5 @@ module_ = Module ns elements [Json.module_] [Core.module_] $
 -- Where unescaped can be any character except for / and ~. Also, address corresponds to any URI that does not use the # symbol, or more precisely to any URI-reference constructed using the following grammar, as defined in the official standard:
 --
 -- address = (scheme : )? hier-part (? query )
-
 
 

@@ -1,74 +1,145 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Hydra.Sources.Kernel.Types.Typing where
 
 -- Standard type-level kernel imports
 import           Hydra.Kernel
-import           Hydra.Dsl.Annotations
+import           Hydra.Dsl.Annotations (doc)
 import           Hydra.Dsl.Bootstrap
-import qualified Hydra.Dsl.Terms                 as Terms
-import           Hydra.Dsl.Types                 as Types
+import           Hydra.Dsl.Types ((>:), (@@), (~>))
+import qualified Hydra.Dsl.Types as T
 import qualified Hydra.Sources.Kernel.Types.Core as Core
-import qualified Data.List                       as L
-import qualified Data.Map                        as M
-import qualified Data.Set                        as S
-import qualified Data.Maybe                      as Y
 
+
+ns :: Namespace
+ns = Namespace "hydra.typing"
+
+define :: String -> Type -> Binding
+define = defineType ns
 
 module_ :: Module
-module_ = Module ns elements [Core.module_] [Core.module_] $
-    Just ("Types supporting type inference and type reconstruction.")
+module_ = Module ns elements [Core.ns] [Core.ns] $
+    Just "Types supporting type inference and type reconstruction."
   where
-    ns = Namespace "hydra.typing"
-    core = typeref $ moduleNamespace Core.module_
-    typing = typeref ns
-    def = datatype ns
-
     elements = [
+      functionStructure,
+      inferenceContext,
+      inferenceResult,
+      termSubst,
+      typeConstraint,
+      typeContext,
+      typeSubst]
 
-      def "InferenceContext" $
-        doc "The context provided to type inference, including various typing enviroments." $
-        record [
-          "schemaTypes">:
-            doc "A fixed typing environment which is derived from the schema of the graph." $
-            Types.map (core "Name") (core "TypeScheme"),
-          "primitiveTypes">:
-            doc "A fixed typing environment which is derived from the set of primitives in the graph." $
-            Types.map (core "Name") (core "TypeScheme"),
-          "dataTypes">:
-            doc ("A mutable typing environment which is specific to the current graph being processed."
-              ++ " This environment is (usually) smaller than the schema and primitive typing environments,"
-              ++ " and is subject to global substitutions.") $
-            Types.map (core "Name") (core "TypeScheme"),
-          "debug">: boolean],
+inferenceContext :: Binding
+inferenceContext = define "InferenceContext" $
+  doc "The context provided to type inference, including various typing environments." $
+  T.record [
+    "schemaTypes">:
+      doc "A fixed typing environment which is derived from the schema of the graph." $
+      T.map Core.name Core.typeScheme,
+    "primitiveTypes">:
+      doc "A fixed typing environment which is derived from the set of primitives in the graph." $
+      T.map Core.name Core.typeScheme,
+    "dataTypes">:
+      doc ("A mutable typing environment which is specific to the current graph being processed."
+        ++ " This environment is (usually) smaller than the schema and primitive typing environments,"
+        ++ " and is subject to global substitutions.") $
+      T.map Core.name Core.typeScheme,
+    "classConstraints">:
+      doc ("A mutable map from type variable names to their accumulated class constraints."
+        ++ " This is populated during type inference when operations requiring Eq or Ord are encountered.") $
+      T.map Core.name Core.typeVariableMetadata,
+    "debug">:
+      doc "Whether to enable debug output during type inference"
+      T.boolean]
 
-      def "InferenceResult" $
-        doc "The result of applying inference rules to a term." $
-        record [
-          "term">: core "Term",
-          "type">: core "Type",
-          "subst">: typing "TypeSubst"],
+inferenceResult :: Binding
+inferenceResult = define "InferenceResult" $
+  doc "The result of applying inference rules to a term." $
+  T.record [
+    "term">:
+      doc "The term which was inferred"
+      Core.term,
+    "type">:
+      doc "The inferred type of the term"
+      Core.type_,
+    "subst">:
+      doc "The type substitution resulting from unification"
+      typeSubst,
+    "classConstraints">:
+      doc "Class constraints discovered during inference (e.g., Ord constraints from Map.lookup)" $
+      T.map Core.name Core.typeVariableMetadata]
 
-      def "TermSubst" $
-        doc "A substitution of term variables for terms" $
-        wrap $ Types.map (core "Name") (core "Term"),
+termSubst :: Binding
+termSubst = define "TermSubst" $
+  doc "A substitution of term variables for terms" $
+  T.wrap $ T.map Core.name Core.term
 
-      def "TypeConstraint" $
-        doc "An assertion that two types can be unified into a single type" $
-        record [
-          "left">: core "Type",
-          "right">: core "Type",
-          "comment">:
-            doc "A description of the type constraint which may be used for tracing or debugging"
-            string],
+typeConstraint :: Binding
+typeConstraint = define "TypeConstraint" $
+  doc "An assertion that two types can be unified into a single type" $
+  T.record [
+    "left">:
+      doc "The left-hand side of the constraint"
+      Core.type_,
+    "right">:
+      doc "The right-hand side of the constraint"
+      Core.type_,
+    "comment">:
+      doc "A description of the type constraint which may be used for tracing or debugging"
+      T.string]
 
-      def "TypeContext" $
-        doc "A typing environment used for type reconstruction (typeOf) over System F terms" $
-        record [
-          "types">: Types.map (core "Name") (core "Type"),
-          "variables">: Types.set (core "Name"),
-          "inferenceContext">: typing "InferenceContext"],
+typeContext :: Binding
+typeContext = define "TypeContext" $
+  doc "A typing environment used for type reconstruction (typeOf) over System F terms" $
+  T.record [
+    "types">:
+      doc "A mapping of lambda- and let-bound variables to their types" $
+      T.map Core.name Core.type_,
+    "metadata">:
+      doc "Any additional metadata about lambda- and let-bound variables" $
+      T.map Core.name Core.term,
+    "typeVariables">:
+      doc "The set of type variables introduced by enclosing type lambdas" $
+      T.set Core.name,
+    "lambdaVariables">:
+      doc "The set of term variables introduced by lambdas (even if untyped)" $
+      T.set Core.name,
+    "letVariables">:
+      doc "The set of term variables introduced by let bindings (even if untyped)" $
+      T.set Core.name,
+    "inferenceContext">:
+      doc "The schema types, primitive types, and data types of the graph"
+      inferenceContext]
 
-      def "TypeSubst" $
-        doc "A substitution of type variables for types" $
-        wrap $ Types.map (core "Name") (core "Type")]
+typeSubst :: Binding
+typeSubst = define "TypeSubst" $
+  doc "A substitution of type variables for types" $
+  T.wrap $ T.map Core.name Core.type_
+
+functionStructure :: Binding
+functionStructure = define "FunctionStructure" $
+  doc ("A structured representation of a function term's components, replacing ad-hoc tuples."
+    ++ " This captures all the information extracted from peeling lambdas, type lambdas, lets, and"
+    ++ " type applications from a term.") $
+  T.forAll "env" $
+  T.record [
+    "typeParams">:
+      doc "Type parameters (from type lambdas)" $
+      T.list Core.name,
+    "params">:
+      doc "Value parameters (from lambdas)" $
+      T.list Core.name,
+    "bindings">:
+      doc "Let bindings accumulated from the term" $
+      T.list Core.binding,
+    "body">:
+      doc "The body term after removing all lambdas, lets, etc."
+      Core.term,
+    "domains">:
+      doc "Domain types of the value parameters" $
+      T.list Core.type_,
+    "codomain">:
+      doc "The return type of the function (if type inference succeeded)" $
+      T.optional Core.type_,
+    "environment">:
+      doc "Updated environment after processing all bindings" $
+      T.variable "env"]

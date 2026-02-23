@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class LambdaStarEtc implements Serializable {
+public abstract class LambdaStarEtc implements Serializable, Comparable<LambdaStarEtc> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.LambdaStarEtc");
   
   public static final hydra.core.Name FIELD_NAME_STAR = new hydra.core.Name("star");
@@ -33,23 +33,23 @@ public abstract class LambdaStarEtc implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(LambdaStarEtc instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Star instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ParamNoDefault instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ParamMaybeDefault instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Kwds instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -57,7 +57,6 @@ public abstract class LambdaStarEtc implements Serializable {
     public final Boolean value;
     
     public Star (Boolean value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -66,13 +65,26 @@ public abstract class LambdaStarEtc implements Serializable {
       if (!(other instanceof Star)) {
         return false;
       }
-      Star o = (Star) (other);
-      return value.equals(o.value);
+      Star o = (Star) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(LambdaStarEtc other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Star o = (Star) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -85,7 +97,6 @@ public abstract class LambdaStarEtc implements Serializable {
     public final hydra.ext.python.syntax.LambdaParamNoDefault value;
     
     public ParamNoDefault (hydra.ext.python.syntax.LambdaParamNoDefault value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -94,13 +105,26 @@ public abstract class LambdaStarEtc implements Serializable {
       if (!(other instanceof ParamNoDefault)) {
         return false;
       }
-      ParamNoDefault o = (ParamNoDefault) (other);
-      return value.equals(o.value);
+      ParamNoDefault o = (ParamNoDefault) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(LambdaStarEtc other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ParamNoDefault o = (ParamNoDefault) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -113,7 +137,6 @@ public abstract class LambdaStarEtc implements Serializable {
     public final java.util.List<hydra.ext.python.syntax.LambdaParamMaybeDefault> value;
     
     public ParamMaybeDefault (java.util.List<hydra.ext.python.syntax.LambdaParamMaybeDefault> value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -122,13 +145,28 @@ public abstract class LambdaStarEtc implements Serializable {
       if (!(other instanceof ParamMaybeDefault)) {
         return false;
       }
-      ParamMaybeDefault o = (ParamMaybeDefault) (other);
-      return value.equals(o.value);
+      ParamMaybeDefault o = (ParamMaybeDefault) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(LambdaStarEtc other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      ParamMaybeDefault o = (ParamMaybeDefault) other;
+      return Integer.compare(
+        value.hashCode(),
+        o.value.hashCode());
     }
     
     @Override
@@ -141,7 +179,6 @@ public abstract class LambdaStarEtc implements Serializable {
     public final hydra.ext.python.syntax.LambdaKwds value;
     
     public Kwds (hydra.ext.python.syntax.LambdaKwds value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -150,13 +187,26 @@ public abstract class LambdaStarEtc implements Serializable {
       if (!(other instanceof Kwds)) {
         return false;
       }
-      Kwds o = (Kwds) (other);
-      return value.equals(o.value);
+      Kwds o = (Kwds) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(LambdaStarEtc other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Kwds o = (Kwds) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override

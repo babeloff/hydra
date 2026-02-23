@@ -4,7 +4,7 @@ package hydra.ext.java.syntax;
 
 import java.io.Serializable;
 
-public abstract class AssignmentOperator implements Serializable {
+public abstract class AssignmentOperator implements Serializable, Comparable<AssignmentOperator> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.AssignmentOperator");
   
   public static final hydra.core.Name FIELD_NAME_SIMPLE = new hydra.core.Name("simple");
@@ -65,55 +65,55 @@ public abstract class AssignmentOperator implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(AssignmentOperator instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Simple instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Times instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Div instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Mod instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Plus instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Minus instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ShiftLeft instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ShiftRight instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(ShiftRightZeroFill instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(And instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Xor instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Or instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -127,12 +127,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof Simple)) {
         return false;
       }
-      Simple o = (Simple) (other);
+      Simple o = (Simple) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -152,12 +162,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof Times)) {
         return false;
       }
-      Times o = (Times) (other);
+      Times o = (Times) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -177,12 +197,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof Div)) {
         return false;
       }
-      Div o = (Div) (other);
+      Div o = (Div) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -202,12 +232,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof Mod)) {
         return false;
       }
-      Mod o = (Mod) (other);
+      Mod o = (Mod) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -227,12 +267,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof Plus)) {
         return false;
       }
-      Plus o = (Plus) (other);
+      Plus o = (Plus) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -252,12 +302,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof Minus)) {
         return false;
       }
-      Minus o = (Minus) (other);
+      Minus o = (Minus) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -277,12 +337,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof ShiftLeft)) {
         return false;
       }
-      ShiftLeft o = (ShiftLeft) (other);
+      ShiftLeft o = (ShiftLeft) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -302,12 +372,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof ShiftRight)) {
         return false;
       }
-      ShiftRight o = (ShiftRight) (other);
+      ShiftRight o = (ShiftRight) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -327,12 +407,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof ShiftRightZeroFill)) {
         return false;
       }
-      ShiftRightZeroFill o = (ShiftRightZeroFill) (other);
+      ShiftRightZeroFill o = (ShiftRightZeroFill) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -352,12 +442,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof And)) {
         return false;
       }
-      And o = (And) (other);
+      And o = (And) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -377,12 +477,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof Xor)) {
         return false;
       }
-      Xor o = (Xor) (other);
+      Xor o = (Xor) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -402,12 +512,22 @@ public abstract class AssignmentOperator implements Serializable {
       if (!(other instanceof Or)) {
         return false;
       }
-      Or o = (Or) (other);
+      Or o = (Or) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AssignmentOperator other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

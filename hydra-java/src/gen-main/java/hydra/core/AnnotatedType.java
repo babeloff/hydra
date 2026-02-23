@@ -7,21 +7,25 @@ import java.io.Serializable;
 /**
  * A type together with an annotation
  */
-public class AnnotatedType implements Serializable {
+public class AnnotatedType implements Serializable, Comparable<AnnotatedType> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.core.AnnotatedType");
   
-  public static final hydra.core.Name FIELD_NAME_SUBJECT = new hydra.core.Name("subject");
+  public static final hydra.core.Name FIELD_NAME_BODY = new hydra.core.Name("body");
   
   public static final hydra.core.Name FIELD_NAME_ANNOTATION = new hydra.core.Name("annotation");
   
-  public final hydra.core.Type subject;
+  /**
+   * The type being annotated
+   */
+  public final hydra.core.Type body;
   
+  /**
+   * The annotation as a map from keys to values
+   */
   public final java.util.Map<hydra.core.Name, hydra.core.Term> annotation;
   
-  public AnnotatedType (hydra.core.Type subject, java.util.Map<hydra.core.Name, hydra.core.Term> annotation) {
-    java.util.Objects.requireNonNull((subject));
-    java.util.Objects.requireNonNull((annotation));
-    this.subject = subject;
+  public AnnotatedType (hydra.core.Type body, java.util.Map<hydra.core.Name, hydra.core.Term> annotation) {
+    this.body = body;
     this.annotation = annotation;
   }
   
@@ -30,22 +34,37 @@ public class AnnotatedType implements Serializable {
     if (!(other instanceof AnnotatedType)) {
       return false;
     }
-    AnnotatedType o = (AnnotatedType) (other);
-    return subject.equals(o.subject) && annotation.equals(o.annotation);
+    AnnotatedType o = (AnnotatedType) other;
+    return java.util.Objects.equals(
+      this.body,
+      o.body) && java.util.Objects.equals(
+      this.annotation,
+      o.annotation);
   }
   
   @Override
   public int hashCode() {
-    return 2 * subject.hashCode() + 3 * annotation.hashCode();
+    return 2 * java.util.Objects.hashCode(body) + 3 * java.util.Objects.hashCode(annotation);
   }
   
-  public AnnotatedType withSubject(hydra.core.Type subject) {
-    java.util.Objects.requireNonNull((subject));
-    return new AnnotatedType(subject, annotation);
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(AnnotatedType other) {
+    int cmp = 0;
+    cmp = ((Comparable) body).compareTo(other.body);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(
+      annotation.hashCode(),
+      other.annotation.hashCode());
+  }
+  
+  public AnnotatedType withBody(hydra.core.Type body) {
+    return new AnnotatedType(body, annotation);
   }
   
   public AnnotatedType withAnnotation(java.util.Map<hydra.core.Name, hydra.core.Term> annotation) {
-    java.util.Objects.requireNonNull((annotation));
-    return new AnnotatedType(subject, annotation);
+    return new AnnotatedType(body, annotation);
   }
 }

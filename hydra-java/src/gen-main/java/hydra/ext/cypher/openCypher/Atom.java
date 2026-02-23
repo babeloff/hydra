@@ -131,12 +131,12 @@ public abstract class Atom implements Serializable {
         return false;
       }
       Literal o = (Literal) (other);
-      return value.equals(o.value);
+      return other instanceof Atom;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -159,12 +159,12 @@ public abstract class Atom implements Serializable {
         return false;
       }
       Parameter o = (Parameter) (other);
-      return value.equals(o.value);
+      return other instanceof Atom;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -187,12 +187,12 @@ public abstract class Atom implements Serializable {
         return false;
       }
       Case o = (Case) (other);
-      return value.equals(o.value);
+      return other instanceof Atom;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -202,22 +202,21 @@ public abstract class Atom implements Serializable {
   }
   
   public static final class CountStar extends hydra.ext.cypher.openCypher.Atom implements Serializable {
-    public CountStar () {
+    public final Boolean value;
     
+    public CountStar (Boolean value) {
+      java.util.Objects.requireNonNull((value));
+      this.value = value;
     }
     
     @Override
     public boolean equals(Object other) {
-      if (!(other instanceof CountStar)) {
-        return false;
-      }
-      CountStar o = (CountStar) (other);
-      return true;
+      return other instanceof CountStar;
     }
     
     @Override
     public int hashCode() {
-      return 0;
+      return getClass().hashCode();
     }
     
     @Override
@@ -240,12 +239,12 @@ public abstract class Atom implements Serializable {
         return false;
       }
       ListComprehension o = (ListComprehension) (other);
-      return value.equals(o.value);
+      return other instanceof Atom;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -268,12 +267,12 @@ public abstract class Atom implements Serializable {
         return false;
       }
       PatternComprehension o = (PatternComprehension) (other);
-      return value.equals(o.value);
+      return other instanceof Atom;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -296,12 +295,12 @@ public abstract class Atom implements Serializable {
         return false;
       }
       Quantifier o = (Quantifier) (other);
-      return value.equals(o.value);
+      return other instanceof Atom;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -324,12 +323,12 @@ public abstract class Atom implements Serializable {
         return false;
       }
       PatternPredicate o = (PatternPredicate) (other);
-      return value.equals(o.value);
+      return other instanceof Atom;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -352,12 +351,12 @@ public abstract class Atom implements Serializable {
         return false;
       }
       Parenthesized o = (Parenthesized) (other);
-      return value.equals(o.value);
+      return other instanceof Atom;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -380,12 +379,12 @@ public abstract class Atom implements Serializable {
         return false;
       }
       FunctionInvocation o = (FunctionInvocation) (other);
-      return value.equals(o.value);
+      return other instanceof Atom;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -408,12 +407,12 @@ public abstract class Atom implements Serializable {
         return false;
       }
       ExistentialSubquery o = (ExistentialSubquery) (other);
-      return value.equals(o.value);
+      return other instanceof Atom;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override
@@ -436,12 +435,12 @@ public abstract class Atom implements Serializable {
         return false;
       }
       Variable o = (Variable) (other);
-      return value.equals(o.value);
+      return other instanceof Atom;
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return getClass().hashCode();
     }
     
     @Override

@@ -20,16 +20,31 @@ import static hydra.dsl.Types.list;
 import static hydra.dsl.Types.scheme;
 import static hydra.dsl.Types.string;
 
+/**
+ * Converts a string to a list of character code points.
+ */
 public class ToList extends PrimitiveFunction {
+    /**
+     * Returns the name of this primitive function.
+     * @return the name "hydra.lib.strings.toList"
+     */
     public Name name() {
         return new Name("hydra.lib.strings.toList");
     }
 
+    /**
+     * Returns the type scheme of this function.
+     * @return the type scheme for a function that converts a string to a list of integers
+     */
     @Override
     public TypeScheme type() {
         return scheme(function(string(), list(int32())));
     }
 
+    /**
+     * Provides the implementation of this primitive function.
+     * @return a function that transforms terms to a flow of graph and term
+     */
     @Override
     protected Function<List<Term>, Flow<Graph, Term>> implementation() {
         return args -> Flows.map(Expect.string(args.get(0)), (Function<String, Term>) s -> {
@@ -43,13 +58,13 @@ public class ToList extends PrimitiveFunction {
     }
 
     /**
-     * Apply the function to its single argument.
+     * Converts a string to a list of character code points.
+     * @param s the string to convert
+     * @return the list of character code points
      */
     public static List<Integer> apply(String s) {
-        List<Integer> list = new ArrayList<>(s.length());
-        for (char c : s.toCharArray()) {
-            list.add((int) c);
-        }
+        List<Integer> list = new ArrayList<>(s.codePointCount(0, s.length()));
+        s.codePoints().forEach(list::add);
         return list;
     }
 }

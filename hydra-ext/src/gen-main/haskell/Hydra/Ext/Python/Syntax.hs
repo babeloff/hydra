@@ -1,9 +1,12 @@
+-- Note: this is an automatically generated file. Do not edit.
+
 -- | A Python syntax model, based on the Python v3 PEG grammar retrieved on 2024-12-22 from https://docs.python.org/3/reference/grammar.html
 
 module Hydra.Ext.Python.Syntax where
 
 import qualified Hydra.Core as Core
-import Prelude hiding  (Enum, Ordering, fail, map, pure, sum)
+import Prelude hiding  (Enum, Ordering, decodeFloat, encodeFloat, fail, map, pure, sum)
+import qualified Data.ByteString as B
 import qualified Data.Int as I
 import qualified Data.List as L
 import qualified Data.Map as M
@@ -1879,14 +1882,14 @@ _SliceOrStarredExpression_starred = (Core.Name "starred")
 
 data Slice = 
   SliceNamed NamedExpression |
-  SliceSlice SliceExpression
+  SliceSlice_ SliceExpression
   deriving (Eq, Ord, Read, Show)
 
 _Slice = (Core.Name "hydra.ext.python.syntax.Slice")
 
 _Slice_named = (Core.Name "named")
 
-_Slice_slice = (Core.Name "slice")
+_Slice_slice_ = (Core.Name "slice_")
 
 data SliceExpression = 
   SliceExpression {

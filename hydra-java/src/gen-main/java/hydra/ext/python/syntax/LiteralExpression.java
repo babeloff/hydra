@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class LiteralExpression implements Serializable {
+public abstract class LiteralExpression implements Serializable, Comparable<LiteralExpression> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.LiteralExpression");
   
   public static final hydra.core.Name FIELD_NAME_NUMBER = new hydra.core.Name("number");
@@ -41,31 +41,31 @@ public abstract class LiteralExpression implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(LiteralExpression instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(Number_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(Complex instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(String_ instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(None instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(True instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(False instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -73,7 +73,6 @@ public abstract class LiteralExpression implements Serializable {
     public final hydra.ext.python.syntax.SignedNumber value;
     
     public Number_ (hydra.ext.python.syntax.SignedNumber value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -82,13 +81,26 @@ public abstract class LiteralExpression implements Serializable {
       if (!(other instanceof Number_)) {
         return false;
       }
-      Number_ o = (Number_) (other);
-      return value.equals(o.value);
+      Number_ o = (Number_) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(LiteralExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Number_ o = (Number_) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -101,7 +113,6 @@ public abstract class LiteralExpression implements Serializable {
     public final hydra.ext.python.syntax.ComplexNumber value;
     
     public Complex (hydra.ext.python.syntax.ComplexNumber value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -110,13 +121,26 @@ public abstract class LiteralExpression implements Serializable {
       if (!(other instanceof Complex)) {
         return false;
       }
-      Complex o = (Complex) (other);
-      return value.equals(o.value);
+      Complex o = (Complex) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(LiteralExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      Complex o = (Complex) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -129,7 +153,6 @@ public abstract class LiteralExpression implements Serializable {
     public final String value;
     
     public String_ (String value) {
-      java.util.Objects.requireNonNull((value));
       this.value = value;
     }
     
@@ -138,13 +161,26 @@ public abstract class LiteralExpression implements Serializable {
       if (!(other instanceof String_)) {
         return false;
       }
-      String_ o = (String_) (other);
-      return value.equals(o.value);
+      String_ o = (String_) other;
+      return java.util.Objects.equals(
+        this.value,
+        o.value);
     }
     
     @Override
     public int hashCode() {
-      return 2 * value.hashCode();
+      return 2 * java.util.Objects.hashCode(value);
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(LiteralExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
+      String_ o = (String_) other;
+      return ((Comparable) value).compareTo(o.value);
     }
     
     @Override
@@ -163,12 +199,22 @@ public abstract class LiteralExpression implements Serializable {
       if (!(other instanceof None)) {
         return false;
       }
-      None o = (None) (other);
+      None o = (None) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(LiteralExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -188,12 +234,22 @@ public abstract class LiteralExpression implements Serializable {
       if (!(other instanceof True)) {
         return false;
       }
-      True o = (True) (other);
+      True o = (True) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(LiteralExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -213,12 +269,22 @@ public abstract class LiteralExpression implements Serializable {
       if (!(other instanceof False)) {
         return false;
       }
-      False o = (False) (other);
+      False o = (False) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(LiteralExpression other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     

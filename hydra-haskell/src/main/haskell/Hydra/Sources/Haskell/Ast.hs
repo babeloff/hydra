@@ -1,453 +1,919 @@
+-- | A Haskell syntax model, loosely based on Language.Haskell.Tools.AST
+
 module Hydra.Sources.Haskell.Ast where
 
-import Hydra.Kernel
-import qualified Hydra.Sources.Kernel.Types.All as KernelTypes
-import qualified Hydra.Sources.Kernel.Terms.All as Tier2
-import Hydra.Dsl.Annotations
-import Hydra.Dsl.Bootstrap
-import Hydra.Dsl.Types as Types
+-- Standard type-level imports
+import           Hydra.Kernel
+import           Hydra.Dsl.Annotations (doc)
+import           Hydra.Dsl.Bootstrap
+import           Hydra.Dsl.Types ((>:))
+import qualified Hydra.Dsl.Types as T
+import qualified Hydra.Sources.Kernel.Types.Core as Core
 
-import qualified Hydra.Sources.Kernel.Types.Accessors   as Accessors
-import qualified Hydra.Sources.Kernel.Types.Ast         as Ast
-import qualified Hydra.Sources.Kernel.Types.Coders      as Coders
-import qualified Hydra.Sources.Kernel.Types.Compute     as Compute
-import qualified Hydra.Sources.Kernel.Types.Constraints as Constraints
-import qualified Hydra.Sources.Kernel.Types.Core        as Core
-import qualified Hydra.Sources.Kernel.Types.Grammar     as Grammar
-import qualified Hydra.Sources.Kernel.Types.Graph       as Graph
-import qualified Hydra.Sources.Kernel.Types.Json        as Json
-import qualified Hydra.Sources.Kernel.Types.Mantle      as Mantle
-import qualified Hydra.Sources.Kernel.Types.Module      as Module
-import qualified Hydra.Sources.Kernel.Types.Phantoms    as Phantoms
-import qualified Hydra.Sources.Kernel.Types.Relational  as Relational
-import qualified Hydra.Sources.Kernel.Types.Query       as Query
-import qualified Hydra.Sources.Kernel.Types.Tabular     as Tabular
-import qualified Hydra.Sources.Kernel.Types.Testing     as Testing
-import qualified Hydra.Sources.Kernel.Types.Topology    as Topology
-import qualified Hydra.Sources.Kernel.Types.Typing      as Typing
-import qualified Hydra.Sources.Kernel.Types.Workflow    as Workflow
 
-haskellAstModule :: Module
-haskellAstModule = Module ns elements [Core.module_] [Core.module_] $
+ns :: Namespace
+ns = Namespace "hydra.ext.haskell.ast"
+
+define :: String -> Type -> Binding
+define = defineType ns
+
+module_ :: Module
+module_ = Module ns elements [Core.ns] [Core.ns] $
     Just "A Haskell syntax model, loosely based on Language.Haskell.Tools.AST"
   where
-    ns = Namespace "hydra.ext.haskell.ast"
-    def = datatype ns
-    ast = typeref ns
-
     elements = [
-
-      def "Alternative" $ -- UAlt
-        doc "A pattern-matching alternative" $
-        record [
-          "pattern">: ast "Pattern",
-          "rhs">: ast "CaseRhs",
-          "binds">: optional $ ast "LocalBindings"],
-
-      def "Assertion" $ -- UAssertion (UClassAssert)
-        doc "A type assertion" $
-        union [
-          "class">: ast "ClassAssertion",
-          "tuple">: list $ ast "Assertion"],
-        -- omitted for now: implicit and infix assertions
-
-      def "ClassAssertion" $ -- UClassAssert
-        record [
-          "name">: ast "Name",
-          "types">: list $ ast "Type"],
-
-      def "CaseRhs" $ -- UCaseRhs'
-        doc "The right-hand side of a pattern-matching alternative" $
-        -- omitted for now: guarded
-        wrap $ ast "Expression",
-
-      def "Constructor" $ -- UConDecl
-        doc "A data constructor" $
-        -- omitted for now: ordinary (positional), infix
-        union [
-          "ordinary">: ast "OrdinaryConstructor",
-          "record">: ast "RecordConstructor"],
-
-      def "OrdinaryConstructor" $
-        doc "An ordinary (positional) data constructor" $
-        record [
-          "name">: ast "Name",
-          "fields">: list $ ast "Type"],
-
-      def "RecordConstructor" $
-        doc "A record-style data constructor" $
-        record [
-          "name">: ast "Name",
-          "fields">: list $ ast "FieldWithComments"],
-
-      def "ConstructorWithComments" $
-        doc "A data constructor together with any comments" $
-        record [
-          "body">: ast "Constructor",
-          "comments">: optional string],
-
-      def "DataDeclaration" $ -- UDataDecl
-        doc "A data type declaration" $
-        record [
-          "keyword">: ast "DataOrNewtype",
-          "context">: list $ ast "Assertion",
-          "head">: ast "DeclarationHead",
-          "constructors">: list $ ast "ConstructorWithComments",
-          "deriving">: list $ ast "Deriving"],
-
-      def "DataOrNewtype" $
-        doc "The 'data' versus 'newtype keyword" $
-        enum ["data", "newtype"],
-
-      def "DeclarationWithComments" $
-        doc "A data declaration together with any comments" $
-        record [
-          "body">: ast "Declaration",
-          "comments">: optional string],
-
-      def "Declaration" $ -- UDecl
-        doc "A data or value declaration" $
-        -- omitted for now: typeFamily, typeSignature, closedTypeFamily, gDataDecl, typeInst, dataInst, gDataInst, class, inst,
-        --                  patternSynonym, deriv, fixity, default, patTypeSig, foreignImport, foreignExport, pragma,
-        --                  role, splice
-        union [
-          "data">: ast "DataDeclaration",
-          "type">: ast "TypeDeclaration",
-          "valueBinding">: ast "ValueBinding",
-          "typedBinding">: ast "TypedBinding"],
-
-      def "DeclarationHead" $ -- UDeclHead
-        doc "The left-hand side of a declaration" $
-        -- omitted for now: infix application
-        union [
-          "application">: ast "ApplicationDeclarationHead",
-          "parens">: ast "DeclarationHead",
-          "simple">: ast "Name"],
-
-      def "ApplicationDeclarationHead" $
-        doc "An application-style declaration head" $
-        record [
-          "function">: ast "DeclarationHead",
-          "operand">: ast "Variable"],
-
-      def "Deriving" $ -- UDeriving
-        doc "A 'deriving' statement" $
-        -- omitted for now: infix, parenthesized, and application instance heads
-        wrap $ list $ ast "Name",
-
-      def "Export" $ -- UExportSpec
-        doc "An export statement" $
-        union [
-          "declaration">: ast "ImportExportSpec",
-          "module">: ast "ModuleName"],
-
-      def "Expression" $ -- UExpr
-        doc "A data expression" $
-        -- omitted for now: multi-if, unboxed tuple, tuple section, unboxed tuple section, parallel array,
-        --                  enum, parallel array enum, list comp, parallel array comp, type application,
-        --                  (all Template Haskell constructors), pragma, arrow definition, arrow application,
-        --                  lambda cases, static, unboxed sum, hole
-        union [
-          "application">: ast "ApplicationExpression",
-          "case">: ast "CaseExpression",
-          "constructRecord">: ast "ConstructRecordExpression",
-          "do">: list $ ast "Statement", -- omitted for now: do vs. mdo
-          "if">: ast "IfExpression",
-          "infixApplication">: ast "InfixApplicationExpression",
-          "literal">: ast "Literal",
-          "lambda">: ast "LambdaExpression",
-          "leftSection">: ast "SectionExpression",
-          "let">: ast "LetExpression",
-          "list">: list $ ast "Expression",
-          "parens">: ast "Expression",
-          "prefixApplication">: ast "PrefixApplicationExpression",
-          "rightSection">: ast "SectionExpression",
-          "tuple">: list $ ast "Expression",
-          "typeSignature">: ast "TypeSignatureExpression",
-          "updateRecord">: ast "UpdateRecordExpression",
-          "variable">: ast "Name"],
-
-      def "ApplicationExpression" $
-        doc "An application expression" $
-        record [
-          "function">: ast "Expression",
-          "argument">: ast "Expression"],
-
-      def "CaseExpression" $
-        doc "A case expression" $
-        record [
-          "case">: ast "Expression",
-          "alternatives">: list $ ast "Alternative"],
-
-      def "ConstructRecordExpression" $
-        doc "A record constructor expression" $
-        record [
-          "name">: ast "Name",
-          "fields">: list $ ast "FieldUpdate"],
-
-      def "IfExpression" $
-        doc "An 'if' expression" $
-        record [
-          "condition">: ast "Expression",
-          "then">: ast "Expression",
-          "else">: ast "Expression"],
-
-      def "InfixApplicationExpression" $
-        doc "An infix application expression" $
-        record [
-          "lhs">: ast "Expression",
-          "operator">: ast "Operator",
-          "rhs">: ast "Expression"],
-
-      def "LambdaExpression" $
-        doc "A lambda expression" $
-        record [
-          "bindings">: list $ ast "Pattern",
-          "inner">: ast "Expression"],
-
-      def "LetExpression" $
-        doc "A 'let' expression" $
-        record [
-          "bindings">: list $ ast "LocalBinding",
-          "inner">: ast "Expression"],
-
-      def "PrefixApplicationExpression" $
-        doc "A prefix expression" $
-        record [
-          "operator">: ast "Operator",
-          "rhs">: ast "Expression"],
-
-      def "SectionExpression" $
-        doc "A section expression" $
-        record [
-          "operator">: ast "Operator",
-          "expression">: ast "Expression"],
-
-      def "TypeSignatureExpression" $
-        doc "A type signature expression" $
-        record [
-          "inner">: ast "Expression",
-          "type">: ast "Type"],
-
-      def "UpdateRecordExpression" $
-        doc "An update record expression" $
-        record [
-          "inner">: ast "Expression",
-          "fields">: list $ ast "FieldUpdate"],
-
-      def "Field" $ -- UFieldDecl
-        doc "A field (name/type pair)" $
-        record [
-          "name">: ast "Name",
-          "type">: ast "Type"],
-
-      def "FieldWithComments" $
-        doc "A field together with any comments" $
-        record [
-          "field">: ast "Field",
-          "comments">: optional string],
-
-      def "FieldUpdate" $ -- UFieldUpdate
-        doc "A field name and value" $
-        -- omitted for now: pun, wildcard
-        record [
-          "name">: ast "Name",
-          "value">: ast "Expression"],
-
-      def "Import" $ -- UImportDecl
-        doc "An import statement" $
-        -- omitted for now: source, safe, pkg
-        record [
-          "qualified">: boolean,
-          "module">: ast "ModuleName",
-          "as">: optional $ ast "ModuleName",
-          "spec">: optional $ ast "SpecImport"],
-
-      def "SpecImport" $
-        doc "An import specification" $
-        union [
-          "list">: list $ ast "ImportExportSpec",
-          "hiding">: list $ ast "ImportExportSpec"],
-
-      def "ImportModifier" $ -- UImportModifier
-        doc "An import modifier ('pattern' or 'type')" $
-        enum ["pattern", "type"],
-
-      def "ImportExportSpec" $ -- UIESpec
-        doc "An import or export specification" $
-        record [
-          "modifier">: optional $ ast "ImportModifier",
-          "name">: ast "Name",
-          "subspec">: optional $ ast "SubspecImportExportSpec"],
-
-      def "SubspecImportExportSpec" $
-        union [
-          "all">: unit,
-          "list">: list $ ast "Name"],
-
-      def "Literal" $ -- ULiteral
-        doc "A literal value" $
-        -- omitted for now: frac, primChar
-        union [
-          "char">: uint16,
-          "double">: float64,
-          "float">: float32,
-          "int">: int32,
-          "integer">: bigint,
-          "string">: string],
-
-      def "LocalBinding" $ -- ULocalBind
-        -- omitted for now: fixity, pragma
-        union [
-          "signature">: ast "TypeSignature",
-          "value">: ast "ValueBinding"],
-
-      def "LocalBindings" $ -- ULocalBinds
-        wrap $ list $ ast "LocalBinding",
-
-      def "Module" $ -- UModule
-        -- omitted for now: pragma
-        record [
-          "head">: optional $ ast "ModuleHead",
-          "imports">: list $ ast "Import",
-          "declarations">: list $ ast "DeclarationWithComments"],
-
-      def "ModuleHead" $ -- UModuleHead
-        -- omitted for now: pragma
-        record [
-          "comments">: optional string,
-          "name">: ast "ModuleName",
-          "exports">: list $ ast "Export"], -- UExportSpecs
-
-      def "ModuleName" $ -- UModuleName
-        wrap string,
-
-      def "Name" $ -- UName
-        union [
-          "implicit">: ast "QualifiedName",
-          "normal">: ast "QualifiedName",
-          "parens">: ast "QualifiedName"],
-
-      def "NamePart" $ -- UNamePart
-        wrap string,
-
-      def "Operator" $ -- UOperator
-        union [
-          "backtick">: ast "QualifiedName",
-          "normal">: ast "QualifiedName"],
-
-      def "Pattern" $ -- UPattern
-        -- omitted for now: unboxed tuples, parallel arrays, irrefutable, bang, view, splice, quasiquote, plusk, unboxed sum
-        union [
-          "application">: ast "ApplicationPattern",
-          "as">: ast "AsPattern",
-          "list">: list $ ast "Pattern",
-          "literal">: ast "Literal",
-          "name">: ast "Name",
-          "parens">: ast "Pattern",
-          "record">: ast "RecordPattern",
-          "tuple">: list $ ast "Pattern",
-          "typed">: ast "TypedPattern",
-          "wildcard">: unit],
-
-      def "ApplicationPattern" $
-        record [
-          "name">: ast "Name",
-          "args">: list $ ast "Pattern"],
-
-      def "AsPattern" $
-        record [
-          "name">: ast "Name",
-          "inner">: ast "Pattern"],
-
-      def "RecordPattern" $
-        record [
-          "name">: ast "Name",
-          "fields">: list $ ast "PatternField"],
-
-      def "TypedPattern" $
-        record [
-          "inner">: ast "Pattern",
-          "type">: ast "Type"],
-
-      def "PatternField" $ -- UPatternField
-        -- omitted for now: puns, wildcards
-        record [
-          "name">: ast "Name",
-          "pattern">: ast "Pattern"],
-
-      def "QualifiedName" $ -- UQualifiedName
-        record [
-          "qualifiers">: list $ ast "NamePart",
-          "unqualified">: ast "NamePart"],
-
-      def "RightHandSide" $ -- URhs
-        -- omitted for now: guarded rhs
-        wrap $ ast "Expression",
-
-      def "Statement" $ -- UStmt
-        wrap $ ast "Expression",
-
-      def "Type" $ -- UType
-        -- omitted for now: forall, unboxed tuple, parallel array, kinded, promoted, splice, quasiquote, bang,
-        --                  lazy, unpack, nounpack, wildcard, named wildcard, sum
-        union [
-          "application">: ast "ApplicationType",
-          "ctx">: ast "ContextType",
-          "function">: ast "FunctionType",
-          "infix">: ast "InfixType",
-          "list">: ast "Type",
-          "parens">: ast "Type",
-          "tuple">: list $ ast "Type",
-          "variable">: ast "Name"],
-
-      def "ApplicationType" $
-        record [
-          "context">: ast "Type",
-          "argument">: ast "Type"],
-
-      def "ContextType" $
-        record [
-          "ctx">: ast "Assertion", -- UContext
-          "type">: ast "Type"],
-
-      def "FunctionType" $
-        record [
-          "domain">: ast "Type",
-          "codomain">: ast "Type"],
-
-      def "InfixType" $
-        record [
-          "lhs">: ast "Type",
-          "operator">: ast "Operator",
-          "rhs">: ast "Operator"],
-
-      def "TypeDeclaration" $ -- UTypeDecl
-        record [
-          "name">: ast "DeclarationHead",
-          "type">: ast "Type"],
-
-      def "TypeSignature" $ -- UTypeSignature
-        record [
-          "name">: ast "Name",
-          "type">: ast "Type"],
-
-      def "TypedBinding" $ -- Added for convenience
-        record [
-          "typeSignature">: ast "TypeSignature",
-          "valueBinding">: ast "ValueBinding"],
-
-      def "ValueBinding" $ -- UValueBind
-        -- omitted for now: funBind
-        union [
-          "simple">: ast "SimpleValueBinding"],
-
-      def "SimpleValueBinding" $
-        record [
-          "pattern">: ast "Pattern",
-          "rhs">: ast "RightHandSide",
-          "localBindings">: optional $ ast "LocalBindings"],
-
-      def "Variable" $
-        -- omitted for now: kind constraints
-        wrap $ ast "Name"]
+      alternative,
+      assertion,
+      classAssertion,
+      caseRhs,
+      constructor,
+      ordinaryConstructor,
+      recordConstructor,
+      constructorWithComments,
+      dataDeclaration,
+      dataOrNewtype,
+      declarationWithComments,
+      declaration,
+      declarationHead,
+      applicationDeclarationHead,
+      deriving_,
+      export,
+      expression,
+      applicationExpression,
+      caseExpression,
+      constructRecordExpression,
+      ifExpression,
+      infixApplicationExpression,
+      lambdaExpression,
+      letExpression,
+      prefixApplicationExpression,
+      sectionExpression,
+      typeSignatureExpression,
+      updateRecordExpression,
+      field,
+      fieldWithComments,
+      fieldUpdate,
+      import_,
+      specImport,
+      importModifier,
+      importExportSpec,
+      subspecImportExportSpec,
+      literal,
+      localBinding,
+      localBindings,
+      module',
+      moduleHead,
+      moduleName,
+      name,
+      namePart,
+      operator,
+      pattern,
+      applicationPattern,
+      asPattern,
+      recordPattern,
+      typedPattern,
+      patternField,
+      qualifiedName,
+      rightHandSide,
+      statement,
+      type_,
+      applicationType,
+      contextType,
+      functionType,
+      infixType,
+      typeDeclaration,
+      typeSignature,
+      typedBinding,
+      valueBinding,
+      simpleValueBinding,
+      variable]
+
+alternative :: Binding -- UAlt
+alternative = define "Alternative" $
+  doc "A pattern-matching alternative" $
+  T.record [
+    "pattern">:
+      doc "The pattern to match"
+      pattern,
+    "rhs">:
+      doc "The right-hand side of the alternative"
+      caseRhs,
+    "binds">:
+      doc "Optional local bindings" $
+      T.maybe localBindings]
+
+assertion :: Binding -- UAssertion (UClassAssert)
+assertion = define "Assertion" $
+  doc "A type assertion" $
+  T.union [
+    "class">:
+      doc "A class assertion"
+      classAssertion,
+    "tuple">:
+      doc "A tuple of assertions" $
+      T.list assertion]
+  -- omitted for now: implicit and infix assertions
+
+classAssertion :: Binding -- UClassAssert
+classAssertion = define "ClassAssertion" $
+  doc "A class assertion" $
+  T.record [
+    "name">:
+      doc "The name of the class"
+      name,
+    "types">:
+      doc "The types to which the class is applied" $
+      T.list type_]
+
+caseRhs :: Binding -- UCaseRhs'
+caseRhs = define "CaseRhs" $
+  doc "The right-hand side of a pattern-matching alternative" $
+  -- omitted for now: guarded
+  T.wrap expression
+
+constructor :: Binding -- UConDecl
+constructor = define "Constructor" $
+  doc "A data constructor" $
+  -- omitted for now: ordinary (positional), infix
+  T.union [
+    "ordinary">:
+      doc "An ordinary (positional) constructor"
+      ordinaryConstructor,
+    "record">:
+      doc "A record constructor"
+      recordConstructor]
+
+ordinaryConstructor :: Binding
+ordinaryConstructor = define "OrdinaryConstructor" $
+  doc "An ordinary (positional) data constructor" $
+  T.record [
+    "name">:
+      doc "The name of the constructor"
+      name,
+    "fields">:
+      doc "The types of the positional fields" $
+      T.list type_]
+
+recordConstructor :: Binding
+recordConstructor = define "RecordConstructor" $
+  doc "A record-style data constructor" $
+  T.record [
+    "name">:
+      doc "The name of the constructor"
+      name,
+    "fields">:
+      doc "The named fields of the record" $
+      T.list fieldWithComments]
+
+constructorWithComments :: Binding
+constructorWithComments = define "ConstructorWithComments" $
+  doc "A data constructor together with any comments" $
+  T.record [
+    "body">:
+      doc "The constructor"
+      constructor,
+    "comments">:
+      doc "Optional comments" $
+      T.maybe T.string]
+
+dataDeclaration :: Binding -- UDataDecl
+dataDeclaration = define "DataDeclaration" $
+  doc "A data type declaration" $
+  T.record [
+    "keyword">:
+      doc "The 'data' or 'newtype' keyword"
+      dataOrNewtype,
+    "context">:
+      doc "Type class constraints" $
+      T.list assertion,
+    "head">:
+      doc "The declaration head"
+      declarationHead,
+    "constructors">:
+      doc "The data constructors" $
+      T.list constructorWithComments,
+    "deriving">:
+      doc "Derived type class instances" $
+      T.list deriving_]
+
+dataOrNewtype :: Binding
+dataOrNewtype = define "DataOrNewtype" $
+  doc "The 'data' versus 'newtype keyword" $
+  T.enum ["data", "newtype"]
+
+declarationWithComments :: Binding
+declarationWithComments = define "DeclarationWithComments" $
+  doc "A data declaration together with any comments" $
+  T.record [
+    "body">:
+      doc "The declaration"
+      declaration,
+    "comments">:
+      doc "Optional comments" $
+      T.maybe T.string]
+
+declaration :: Binding -- UDecl
+declaration = define "Declaration" $
+  doc "A data or value declaration" $
+  -- omitted for now: typeFamily, typeSignature, closedTypeFamily, gDataDecl, typeInst, dataInst, gDataInst, class, inst,
+  --                  patternSynonym, deriv, fixity, default, patTypeSig, foreignImport, foreignExport, pragma,
+  --                  role, splice
+  T.union [
+    "data">:
+      doc "A data type declaration"
+      dataDeclaration,
+    "type">:
+      doc "A type synonym declaration"
+      typeDeclaration,
+    "valueBinding">:
+      doc "A value binding"
+      valueBinding,
+    "typedBinding">:
+      doc "A typed binding"
+      typedBinding]
+
+declarationHead :: Binding -- UDeclHead
+declarationHead = define "DeclarationHead" $
+  doc "The left-hand side of a declaration" $
+  -- omitted for now: infix application
+  T.union [
+    "application">:
+      doc "An application-style declaration head"
+      applicationDeclarationHead,
+    "parens">:
+      doc "A parenthesized declaration head"
+      declarationHead,
+    "simple">:
+      doc "A simple name"
+      name]
+
+applicationDeclarationHead :: Binding
+applicationDeclarationHead = define "ApplicationDeclarationHead" $
+  doc "An application-style declaration head" $
+  T.record [
+    "function">:
+      doc "The function being applied"
+      declarationHead,
+    "operand">:
+      doc "The type variable operand"
+      variable]
+
+deriving_ :: Binding -- UDeriving
+deriving_ = define "Deriving" $
+  doc "A 'deriving' statement" $
+  -- omitted for now: infix, parenthesized, and application instance heads
+  T.wrap $ T.list name
+
+export :: Binding -- UExportSpec
+export = define "Export" $
+  doc "An export statement" $
+  T.union [
+    "declaration">:
+      doc "An exported declaration"
+      importExportSpec,
+    "module">:
+      doc "An exported module"
+      moduleName]
+
+expression :: Binding -- UExpr
+expression = define "Expression" $
+  doc "A data expression" $
+  -- omitted for now: multi-if, unboxed tuple, tuple section, unboxed tuple section, parallel array,
+  --                  enum, parallel array enum, list comp, parallel array comp, type application,
+  --                  (all Template Haskell constructors), pragma, arrow definition, arrow application,
+  --                  lambda cases, static, unboxed sum, hole
+  T.union [
+    "application">:
+      doc "A function application"
+      applicationExpression,
+    "case">:
+      doc "A case expression"
+      caseExpression,
+    "constructRecord">:
+      doc "A record constructor expression"
+      constructRecordExpression,
+    "do">:
+      doc "A 'do' expression" $
+      T.list statement, -- omitted for now: do vs. mdo
+    "if">:
+      doc "An 'if' expression"
+      ifExpression,
+    "infixApplication">:
+      doc "An infix application"
+      infixApplicationExpression,
+    "literal">:
+      doc "A literal value"
+      literal,
+    "lambda">:
+      doc "A lambda expression"
+      lambdaExpression,
+    "leftSection">:
+      doc "A left section expression"
+      sectionExpression,
+    "let">:
+      doc "A 'let' expression"
+      letExpression,
+    "list">:
+      doc "A list expression" $
+      T.list expression,
+    "parens">:
+      doc "A parenthesized expression"
+      expression,
+    "prefixApplication">:
+      doc "A prefix application"
+      prefixApplicationExpression,
+    "rightSection">:
+      doc "A right section expression"
+      sectionExpression,
+    "tuple">:
+      doc "A tuple expression" $
+      T.list expression,
+    "typeSignature">:
+      doc "A type signature expression"
+      typeSignatureExpression,
+    "updateRecord">:
+      doc "A record update expression"
+      updateRecordExpression,
+    "variable">:
+      doc "A variable reference"
+      name]
+
+applicationExpression :: Binding
+applicationExpression = define "ApplicationExpression" $
+  doc "An application expression" $
+  T.record [
+    "function">:
+      doc "The function being applied"
+      expression,
+    "argument">:
+      doc "The argument"
+      expression]
+
+caseExpression :: Binding
+caseExpression = define "CaseExpression" $
+  doc "A case expression" $
+  T.record [
+    "case">:
+      doc "The expression being matched"
+      expression,
+    "alternatives">:
+      doc "The pattern-matching alternatives" $
+      T.list alternative]
+
+constructRecordExpression :: Binding
+constructRecordExpression = define "ConstructRecordExpression" $
+  doc "A record constructor expression" $
+  T.record [
+    "name">:
+      doc "The constructor name"
+      name,
+    "fields">:
+      doc "The field assignments" $
+      T.list fieldUpdate]
+
+ifExpression :: Binding
+ifExpression = define "IfExpression" $
+  doc "An 'if' expression" $
+  T.record [
+    "condition">:
+      doc "The condition expression"
+      expression,
+    "then">:
+      doc "The 'then' branch"
+      expression,
+    "else">:
+      doc "The 'else' branch"
+      expression]
+
+infixApplicationExpression :: Binding
+infixApplicationExpression = define "InfixApplicationExpression" $
+  doc "An infix application expression" $
+  T.record [
+    "lhs">:
+      doc "The left-hand operand"
+      expression,
+    "operator">:
+      doc "The infix operator"
+      operator,
+    "rhs">:
+      doc "The right-hand operand"
+      expression]
+
+lambdaExpression :: Binding
+lambdaExpression = define "LambdaExpression" $
+  doc "A lambda expression" $
+  T.record [
+    "bindings">:
+      doc "The patterns binding parameters" $
+      T.list pattern,
+    "inner">:
+      doc "The body of the lambda"
+      expression]
+
+letExpression :: Binding
+letExpression = define "LetExpression" $
+  doc "A 'let' expression" $
+  T.record [
+    "bindings">:
+      doc "The local bindings" $
+      T.list localBinding,
+    "inner">:
+      doc "The body of the let expression"
+      expression]
+
+prefixApplicationExpression :: Binding
+prefixApplicationExpression = define "PrefixApplicationExpression" $
+  doc "A prefix expression" $
+  T.record [
+    "operator">:
+      doc "The prefix operator"
+      operator,
+    "rhs">:
+      doc "The operand"
+      expression]
+
+sectionExpression :: Binding
+sectionExpression = define "SectionExpression" $
+  doc "A section expression" $
+  T.record [
+    "operator">:
+      doc "The operator"
+      operator,
+    "expression">:
+      doc "The operand"
+      expression]
+
+typeSignatureExpression :: Binding
+typeSignatureExpression = define "TypeSignatureExpression" $
+  doc "A type signature expression" $
+  T.record [
+    "inner">:
+      doc "The expression being typed"
+      expression,
+    "type">:
+      doc "The type signature"
+      type_]
+
+updateRecordExpression :: Binding
+updateRecordExpression = define "UpdateRecordExpression" $
+  doc "An update record expression" $
+  T.record [
+    "inner">:
+      doc "The record being updated"
+      expression,
+    "fields">:
+      doc "The field updates" $
+      T.list fieldUpdate]
+
+field :: Binding -- UFieldDecl
+field = define "Field" $
+  doc "A field (name/type pair)" $
+  T.record [
+    "name">:
+      doc "The field name"
+      name,
+    "type">:
+      doc "The field type"
+      type_]
+
+fieldWithComments :: Binding
+fieldWithComments = define "FieldWithComments" $
+  doc "A field together with any comments" $
+  T.record [
+    "field">:
+      doc "The field"
+      field,
+    "comments">:
+      doc "Optional comments" $
+      T.maybe T.string]
+
+fieldUpdate :: Binding -- UFieldUpdate
+fieldUpdate = define "FieldUpdate" $
+  doc "A field name and value" $
+  -- omitted for now: pun, wildcard
+  T.record [
+    "name">:
+      doc "The field name"
+      name,
+    "value">:
+      doc "The field value"
+      expression]
+
+import_ :: Binding -- UImportDecl
+import_ = define "Import" $
+  doc "An import statement" $
+  -- omitted for now: source, safe, pkg
+  T.record [
+    "qualified">:
+      doc "Whether the import is qualified"
+      T.boolean,
+    "module">:
+      doc "The module being imported"
+      moduleName,
+    "as">:
+      doc "Optional alias for the module" $
+      T.maybe moduleName,
+    "spec">:
+      doc "Optional import specification" $
+      T.maybe specImport]
+
+specImport :: Binding
+specImport = define "SpecImport" $
+  doc "An import specification" $
+  T.union [
+    "list">:
+      doc "A list of imports to include" $
+      T.list importExportSpec,
+    "hiding">:
+      doc "A list of imports to exclude" $
+      T.list importExportSpec]
+
+importModifier :: Binding -- UImportModifier
+importModifier = define "ImportModifier" $
+  doc "An import modifier ('pattern' or 'type')" $
+  T.enum ["pattern", "type"]
+
+importExportSpec :: Binding -- UIESpec
+importExportSpec = define "ImportExportSpec" $
+  doc "An import or export specification" $
+  T.record [
+    "modifier">:
+      doc "Optional import modifier" $
+      T.maybe importModifier,
+    "name">:
+      doc "The name being imported or exported"
+      name,
+    "subspec">:
+      doc "Optional subspecification" $
+      T.maybe subspecImportExportSpec]
+
+subspecImportExportSpec :: Binding
+subspecImportExportSpec = define "SubspecImportExportSpec" $
+  doc "A subspecification within an import/export" $
+  T.union [
+    "all">:
+      doc "Import/export all"
+      T.unit,
+    "list">:
+      doc "Import/export specific names" $
+      T.list name]
+
+literal :: Binding -- ULiteral
+literal = define "Literal" $
+  doc "A literal value" $
+  -- omitted for now: frac, primChar
+  T.union [
+    "char">:
+      doc "A character literal"
+      T.uint16,
+    "double">:
+      doc "A double-precision floating point literal"
+      T.float64,
+    "float">:
+      doc "A single-precision floating point literal"
+      T.float32,
+    "int">:
+      doc "A 32-bit integer literal"
+      T.int32,
+    "integer">:
+      doc "An arbitrary-precision integer literal"
+      T.bigint,
+    "string">:
+      doc "A string literal"
+      T.string]
+
+localBinding :: Binding -- ULocalBind
+localBinding = define "LocalBinding" $
+  doc "A local binding" $
+  -- omitted for now: fixity, pragma
+  T.union [
+    "signature">:
+      doc "A type signature"
+      typeSignature,
+    "value">:
+      doc "A value binding"
+      valueBinding]
+
+localBindings :: Binding -- ULocalBinds
+localBindings = define "LocalBindings" $
+  doc "A collection of local bindings" $
+  T.wrap $ T.list localBinding
+
+module' :: Binding -- UModule
+module' = define "Module" $
+  doc "A Haskell module" $
+  -- omitted for now: pragma
+  T.record [
+    "head">:
+      doc "Optional module head" $
+      T.maybe moduleHead,
+    "imports">:
+      doc "Import statements" $
+      T.list import_,
+    "declarations">:
+      doc "Module declarations" $
+      T.list declarationWithComments]
+
+moduleHead :: Binding -- UModuleHead
+moduleHead = define "ModuleHead" $
+  doc "A module head" $
+  -- omitted for now: pragma
+  T.record [
+    "comments">:
+      doc "Optional module-level comments" $
+      T.maybe T.string,
+    "name">:
+      doc "The module name"
+      moduleName,
+    "exports">:
+      doc "Export list" $
+      T.list export] -- UExportSpecs
+
+moduleName :: Binding -- UModuleName
+moduleName = define "ModuleName" $
+  doc "A module name" $
+  T.wrap T.string
+
+name :: Binding -- UName
+name = define "Name" $
+  doc "A name" $
+  T.union [
+    "implicit">:
+      doc "An implicit name"
+      qualifiedName,
+    "normal">:
+      doc "A normal name"
+      qualifiedName,
+    "parens">:
+      doc "A parenthesized name"
+      qualifiedName]
+
+namePart :: Binding -- UNamePart
+namePart = define "NamePart" $
+  doc "A component of a qualified name" $
+  T.wrap T.string
+
+operator :: Binding -- UOperator
+operator = define "Operator" $
+  doc "An operator" $
+  T.union [
+    "backtick">:
+      doc "A function used as an infix operator"
+      qualifiedName,
+    "normal">:
+      doc "A normal infix operator"
+      qualifiedName]
+
+pattern :: Binding -- UPattern
+pattern = define "Pattern" $
+  doc "A pattern" $
+  -- omitted for now: unboxed tuples, parallel arrays, irrefutable, bang, view, splice, quasiquote, plusk, unboxed sum
+  T.union [
+    "application">:
+      doc "An application pattern"
+      applicationPattern,
+    "as">:
+      doc "An 'as' pattern"
+      asPattern,
+    "list">:
+      doc "A list pattern" $
+      T.list pattern,
+    "literal">:
+      doc "A literal pattern"
+      literal,
+    "name">:
+      doc "A name pattern"
+      name,
+    "parens">:
+      doc "A parenthesized pattern"
+      pattern,
+    "record">:
+      doc "A record pattern"
+      recordPattern,
+    "tuple">:
+      doc "A tuple pattern" $
+      T.list pattern,
+    "typed">:
+      doc "A typed pattern"
+      typedPattern,
+    "wildcard">:
+      doc "A wildcard pattern"
+      T.unit]
+
+applicationPattern :: Binding
+applicationPattern = define "ApplicationPattern" $
+  doc "An application pattern" $
+  T.record [
+    "name">:
+      doc "The constructor name"
+      name,
+    "args">:
+      doc "The pattern arguments" $
+      T.list pattern]
+
+asPattern :: Binding
+asPattern = define "AsPattern" $
+  doc "An 'as' pattern" $
+  T.record [
+    "name">:
+      doc "The bound name"
+      name,
+    "inner">:
+      doc "The inner pattern"
+      pattern]
+
+recordPattern :: Binding
+recordPattern = define "RecordPattern" $
+  doc "A record pattern" $
+  T.record [
+    "name">:
+      doc "The constructor name"
+      name,
+    "fields">:
+      doc "The field patterns" $
+      T.list patternField]
+
+typedPattern :: Binding
+typedPattern = define "TypedPattern" $
+  doc "A typed pattern" $
+  T.record [
+    "inner">:
+      doc "The inner pattern"
+      pattern,
+    "type">:
+      doc "The type annotation"
+      type_]
+
+patternField :: Binding -- UPatternField
+patternField = define "PatternField" $
+  doc "A pattern field" $
+  -- omitted for now: puns, wildcards
+  T.record [
+    "name">:
+      doc "The field name"
+      name,
+    "pattern">:
+      doc "The field pattern"
+      pattern]
+
+qualifiedName :: Binding -- UQualifiedName
+qualifiedName = define "QualifiedName" $
+  doc "A qualified name" $
+  T.record [
+    "qualifiers">:
+      doc "The qualifier parts" $
+      T.list namePart,
+    "unqualified">:
+      doc "The unqualified name part"
+      namePart]
+
+rightHandSide :: Binding -- URhs
+rightHandSide = define "RightHandSide" $
+  doc "A right-hand side of a binding" $
+  -- omitted for now: guarded rhs
+  T.wrap expression
+
+statement :: Binding -- UStmt
+statement = define "Statement" $
+  doc "A do-notation statement" $
+  T.wrap expression
+
+type_ :: Binding -- UType
+type_ = define "Type" $
+  doc "A type expression" $
+  -- omitted for now: forall, unboxed tuple, parallel array, kinded, promoted, splice, quasiquote, bang,
+  --                  lazy, unpack, nounpack, wildcard, named wildcard, sum
+  T.union [
+    "application">:
+      doc "An application type"
+      applicationType,
+    "ctx">:
+      doc "A context type"
+      contextType,
+    "function">:
+      doc "A function type"
+      functionType,
+    "infix">:
+      doc "An infix type"
+      infixType,
+    "list">:
+      doc "A list type"
+      type_,
+    "parens">:
+      doc "A parenthesized type"
+      type_,
+    "tuple">:
+      doc "A tuple type" $
+      T.list type_,
+    "variable">:
+      doc "A type variable or type name"
+      name]
+
+applicationType :: Binding
+applicationType = define "ApplicationType" $
+  doc "An application type" $
+  T.record [
+    "context">:
+      doc "The type being applied"
+      type_,
+    "argument">:
+      doc "The type argument"
+      type_]
+
+contextType :: Binding
+contextType = define "ContextType" $
+  doc "A type with a context (type class constraints)" $
+  T.record [
+    "ctx">:
+      doc "The type class context"
+      assertion, -- UContext
+    "type">:
+      doc "The constrained type"
+      type_]
+
+functionType :: Binding
+functionType = define "FunctionType" $
+  doc "A function type" $
+  T.record [
+    "domain">:
+      doc "The domain type"
+      type_,
+    "codomain">:
+      doc "The codomain type"
+      type_]
+
+infixType :: Binding
+infixType = define "InfixType" $
+  doc "An infix type application" $
+  T.record [
+    "lhs">:
+      doc "The left-hand type"
+      type_,
+    "operator">:
+      doc "The type operator"
+      operator,
+    "rhs">:
+      doc "The right-hand operator"
+      operator]
+
+typeDeclaration :: Binding -- UTypeDecl
+typeDeclaration = define "TypeDeclaration" $
+  doc "A type synonym declaration" $
+  T.record [
+    "name">:
+      doc "The declaration head"
+      declarationHead,
+    "type">:
+      doc "The type being defined"
+      type_]
+
+typeSignature :: Binding -- UTypeSignature
+typeSignature = define "TypeSignature" $
+  doc "A type signature" $
+  T.record [
+    "name">:
+      doc "The name being typed"
+      name,
+    "type">:
+      doc "The type"
+      type_]
+
+typedBinding :: Binding -- Added for convenience
+typedBinding = define "TypedBinding" $
+  doc "A binding with its type signature" $
+  T.record [
+    "typeSignature">:
+      doc "The type signature"
+      typeSignature,
+    "valueBinding">:
+      doc "The value binding"
+      valueBinding]
+
+valueBinding :: Binding -- UValueBind
+valueBinding = define "ValueBinding" $
+  doc "A value binding" $
+  -- omitted for now: funBind
+  T.union [
+    "simple">:
+      doc "A simple value binding"
+      simpleValueBinding]
+
+simpleValueBinding :: Binding
+simpleValueBinding = define "SimpleValueBinding" $
+  doc "A simple value binding" $
+  T.record [
+    "pattern">:
+      doc "The pattern being bound"
+      pattern,
+    "rhs">:
+      doc "The right-hand side"
+      rightHandSide,
+    "localBindings">:
+      doc "Optional local bindings (where clause)" $
+      T.maybe localBindings]
+
+variable :: Binding
+variable = define "Variable" $
+  doc "A type variable" $
+  -- omitted for now: kind constraints
+  T.wrap name

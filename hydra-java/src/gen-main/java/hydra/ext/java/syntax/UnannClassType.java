@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * A ClassType which does not allow annotations
  */
-public class UnannClassType implements Serializable {
+public class UnannClassType implements Serializable, Comparable<UnannClassType> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.java.syntax.UnannClassType");
   
   public static final hydra.core.Name FIELD_NAME_VALUE = new hydra.core.Name("value");
@@ -15,7 +15,6 @@ public class UnannClassType implements Serializable {
   public final hydra.ext.java.syntax.ClassType value;
   
   public UnannClassType (hydra.ext.java.syntax.ClassType value) {
-    java.util.Objects.requireNonNull((value));
     this.value = value;
   }
   
@@ -24,12 +23,20 @@ public class UnannClassType implements Serializable {
     if (!(other instanceof UnannClassType)) {
       return false;
     }
-    UnannClassType o = (UnannClassType) (other);
-    return value.equals(o.value);
+    UnannClassType o = (UnannClassType) other;
+    return java.util.Objects.equals(
+      this.value,
+      o.value);
   }
   
   @Override
   public int hashCode() {
-    return 2 * value.hashCode();
+    return 2 * java.util.Objects.hashCode(value);
+  }
+  
+  @Override
+  @SuppressWarnings("unchecked")
+  public int compareTo(UnannClassType other) {
+    return ((Comparable) value).compareTo(other.value);
   }
 }

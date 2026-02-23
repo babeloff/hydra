@@ -13,9 +13,9 @@ public class ListComprehension implements Serializable {
   
   public final hydra.ext.cypher.openCypher.FilterExpression left;
   
-  public final hydra.util.Opt<hydra.ext.cypher.openCypher.Expression> right;
+  public final hydra.util.Maybe<hydra.ext.cypher.openCypher.Expression> right;
   
-  public ListComprehension (hydra.ext.cypher.openCypher.FilterExpression left, hydra.util.Opt<hydra.ext.cypher.openCypher.Expression> right) {
+  public ListComprehension (hydra.ext.cypher.openCypher.FilterExpression left, hydra.util.Maybe<hydra.ext.cypher.openCypher.Expression> right) {
     java.util.Objects.requireNonNull((left));
     java.util.Objects.requireNonNull((right));
     this.left = left;
@@ -41,7 +41,7 @@ public class ListComprehension implements Serializable {
     return new ListComprehension(left, right);
   }
   
-  public ListComprehension withRight(hydra.util.Opt<hydra.ext.cypher.openCypher.Expression> right) {
+  public ListComprehension withRight(hydra.util.Maybe<hydra.ext.cypher.openCypher.Expression> right) {
     java.util.Objects.requireNonNull((right));
     return new ListComprehension(left, right);
   }

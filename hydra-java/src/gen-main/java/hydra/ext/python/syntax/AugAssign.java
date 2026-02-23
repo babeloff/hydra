@@ -4,7 +4,7 @@ package hydra.ext.python.syntax;
 
 import java.io.Serializable;
 
-public abstract class AugAssign implements Serializable {
+public abstract class AugAssign implements Serializable, Comparable<AugAssign> {
   public static final hydra.core.Name TYPE_NAME = new hydra.core.Name("hydra.ext.python.syntax.AugAssign");
   
   public static final hydra.core.Name FIELD_NAME_PLUS_EQUAL = new hydra.core.Name("plusEqual");
@@ -69,59 +69,59 @@ public abstract class AugAssign implements Serializable {
   
   public interface PartialVisitor<R> extends Visitor<R> {
     default R otherwise(AugAssign instance) {
-      throw new IllegalStateException("Non-exhaustive patterns when matching: " + (instance));
+      throw new IllegalStateException("Non-exhaustive patterns when matching: " + instance);
     }
     
     default R visit(PlusEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(MinusEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(TimesEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(AtEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(SlashEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(PercentEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(AmpersandEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(BarEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(CaretEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(LeftShiftEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(RightShiftEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(StarStarEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
     
     default R visit(DoubleSlashEqual instance) {
-      return otherwise((instance));
+      return otherwise(instance);
     }
   }
   
@@ -135,12 +135,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof PlusEqual)) {
         return false;
       }
-      PlusEqual o = (PlusEqual) (other);
+      PlusEqual o = (PlusEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -160,12 +170,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof MinusEqual)) {
         return false;
       }
-      MinusEqual o = (MinusEqual) (other);
+      MinusEqual o = (MinusEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -185,12 +205,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof TimesEqual)) {
         return false;
       }
-      TimesEqual o = (TimesEqual) (other);
+      TimesEqual o = (TimesEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -210,12 +240,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof AtEqual)) {
         return false;
       }
-      AtEqual o = (AtEqual) (other);
+      AtEqual o = (AtEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -235,12 +275,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof SlashEqual)) {
         return false;
       }
-      SlashEqual o = (SlashEqual) (other);
+      SlashEqual o = (SlashEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -260,12 +310,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof PercentEqual)) {
         return false;
       }
-      PercentEqual o = (PercentEqual) (other);
+      PercentEqual o = (PercentEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -285,12 +345,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof AmpersandEqual)) {
         return false;
       }
-      AmpersandEqual o = (AmpersandEqual) (other);
+      AmpersandEqual o = (AmpersandEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -310,12 +380,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof BarEqual)) {
         return false;
       }
-      BarEqual o = (BarEqual) (other);
+      BarEqual o = (BarEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -335,12 +415,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof CaretEqual)) {
         return false;
       }
-      CaretEqual o = (CaretEqual) (other);
+      CaretEqual o = (CaretEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -360,12 +450,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof LeftShiftEqual)) {
         return false;
       }
-      LeftShiftEqual o = (LeftShiftEqual) (other);
+      LeftShiftEqual o = (LeftShiftEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -385,12 +485,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof RightShiftEqual)) {
         return false;
       }
-      RightShiftEqual o = (RightShiftEqual) (other);
+      RightShiftEqual o = (RightShiftEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -410,12 +520,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof StarStarEqual)) {
         return false;
       }
-      StarStarEqual o = (StarStarEqual) (other);
+      StarStarEqual o = (StarStarEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
@@ -435,12 +555,22 @@ public abstract class AugAssign implements Serializable {
       if (!(other instanceof DoubleSlashEqual)) {
         return false;
       }
-      DoubleSlashEqual o = (DoubleSlashEqual) (other);
+      DoubleSlashEqual o = (DoubleSlashEqual) other;
       return true;
     }
     
     @Override
     public int hashCode() {
+      return 0;
+    }
+    
+    @Override
+    @SuppressWarnings("unchecked")
+    public int compareTo(AugAssign other) {
+      int tagCmp = (this).getClass().getName().compareTo(other.getClass().getName());
+      if (tagCmp != 0) {
+        return tagCmp;
+      }
       return 0;
     }
     
