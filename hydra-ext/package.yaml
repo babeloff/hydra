@@ -79,14 +79,6 @@ executables:
     dependencies:
       - hydra-ext
 
-  update-java-kernel-sources:
-    main: Main.hs
-    source-dirs:
-      - src/exec/update-java-kernel-sources
-    ghc-options: [-rtsopts]
-    dependencies:
-      - hydra-ext
-
   update-python-kernel:
     main: Main.hs
     source-dirs:
@@ -131,7 +123,15 @@ executables:
     dependencies:
       - hydra-ext
 
-  update-json-main:
+  update-haskell-ext-main:
+    main: Main.hs
+    source-dirs:
+      - src/exec/update-haskell-ext-main
+    ghc-options: [-rtsopts]
+    dependencies:
+      - hydra-ext
+
+  update-json-ext:
     main: Main.hs
     source-dirs:
       - src/exec/update-json-main
@@ -139,10 +139,11 @@ executables:
     dependencies:
       - hydra-ext
 
-  update-python-kernel-sources:
+  bootstrap-from-json:
     main: Main.hs
     source-dirs:
-      - src/exec/update-python-kernel-sources
+      - src/exec/bootstrap-from-json
     ghc-options: [-rtsopts]
     dependencies:
       - hydra-ext
+      - time

@@ -185,6 +185,7 @@ unionFieldReference g namespaces sname fname =
       unqualName = (Names.unqualifyName qualName)
   in (elementReference namespaces unqualName)
 
+-- | Unpack nested forall types into a list of type variables and the inner type
 unpackForallType :: (t0 -> Core.Type -> ([Core.Name], Core.Type))
 unpackForallType cx t = ((\x -> case x of
   Core.TypeForall v1 ->  

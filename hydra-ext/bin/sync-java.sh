@@ -148,7 +148,6 @@ if [ "$QUICK_MODE" = false ]; then
     else
         echo ""
         echo "WARNING: Some tests failed (exit code $TEST_RESULT). Please review the output above."
-        echo "Known failures: BigInt->BigFloat precision, String->Binary encoding, transcendental math precision"
     fi
 
     cd "$HYDRA_EXT_DIR"
