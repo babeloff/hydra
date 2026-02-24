@@ -10,6 +10,7 @@ from typing import TypeVar, cast
 import hydra.annotations
 import hydra.arity
 import hydra.checking
+import hydra.coders
 import hydra.core
 import hydra.formatting
 import hydra.lexical
@@ -225,6 +226,90 @@ def in_coder_graph_context(get_graph: Callable[[T0], T1], get_meta: Callable[[T0
     r"""Run a Flow Graph computation within a Flow state computation."""
     
     return hydra.lib.flows.bind(hydra.monads.get_state(), (lambda st: hydra.lib.flows.bind(hydra.monads.with_state(get_graph(st), hydra.lib.flows.bind(graph_flow, (lambda ret: hydra.lib.flows.bind(hydra.monads.get_state(), (lambda g2: hydra.lib.flows.pure((ret, g2))))))), (lambda result: hydra.lib.flows.bind(hydra.monads.put_state(make_coder(hydra.lib.pairs.second(result), get_meta(st))), (lambda _: hydra.lib.flows.pure(hydra.lib.pairs.first(result))))))))
+
+def is_tail_recursive_in_tail_position(func_name: hydra.core.Name, term: hydra.core.Term) -> bool:
+    r"""Check that all self-references are in tail position."""
+    
+    @lru_cache(1)
+    def stripped() -> hydra.core.Term:
+        return hydra.rewriting.deannotate_and_detype_term(term)
+    def _hoist_body_1(v1: hydra.core.Function) -> bool:
+        match v1:
+            case hydra.core.FunctionLambda(value=lam):
+                return is_tail_recursive_in_tail_position(func_name, lam.body)
+            
+            case _:
+                return hydra.rewriting.is_free_variable_in_term(func_name, term)
+    match stripped():
+        case hydra.core.TermApplication():
+            @lru_cache(1)
+            def gathered() -> tuple[frozenlist[hydra.core.Term], hydra.core.Term]:
+                return gather_applications(stripped())
+            @lru_cache(1)
+            def gather_args() -> frozenlist[hydra.core.Term]:
+                return hydra.lib.pairs.first(gathered())
+            @lru_cache(1)
+            def gather_fun() -> hydra.core.Term:
+                return hydra.lib.pairs.second(gathered())
+            @lru_cache(1)
+            def stripped_fun() -> hydra.core.Term:
+                return hydra.rewriting.deannotate_and_detype_term(gather_fun())
+            def _hoist_body_1(v1: hydra.core.Elimination) -> bool:
+                match v1:
+                    case hydra.core.EliminationUnion(value=cs):
+                        cases_ = cs.cases
+                        dflt = cs.default
+                        @lru_cache(1)
+                        def branches_ok() -> bool:
+                            return hydra.lib.lists.foldl((lambda ok, field: hydra.lib.logic.and_(ok, is_tail_recursive_in_tail_position(func_name, field.term))), True, cases_)
+                        @lru_cache(1)
+                        def dflt_ok() -> bool:
+                            return hydra.lib.maybes.maybe(True, (lambda d: is_tail_recursive_in_tail_position(func_name, d)), dflt)
+                        @lru_cache(1)
+                        def args_ok() -> bool:
+                            return hydra.lib.lists.foldl((lambda ok, arg: hydra.lib.logic.and_(ok, hydra.rewriting.is_free_variable_in_term(func_name, arg))), True, gather_args())
+                        return hydra.lib.logic.and_(hydra.lib.logic.and_(branches_ok(), dflt_ok()), args_ok())
+                    
+                    case _:
+                        return hydra.rewriting.is_free_variable_in_term(func_name, term)
+            def _hoist_body_2(v1: hydra.core.Function) -> bool:
+                match v1:
+                    case hydra.core.FunctionElimination(value=e):
+                        return _hoist_body_1(e)
+                    
+                    case _:
+                        return hydra.rewriting.is_free_variable_in_term(func_name, term)
+            def _hoist_body_3(v1: hydra.core.Term) -> bool:
+                match v1:
+                    case hydra.core.TermVariable(value=vname):
+                        return hydra.lib.logic.if_else(hydra.lib.equality.equal(vname, func_name), (lambda : (args_no_func := hydra.lib.lists.foldl((lambda ok, arg: hydra.lib.logic.and_(ok, hydra.rewriting.is_free_variable_in_term(func_name, arg))), True, gather_args()), (args_no_lambda := (_hoist_args_no_lambda_1 := (lambda v12: hydra.dsl.python.unsupported("inline match expressions are not yet supported")), _hoist_args_no_lambda_2 := (lambda v12: hydra.dsl.python.unsupported("inline match expressions are not yet supported")), hydra.lib.lists.foldl((lambda ok, arg: hydra.lib.logic.and_(ok, hydra.lib.logic.not_(hydra.rewriting.fold_over_term(hydra.coders.TraversalOrder.PRE, (lambda found, t: hydra.lib.logic.or_(found, _hoist_args_no_lambda_2(t))), False, arg)))), True, gather_args()))[2], hydra.lib.logic.and_(args_no_func, args_no_lambda))[1])[1]), (lambda : hydra.rewriting.is_free_variable_in_term(func_name, term)))
+                    
+                    case hydra.core.TermFunction(value=f):
+                        return _hoist_body_2(f)
+                    
+                    case _:
+                        return hydra.rewriting.is_free_variable_in_term(func_name, term)
+            return _hoist_body_3(stripped_fun())
+        
+        case hydra.core.TermFunction(value=f):
+            return _hoist_body_1(f)
+        
+        case hydra.core.TermLet(value=lt):
+            @lru_cache(1)
+            def bindings_ok() -> bool:
+                return hydra.lib.lists.foldl((lambda ok, b: hydra.lib.logic.and_(ok, hydra.rewriting.is_free_variable_in_term(func_name, b.term))), True, lt.bindings)
+            return hydra.lib.logic.and_(bindings_ok(), is_tail_recursive_in_tail_position(func_name, lt.body))
+        
+        case _:
+            return hydra.rewriting.is_free_variable_in_term(func_name, term)
+
+def is_self_tail_recursive(func_name: hydra.core.Name, body: hydra.core.Term) -> bool:
+    r"""Check if a term body is self-tail-recursive with respect to a function name."""
+    
+    @lru_cache(1)
+    def calls_self() -> bool:
+        return hydra.lib.logic.not_(hydra.rewriting.is_free_variable_in_term(func_name, body))
+    return hydra.lib.logic.if_else(calls_self(), (lambda : is_tail_recursive_in_tail_position(func_name, body)), (lambda : False))
 
 def is_simple_assignment(term: hydra.core.Term) -> bool:
     while True:
