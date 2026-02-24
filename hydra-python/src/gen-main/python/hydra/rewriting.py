@@ -53,48 +53,58 @@ def apply_inside_type_lambdas_and_annotations(f: Callable[[hydra.core.Term], hyd
 def deannotate_and_detype_term(t: hydra.core.Term) -> hydra.core.Term:
     r"""Strip type annotations from the top levels of a term."""
     
-    match t:
-        case hydra.core.TermAnnotated(value=at):
-            return deannotate_and_detype_term(at.body)
-        
-        case hydra.core.TermTypeApplication(value=tt):
-            return deannotate_and_detype_term(tt.body)
-        
-        case hydra.core.TermTypeLambda(value=ta):
-            return deannotate_and_detype_term(ta.body)
-        
-        case _:
-            return t
+    while True:
+        match t:
+            case hydra.core.TermAnnotated(value=at):
+                t = at.body
+                continue
+            
+            case hydra.core.TermTypeApplication(value=tt):
+                t = tt.body
+                continue
+            
+            case hydra.core.TermTypeLambda(value=ta):
+                t = ta.body
+                continue
+            
+            case _:
+                return t
 
 def deannotate_term(t: hydra.core.Term) -> hydra.core.Term:
     r"""Strip all annotations (including System F type annotations) from the top levels of a term."""
     
-    match t:
-        case hydra.core.TermAnnotated(value=at):
-            return deannotate_term(at.body)
-        
-        case _:
-            return t
+    while True:
+        match t:
+            case hydra.core.TermAnnotated(value=at):
+                t = at.body
+                continue
+            
+            case _:
+                return t
 
 def deannotate_type(t: hydra.core.Type) -> hydra.core.Type:
     r"""Strip all annotations from a term."""
     
-    match t:
-        case hydra.core.TypeAnnotated(value=arg_):
-            return deannotate_type(arg_.body)
-        
-        case _:
-            return t
+    while True:
+        match t:
+            case hydra.core.TypeAnnotated(value=arg_):
+                t = arg_.body
+                continue
+            
+            case _:
+                return t
 
 def deannotate_type_parameters(t: hydra.core.Type) -> hydra.core.Type:
     r"""Strip any top-level type lambdas from a type, extracting the (possibly nested) type body."""
     
-    match deannotate_type(t):
-        case hydra.core.TypeForall(value=lt):
-            return deannotate_type_parameters(lt.body)
-        
-        case _:
-            return t
+    while True:
+        match deannotate_type(t):
+            case hydra.core.TypeForall(value=lt):
+                t = lt.body
+                continue
+            
+            case _:
+                return t
 
 def rewrite_type(f: Callable[[Callable[[hydra.core.Type], hydra.core.Type], hydra.core.Type], hydra.core.Type], typ0: hydra.core.Type) -> hydra.core.Type:
     def fsub(recurse: Callable[[hydra.core.Type], hydra.core.Type], typ: hydra.core.Type) -> hydra.core.Type:
@@ -363,14 +373,13 @@ def flatten_let_terms(term: hydra.core.Term) -> hydra.core.Term:
             case _:
                 return (hydra.core.Binding(key0, val0, t), ())
     def flatten_body_let(bindings: frozenlist[hydra.core.Binding], body: hydra.core.Term) -> tuple[frozenlist[hydra.core.Binding], hydra.core.Term]:
-        match body:
-            case hydra.core.TermLet(value=inner_lt):
-                inner_bindings = inner_lt.bindings
-                inner_body = inner_lt.body
-                return flatten_body_let(hydra.lib.lists.concat2(bindings, inner_bindings), inner_body)
-            
-            case _:
-                return (hydra.lib.lists.concat2((), bindings), body)
+        while True:
+            match body:
+                case hydra.core.TermLet(value=inner_lt):
+                    return (inner_bindings := inner_lt.bindings, (inner_body := inner_lt.body, flatten_body_let(hydra.lib.lists.concat2(bindings, inner_bindings), inner_body))[1])[1]
+                
+                case _:
+                    return (hydra.lib.lists.concat2((), bindings), body)
     def flatten(recurse: Callable[[T0], hydra.core.Term], term2: T0) -> hydra.core.Term:
         @lru_cache(1)
         def rewritten() -> hydra.core.Term:
@@ -774,22 +783,24 @@ def is_free_variable_in_term(v: hydra.core.Name, term: hydra.core.Term) -> bool:
     return hydra.lib.logic.not_(hydra.lib.sets.member(v, free_variables_in_term(term)))
 
 def is_lambda(term: hydra.core.Term) -> bool:
-    def _hoist_hydra_rewriting_is_lambda_1(v1: hydra.core.Function) -> bool:
-        match v1:
-            case hydra.core.FunctionLambda():
-                return True
+    while True:
+        def _hoist_hydra_rewriting_is_lambda_1(v1: hydra.core.Function) -> bool:
+            match v1:
+                case hydra.core.FunctionLambda():
+                    return True
+                
+                case _:
+                    return False
+        match deannotate_term(term):
+            case hydra.core.TermFunction(value=v1):
+                return _hoist_hydra_rewriting_is_lambda_1(v1)
+            
+            case hydra.core.TermLet(value=lt):
+                term = lt.body
+                continue
             
             case _:
                 return False
-    match deannotate_term(term):
-        case hydra.core.TermFunction(value=v1):
-            return _hoist_hydra_rewriting_is_lambda_1(v1)
-        
-        case hydra.core.TermLet(value=lt):
-            return is_lambda(lt.body)
-        
-        case _:
-            return False
 
 def lift_lambda_above_let(term0: hydra.core.Term) -> hydra.core.Term:
     r"""Rewrite terms like `let foo = bar in λx.baz` to `λx.let foo = bar in baz`, lifting lambda-bound variables above let-bound variables, recursively. This is helpful for targets such as Python."""
@@ -2135,12 +2146,14 @@ def topological_sort_binding_map(binding_map: FrozenDict[hydra.core.Name, hydra.
     def keys() -> frozenset[hydra.core.Name]:
         return hydra.lib.sets.from_list(hydra.lib.lists.map((lambda x1: hydra.lib.pairs.first(x1)), bindings()))
     def has_type_annotation(term: hydra.core.Term) -> bool:
-        match term:
-            case hydra.core.TermAnnotated(value=at):
-                return has_type_annotation(at.body)
-            
-            case _:
-                return False
+        while True:
+            match term:
+                case hydra.core.TermAnnotated(value=at):
+                    term = at.body
+                    continue
+                
+                case _:
+                    return False
     def deps_of(name_and_term: tuple[T0, hydra.core.Term]) -> tuple[T0, frozenlist[hydra.core.Name]]:
         @lru_cache(1)
         def name() -> T0:

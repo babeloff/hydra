@@ -504,52 +504,51 @@ def eta_expand_typed_term(tx0: hydra.typing.TypeContext, term0: hydra.core.Term)
                 case _:
                     return rewrite(False, False, (), recurse, tx, term2)
         def arity_of(tx2: hydra.typing.TypeContext, term2: hydra.core.Term) -> hydra.compute.Flow[T2, int]:
-            @lru_cache(1)
-            def dflt() -> hydra.compute.Flow[T3, int]:
-                return hydra.lib.flows.map((lambda x1: hydra.arity.type_arity(x1)), hydra.checking.type_of(tx2, (), term2))
-            def for_function(tx3: hydra.typing.TypeContext, f: hydra.core.Function) -> hydra.compute.Flow[T2, int]:
-                match f:
-                    case hydra.core.FunctionElimination():
-                        return hydra.lib.flows.pure(1)
+            while True:
+                @lru_cache(1)
+                def dflt() -> hydra.compute.Flow[T3, int]:
+                    return hydra.lib.flows.map((lambda x1: hydra.arity.type_arity(x1)), hydra.checking.type_of(tx2, (), term2))
+                def for_function(tx3: hydra.typing.TypeContext, f: hydra.core.Function) -> hydra.compute.Flow[T2, int]:
+                    match f:
+                        case hydra.core.FunctionElimination():
+                            return hydra.lib.flows.pure(1)
+                        
+                        case hydra.core.FunctionLambda(value=l):
+                            @lru_cache(1)
+                            def txl() -> hydra.typing.TypeContext:
+                                return hydra.schemas.extend_type_context_for_lambda(tx3, l)
+                            return arity_of(txl(), l.body)
+                        
+                        case hydra.core.FunctionPrimitive(value=name):
+                            return hydra.lib.flows.map((lambda x1: hydra.arity.type_scheme_arity(x1)), hydra.lexical.require_primitive_type(tx3, name))
+                        
+                        case _:
+                            raise AssertionError("Unreachable: all variants handled")
+                match term2:
+                    case hydra.core.TermAnnotated(value=at):
+                        tx2 = tx2
+                        term2 = at.body
+                        continue
                     
-                    case hydra.core.FunctionLambda(value=l):
-                        @lru_cache(1)
-                        def txl() -> hydra.typing.TypeContext:
-                            return hydra.schemas.extend_type_context_for_lambda(tx3, l)
-                        return arity_of(txl(), l.body)
+                    case hydra.core.TermFunction(value=f):
+                        return for_function(tx2, f)
                     
-                    case hydra.core.FunctionPrimitive(value=name):
-                        return hydra.lib.flows.map((lambda x1: hydra.arity.type_scheme_arity(x1)), hydra.lexical.require_primitive_type(tx3, name))
+                    case hydra.core.TermLet(value=l):
+                        return (txl := hydra.schemas.extend_type_context_for_let((lambda _, _2: Nothing()), tx2, l), arity_of(txl, l.body))[1]
+                    
+                    case hydra.core.TermTypeApplication(value=tat):
+                        tx2 = tx2
+                        term2 = tat.body
+                        continue
+                    
+                    case hydra.core.TermTypeLambda(value=tl):
+                        return (txt := hydra.schemas.extend_type_context_for_type_lambda(tx2, tl), arity_of(txt, tl.body))[1]
+                    
+                    case hydra.core.TermVariable(value=name):
+                        return hydra.lib.maybes.maybe(hydra.lib.flows.map((lambda x1: hydra.arity.type_arity(x1)), hydra.checking.type_of(tx2, (), cast(hydra.core.Term, hydra.core.TermVariable(name)))), (lambda t: hydra.lib.flows.pure(hydra.arity.type_arity(t))), hydra.lib.maps.lookup(name, tx2.types))
                     
                     case _:
-                        raise AssertionError("Unreachable: all variants handled")
-            match term2:
-                case hydra.core.TermAnnotated(value=at):
-                    return arity_of(tx2, at.body)
-                
-                case hydra.core.TermFunction(value=f):
-                    return for_function(tx2, f)
-                
-                case hydra.core.TermLet(value=l):
-                    @lru_cache(1)
-                    def txl() -> hydra.typing.TypeContext:
-                        return hydra.schemas.extend_type_context_for_let((lambda _, _2: Nothing()), tx2, l)
-                    return arity_of(txl(), l.body)
-                
-                case hydra.core.TermTypeApplication(value=tat):
-                    return arity_of(tx2, tat.body)
-                
-                case hydra.core.TermTypeLambda(value=tl):
-                    @lru_cache(1)
-                    def txt() -> hydra.typing.TypeContext:
-                        return hydra.schemas.extend_type_context_for_type_lambda(tx2, tl)
-                    return arity_of(txt(), tl.body)
-                
-                case hydra.core.TermVariable(value=name):
-                    return hydra.lib.maybes.maybe(hydra.lib.flows.map((lambda x1: hydra.arity.type_arity(x1)), hydra.checking.type_of(tx2, (), cast(hydra.core.Term, hydra.core.TermVariable(name)))), (lambda t: hydra.lib.flows.pure(hydra.arity.type_arity(t))), hydra.lib.maps.lookup(name, tx2.types))
-                
-                case _:
-                    return dflt()
+                        return dflt()
         def extra_variables(n: int) -> frozenlist[hydra.core.Name]:
             return hydra.lib.lists.map((lambda i: hydra.core.Name(hydra.lib.strings.cat2("v", hydra.lib.literals.show_int32(i)))), hydra.lib.math.range_(1, n))
         def pad(vars: frozenlist[hydra.core.Name], body: hydra.core.Term) -> hydra.core.Term:

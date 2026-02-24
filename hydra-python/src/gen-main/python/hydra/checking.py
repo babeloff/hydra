@@ -327,20 +327,21 @@ def type_of_application(tx: hydra.typing.TypeContext, type_args: frozenlist[hydr
     fun = app.function
     arg = app.argument
     def try_type(tfun: hydra.core.Type, targ: hydra.core.Type) -> hydra.compute.Flow[T1, hydra.core.Type]:
-        match tfun:
-            case hydra.core.TypeForall(value=ft):
-                return try_type(ft.body, targ)
-            
-            case hydra.core.TypeFunction(value=ft2):
-                dom = ft2.domain
-                cod = ft2.codomain
-                return hydra.lib.logic.if_else(types_effectively_equal(tx, dom, targ), (lambda : hydra.lib.flows.pure(cod)), (lambda : hydra.lib.flows.fail(hydra.lib.strings.cat(("in application, expected ", hydra.show.core.type(dom), " but found ", hydra.show.core.type(targ))))))
-            
-            case hydra.core.TypeVariable():
-                return hydra.lib.flows.map((lambda x: cast(hydra.core.Type, hydra.core.TypeVariable(x))), hydra.schemas.fresh_name())
-            
-            case _:
-                return hydra.lib.flows.fail(hydra.lib.strings.cat(("left hand side of application (", hydra.show.core.term(fun), ") is not function-typed (", hydra.show.core.type(tfun), ")", ". types: ", hydra.lib.strings.intercalate(", ", hydra.lib.lists.map((lambda p: hydra.lib.strings.cat((hydra.lib.pairs.first(p).value, ": ", hydra.show.core.type(hydra.lib.pairs.second(p))))), hydra.lib.maps.to_list(tx.types))))))
+        while True:
+            match tfun:
+                case hydra.core.TypeForall(value=ft):
+                    tfun = ft.body
+                    targ = targ
+                    continue
+                
+                case hydra.core.TypeFunction(value=ft2):
+                    return (dom := ft2.domain, (cod := ft2.codomain, hydra.lib.logic.if_else(types_effectively_equal(tx, dom, targ), (lambda : hydra.lib.flows.pure(cod)), (lambda : hydra.lib.flows.fail(hydra.lib.strings.cat(("in application, expected ", hydra.show.core.type(dom), " but found ", hydra.show.core.type(targ)))))))[1])[1]
+                
+                case hydra.core.TypeVariable():
+                    return hydra.lib.flows.map((lambda x: cast(hydra.core.Type, hydra.core.TypeVariable(x))), hydra.schemas.fresh_name())
+                
+                case _:
+                    return hydra.lib.flows.fail(hydra.lib.strings.cat(("left hand side of application (", hydra.show.core.term(fun), ") is not function-typed (", hydra.show.core.type(tfun), ")", ". types: ", hydra.lib.strings.intercalate(", ", hydra.lib.lists.map((lambda p: hydra.lib.strings.cat((hydra.lib.pairs.first(p).value, ": ", hydra.show.core.type(hydra.lib.pairs.second(p))))), hydra.lib.maps.to_list(tx.types))))))
     return hydra.lib.flows.bind(type_of(tx, (), fun), (lambda tfun: hydra.lib.flows.bind(type_of(tx, (), arg), (lambda targ: hydra.lib.flows.bind(try_type(tfun, targ), (lambda t: apply_type_arguments_to_type(tx, type_args, t)))))))
 
 def type_of_case_statement(tx: hydra.typing.TypeContext, type_args: frozenlist[hydra.core.Type], cs: hydra.core.CaseStatement) -> hydra.compute.Flow[T0, hydra.core.Type]:
