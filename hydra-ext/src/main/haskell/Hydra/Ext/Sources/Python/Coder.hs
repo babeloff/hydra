@@ -208,6 +208,7 @@ module_ = Module ns elements
       toBinding initialEnvironment,
       toBinding targetPythonVersion,
       -- Function analysis
+      toBinding pythonBindingMetadata,
       toBinding analyzePythonFunction,
       toBinding analyzePythonFunctionInline,
       -- withDefinitions context
@@ -1722,7 +1723,7 @@ withLet = def "withLet" $
   Schemas.withLetContext @@
     pythonEnvironmentGetTypeContext @@
     pythonEnvironmentSetTypeContext @@
-    CoderUtils.bindingMetadata
+    pythonBindingMetadata
 
 -- | Execute a computation with inline let context (no metadata, for walrus operators)
 --   Also adds binding names to inlineVariables so encodeVariable knows not to add call syntax.
@@ -1802,13 +1803,26 @@ initialEnvironment = def "initialEnvironment" $
       PyHelpers._PythonEnvironment_skipCasts>>: true,
       PyHelpers._PythonEnvironment_inlineVariables>>: Sets.empty]
 
+-- | Python-specific binding metadata function.
+--   Like CoderUtils.bindingMetadata, but skips metadata for trivial bindings.
+--   This prevents trivial let-bindings (field accesses, literals, plain variables)
+--   from being thunked with @lru_cache(1) and from getting () call syntax at reference sites.
+pythonBindingMetadata :: TBinding (TypeContext -> Binding -> Maybe Term)
+pythonBindingMetadata = def "pythonBindingMetadata" $
+  doc "Like bindingMetadata, but skips metadata for trivial bindings" $
+  "tc" ~> "b" ~>
+  Logic.ifElse (CoderUtils.isTrivialTerm @@ (Core.bindingTerm $ var "b"))
+    nothing
+    (CoderUtils.bindingMetadata @@ var "tc" @@ var "b")
+
 -- | Analyze a function term with Python-specific TypeContext management.
---   This is a wrapper around CoderUtils.analyzeFunctionTerm that provides the Python-specific
---   TypeContext getter and setter functions.
+--   This is a wrapper around CoderUtils.analyzeFunctionTermWith that provides the Python-specific
+--   TypeContext getter/setter and Python-specific binding metadata (which skips trivial bindings).
 analyzePythonFunction :: TBinding (PyHelpers.PythonEnvironment -> Term -> Flow PyHelpers.PyGraph (FunctionStructure PyHelpers.PythonEnvironment))
 analyzePythonFunction = def "analyzePythonFunction" $
   doc "Analyze a function term with Python-specific TypeContext management" $
-  CoderUtils.analyzeFunctionTerm @@
+  CoderUtils.analyzeFunctionTermWith @@
+    pythonBindingMetadata @@
     pythonEnvironmentGetTypeContext @@
     pythonEnvironmentSetTypeContext
 
@@ -1859,14 +1873,17 @@ encodeBindingAsAssignment = def "encodeBindingAsAssignment" $
     "tc" <~ (project PyHelpers._PythonEnvironment PyHelpers._PythonEnvironment_typeContext @@ var "env") $
     "isComplexVar" <~ (CoderUtils.isComplexVariable @@ var "tc" @@ var "name") $
     "termIsComplex" <~ (CoderUtils.isComplexTerm @@ var "tc" @@ var "term") $
+    "isTrivial" <~ (CoderUtils.isTrivialTerm @@ var "term") $
     -- Check if needs thunking based on type scheme arity and complexity
-    "needsThunk" <~ optCases (var "mts")
-      -- No type scheme: thunk if complex
-      (Logic.and (var "allowThunking") (Logic.or (var "isComplexVar") (var "termIsComplex")))
-      -- Has type scheme: thunk if arity == 0 and complex
-      ("ts" ~> Logic.and (var "allowThunking")
-        (Logic.and (Equality.equal (Arity.typeSchemeArity @@ var "ts") (Phantoms.int 0))
-                   (Logic.or (var "isComplexVar") (var "termIsComplex")))) $
+    -- Trivial terms (literals, variables, field projections) are never thunked
+    "needsThunk" <~ Logic.ifElse (var "isTrivial") (boolean False)
+      (optCases (var "mts")
+        -- No type scheme: thunk if complex
+        (Logic.and (var "allowThunking") (Logic.or (var "isComplexVar") (var "termIsComplex")))
+        -- Has type scheme: thunk if arity == 0 and complex
+        ("ts" ~> Logic.and (var "allowThunking")
+          (Logic.and (Equality.equal (Arity.typeSchemeArity @@ var "ts") (Phantoms.int 0))
+                     (Logic.or (var "isComplexVar") (var "termIsComplex"))))) $
     "pterm" <~ (Logic.ifElse (var "needsThunk") (makeThunk @@ var "pbody") (var "pbody")) $
     produce $ PyDsl.namedExpressionAssignment $ PyDsl.assignmentExpression (var "pyName") (var "pterm")
 
@@ -2048,8 +2065,9 @@ encodeTermAssignment = def "encodeTermAssignment" $
     "tc" <~ (project PyHelpers._PythonEnvironment PyHelpers._PythonEnvironment_typeContext @@ var "env2") $
     "binding" <~ (Core.binding (var "name") (var "term") (just $ var "ts")) $
     "isComplex" <~ (CoderUtils.isComplexBinding @@ var "tc" @@ var "binding") $
-    Logic.ifElse (var "isComplex")
-      -- Complex binding: use function definition
+    "isTrivial" <~ (CoderUtils.isTrivialTerm @@ var "term") $
+    Logic.ifElse (Logic.and (var "isComplex") (Logic.not (var "isTrivial")))
+      -- Complex binding (non-trivial): use function definition
       (withBindings @@ var "bindings" @@
         ("bindingStmts" <<~ (Flows.mapList (encodeBindingAs @@ var "env2") (var "bindings")) $
           encodeFunctionDefinition @@ var "env2" @@ var "name" @@ var "tparams" @@ var "params" @@ var "body" @@ var "doms" @@ var "mcod" @@ var "comment" @@ var "bindingStmts"))
@@ -2115,11 +2133,13 @@ encodeVariable = def "encodeVariable" $
                   (Maps.lookup (var "name") (var "tcMetadata")))
               -- In graph elements
               ("el" ~>
+                "elTrivial1" <~ (CoderUtils.isTrivialTerm @@ (Core.bindingTerm $ var "el")) $
                 Maybes.maybe
                   (produce $ var "asVariable")
                   ("ts" ~>
-                    Logic.ifElse (Logic.and (Equality.equal (Arity.typeSchemeArity @@ var "ts") (int32 0))
-                                            (CoderUtils.isComplexBinding @@ var "tc" @@ var "el"))
+                    Logic.ifElse (Logic.and (Logic.and (Equality.equal (Arity.typeSchemeArity @@ var "ts") (int32 0))
+                                                       (CoderUtils.isComplexBinding @@ var "tc" @@ var "el"))
+                                            (Logic.not (var "elTrivial1")))
                       (produce $ var "asFunctionCall")
                       ("asFunctionRef" <~ (Logic.ifElse (Logic.not $ Lists.null (Core.typeSchemeVariables $ var "ts"))
                           (makeSimpleLambda @@ (Arity.typeArity @@ (Core.typeSchemeType $ var "ts")) @@ var "asVariable")
@@ -2163,16 +2183,19 @@ encodeVariable = def "encodeVariable" $
                     produce $ var "asFunctionRef")
                   -- In graph elements
                   ("el" ~>
+                    "elTrivial" <~ (CoderUtils.isTrivialTerm @@ (Core.bindingTerm $ var "el")) $
                     Maybes.maybe
-                      (Logic.ifElse (Equality.equal (Arity.typeArity @@ var "typ") (int32 0))
+                      (Logic.ifElse (Logic.and (Equality.equal (Arity.typeArity @@ var "typ") (int32 0))
+                                               (Logic.not (var "elTrivial")))
                         (produce $ var "asFunctionCall")
                         ("asFunctionRef" <~ (Logic.ifElse (Logic.not $ Sets.null (Rewriting.freeVariablesInType @@ var "typ"))
                             (makeSimpleLambda @@ (Arity.typeArity @@ var "typ") @@ var "asVariable")
                             (var "asVariable")) $
                           produce $ var "asFunctionRef"))
                       ("ts" ~>
-                        Logic.ifElse (Logic.and (Equality.equal (Arity.typeArity @@ var "typ") (int32 0))
-                                                (CoderUtils.isComplexBinding @@ var "tc" @@ var "el"))
+                        Logic.ifElse (Logic.and (Logic.and (Equality.equal (Arity.typeArity @@ var "typ") (int32 0))
+                                                           (CoderUtils.isComplexBinding @@ var "tc" @@ var "el"))
+                                                (Logic.not (var "elTrivial")))
                           (produce $ var "asFunctionCall")
                           ("asFunctionRef" <~ (Logic.ifElse (Logic.not $ Sets.null (Rewriting.freeVariablesInType @@ var "typ"))
                               (makeSimpleLambda @@ (Arity.typeArity @@ var "typ") @@ var "asVariable")

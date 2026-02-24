@@ -36,18 +36,10 @@ def schema_spec(cx: hydra.graph.Graph, raw: hydra.core.Term) -> Either[hydra.uti
     def _hoist_hydra_decode_workflow_schema_spec_1(cx: hydra.graph.Graph, v1: hydra.core.Term) -> Either[hydra.util.DecodingError, hydra.workflow.SchemaSpec]:
         match v1:
             case hydra.core.TermUnion(value=inj):
-                @lru_cache(1)
-                def tname() -> hydra.core.Name:
-                    return inj.type_name
-                @lru_cache(1)
-                def field() -> hydra.core.Field:
-                    return inj.field
-                @lru_cache(1)
-                def fname() -> hydra.core.Name:
-                    return field().name
-                @lru_cache(1)
-                def fterm() -> hydra.core.Term:
-                    return field().term
+                tname = inj.type_name
+                field = inj.field
+                fname = field.name
+                fterm = field.term
                 @lru_cache(1)
                 def variant_map() -> FrozenDict[hydra.core.Name, Callable[[hydra.core.Term], Either[hydra.util.DecodingError, hydra.workflow.SchemaSpec]]]:
                     def _hoist_variant_map_1(v12: hydra.core.Literal) -> Either[hydra.util.DecodingError, str]:
@@ -65,7 +57,7 @@ def schema_spec(cx: hydra.graph.Graph, raw: hydra.core.Term) -> Either[hydra.uti
                             case _:
                                 return Left(hydra.util.DecodingError("expected literal"))
                     return hydra.lib.maps.from_list(((hydra.core.Name("hydra"), (lambda input: hydra.lib.eithers.map((lambda t: cast(hydra.workflow.SchemaSpec, hydra.workflow.SchemaSpecHydra(t))), hydra_schema_spec(cx, input)))), (hydra.core.Name("file"), (lambda input: hydra.lib.eithers.map((lambda t: cast(hydra.workflow.SchemaSpec, hydra.workflow.SchemaSpecFile(t))), hydra.lib.eithers.either((lambda err: Left(hydra.util.DecodingError(err))), (lambda stripped2: _hoist_variant_map_2(stripped2)), hydra.lexical.strip_and_dereference_term_either(cx, input))))), (hydra.core.Name("provided"), (lambda input: hydra.lib.eithers.map((lambda t: cast(hydra.workflow.SchemaSpec, hydra.workflow.SchemaSpecProvided())), hydra.extract.helpers.decode_unit(cx, input))))))
-                return hydra.lib.maybes.maybe(Left(hydra.util.DecodingError(hydra.lib.strings.cat(("no such field ", fname().value, " in union type ", tname().value)))), (lambda f: f(fterm())), hydra.lib.maps.lookup(fname(), variant_map()))
+                return hydra.lib.maybes.maybe(Left(hydra.util.DecodingError(hydra.lib.strings.cat(("no such field ", fname.value, " in union type ", tname.value)))), (lambda f: f(fterm)), hydra.lib.maps.lookup(fname, variant_map()))
             
             case _:
                 return Left(hydra.util.DecodingError("expected union of type hydra.workflow.SchemaSpec"))
