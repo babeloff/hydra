@@ -373,9 +373,19 @@ public class TestSuiteRunner {
     Stream<DynamicNode> kernelTests() {
         TestGroup allTests = TestSuite.allTests();
         rootTestGroup = allTests;
+
+        // Eagerly initialize test infrastructure and measure time.
+        // This ensures startup cost is not attributed to the first test group.
+        long initStart = System.nanoTime();
+        getTestGraph();
+        getInferenceContext();
+        getTypeContext();
+        double initMs = (System.nanoTime() - initStart) / 1_000_000.0;
         if (BENCHMARK_OUTPUT != null) {
+            benchmarkResults.put(allTests.name + "/_initialization", initMs);
             Runtime.getRuntime().addShutdownHook(new Thread(() -> writeBenchmarkJson(BENCHMARK_OUTPUT, allTests)));
         }
+
         return collectTests(allTests, allTests.name);
     }
 
@@ -1207,6 +1217,21 @@ public class TestSuiteRunner {
         List<TestGroup> subgroups = root.subgroups;
         int totalPassed = 0, totalFailed = 0, totalSkipped = 0;
         double totalTimeMs = 0;
+
+        // Add initialization group if present
+        double initTime = benchmarkResults.getOrDefault(rootPath + "/_initialization", 0.0);
+        if (initTime > 0) {
+            totalTimeMs += initTime;
+            sb.append("    {\n");
+            sb.append("      \"failed\": 0,\n");
+            sb.append("      \"passed\": 0,\n");
+            sb.append("      \"path\": ").append(jsonString(rootPath + "/_initialization")).append(",\n");
+            sb.append("      \"skipped\": 0,\n");
+            sb.append("      \"totalTimeMs\": ").append(round1(initTime)).append("}");
+            if (!subgroups.isEmpty()) sb.append(",");
+            sb.append("\n");
+        }
+
         for (int i = 0; i < subgroups.size(); i++) {
             TestGroup group = subgroups.get(i);
             String groupPath = rootPath + "/" + group.name;
