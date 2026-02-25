@@ -33282,17 +33282,37 @@
                                                                   "application": {
                                                                     "argument": {
                                                                       "application": {
-                                                                        "argument": {"variable": "fun"},
-                                                                        "function": {
+                                                                        "argument": {
                                                                           "application": {
-                                                                            "argument": {"variable": "tc"},
+                                                                            "argument": {"variable": "fun"},
                                                                             "function": {
                                                                               "application": {
-                                                                                "argument": {"literal": {"string": "1"}},
+                                                                                "argument": {"variable": "tc"},
                                                                                 "function": {
+                                                                                  "application": {
+                                                                                    "argument": {"literal": {"string": "1"}},
+                                                                                    "function": {
+                                                                                      "typeApplication": {
+                                                                                        "body": {"variable": "hydra.coderUtils.tryTypeOf"},
+                                                                                        "type": {"variable": "hydra.graph.Graph"}}}}}}}}},
+                                                                        "function": {
+                                                                          "application": {
+                                                                            "argument": {
+                                                                              "union": {
+                                                                                "field": {
+                                                                                  "name": "variable",
+                                                                                  "term": {
+                                                                                    "wrap": {
+                                                                                      "body": {"literal": {"string": "unknown"}},
+                                                                                      "typeName": "hydra.core.Name"}}},
+                                                                                "typeName": "hydra.core.Type"}},
+                                                                            "function": {
+                                                                              "typeApplication": {
+                                                                                "body": {
                                                                                   "typeApplication": {
-                                                                                    "body": {"variable": "hydra.coderUtils.tryTypeOf"},
-                                                                                    "type": {"variable": "hydra.graph.Graph"}}}}}}}}},
+                                                                                    "body": {"function": {"primitive": "hydra.lib.flows.withDefault"}},
+                                                                                    "type": {"variable": "hydra.graph.Graph"}}},
+                                                                                "type": {"variable": "hydra.core.Type"}}}}}}},
                                                                     "function": {
                                                                       "application": {
                                                                         "argument": {"variable": "mfunTyp"},
@@ -33875,22 +33895,71 @@
                                                                                 {
                                                                                   "application": {
                                                                                     "argument": {
+                                                                                      "function": {
+                                                                                        "lambda": {
+                                                                                          "body": {
+                                                                                            "application": {
+                                                                                              "argument": {
+                                                                                                "function": {
+                                                                                                  "lambda": {
+                                                                                                    "body": {
+                                                                                                      "application": {
+                                                                                                        "argument": {
+                                                                                                          "application": {
+                                                                                                            "argument": {"variable": "jarg"},
+                                                                                                            "function": {
+                                                                                                              "application": {
+                                                                                                                "argument": {"variable": "jfun"},
+                                                                                                                "function": {"variable": "hydra.ext.java.coder.applyJavaArg"}}}}},
+                                                                                                        "function": {
+                                                                                                          "typeApplication": {
+                                                                                                            "body": {
+                                                                                                              "typeApplication": {
+                                                                                                                "body": {"function": {"primitive": "hydra.lib.flows.pure"}},
+                                                                                                                "type": {"variable": "hydra.graph.Graph"}}},
+                                                                                                            "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}},
+                                                                                                    "domain": [{"variable": "hydra.ext.java.syntax.Expression"}],
+                                                                                                    "parameter": "jarg"}}},
+                                                                                              "function": {
+                                                                                                "application": {
+                                                                                                  "argument": {
+                                                                                                    "application": {
+                                                                                                      "argument": {"variable": "rhs"},
+                                                                                                      "function": {
+                                                                                                        "application": {
+                                                                                                          "argument": {"variable": "env"},
+                                                                                                          "function": {"variable": "hydra.ext.java.coder.encodeTerm"}}}}},
+                                                                                                  "function": {
+                                                                                                    "typeApplication": {
+                                                                                                      "body": {
+                                                                                                        "typeApplication": {
+                                                                                                          "body": {
+                                                                                                            "typeApplication": {
+                                                                                                              "body": {"function": {"primitive": "hydra.lib.flows.bind"}},
+                                                                                                              "type": {"variable": "hydra.graph.Graph"}}},
+                                                                                                          "type": {"variable": "hydra.ext.java.syntax.Expression"}}},
+                                                                                                      "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}}}},
+                                                                                          "domain": [{"variable": "hydra.ext.java.syntax.Expression"}],
+                                                                                          "parameter": "jfun"}}},
+                                                                                    "function": {
                                                                                       "application": {
                                                                                         "argument": {
-                                                                                          "list": [
-                                                                                            {"literal": {"string": "Unexpected type: "}},
-                                                                                            {
+                                                                                          "application": {
+                                                                                            "argument": {"variable": "lhs"},
+                                                                                            "function": {
                                                                                               "application": {
-                                                                                                "argument": {"variable": "t"},
-                                                                                                "function": {"variable": "hydra.show.core.type"}}}]},
-                                                                                        "function": {"function": {"primitive": "hydra.lib.strings.cat"}}}},
-                                                                                    "function": {
-                                                                                      "typeApplication": {
-                                                                                        "body": {
+                                                                                                "argument": {"variable": "env"},
+                                                                                                "function": {"variable": "hydra.ext.java.coder.encodeTerm"}}}}},
+                                                                                        "function": {
                                                                                           "typeApplication": {
-                                                                                            "body": {"variable": "hydra.monads.fail"},
-                                                                                            "type": {"variable": "hydra.graph.Graph"}}},
-                                                                                        "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}}],
+                                                                                            "body": {
+                                                                                              "typeApplication": {
+                                                                                                "body": {
+                                                                                                  "typeApplication": {
+                                                                                                    "body": {"function": {"primitive": "hydra.lib.flows.bind"}},
+                                                                                                    "type": {"variable": "hydra.graph.Graph"}}},
+                                                                                                "type": {"variable": "hydra.ext.java.syntax.Expression"}}},
+                                                                                            "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}}}}],
                                                                               "typeName": "hydra.core.Type"}}}}}},
                                                                   "domain": [{"variable": "hydra.core.Type"}],
                                                                   "parameter": "t"}}},
@@ -46096,72 +46165,51 @@
                                                                                                                                                                                                                 "function": {
                                                                                                                                                                                                                   "lambda": {
                                                                                                                                                                                                                     "body": {
-                                                                                                                                                                                                                      "let": {
-                                                                                                                                                                                                                        "bindings": [
-                                                                                                                                                                                                                          {
-                                                                                                                                                                                                                            "name": "dApp",
-                                                                                                                                                                                                                            "term": {
-                                                                                                                                                                                                                              "union": {
-                                                                                                                                                                                                                                "field": {
-                                                                                                                                                                                                                                  "name": "application",
-                                                                                                                                                                                                                                  "term": {
-                                                                                                                                                                                                                                    "record": {
-                                                                                                                                                                                                                                      "fields": [
-                                                                                                                                                                                                                                        {"name": "function", "term": {"variable": "d"}},
-                                                                                                                                                                                                                                        {"name": "argument", "term": {"variable": "arg"}}],
-                                                                                                                                                                                                                                      "typeName": "hydra.core.Application"}}},
-                                                                                                                                                                                                                                "typeName": "hydra.core.Term"}},
-                                                                                                                                                                                                                            "type": [
-                                                                                                                                                                                                                              {
-                                                                                                                                                                                                                                "constraints": null,
-                                                                                                                                                                                                                                "type": {"variable": "hydra.core.Term"},
-                                                                                                                                                                                                                                "variables": []}]}],
-                                                                                                                                                                                                                        "body": {
+                                                                                                                                                                                                                      "application": {
+                                                                                                                                                                                                                        "argument": {
+                                                                                                                                                                                                                          "function": {
+                                                                                                                                                                                                                            "lambda": {
+                                                                                                                                                                                                                              "body": {
+                                                                                                                                                                                                                                "application": {
+                                                                                                                                                                                                                                  "argument": {
+                                                                                                                                                                                                                                    "list": [
+                                                                                                                                                                                                                                      {
+                                                                                                                                                                                                                                        "union": {
+                                                                                                                                                                                                                                          "field": {
+                                                                                                                                                                                                                                            "name": "statement",
+                                                                                                                                                                                                                                            "term": {
+                                                                                                                                                                                                                                              "application": {
+                                                                                                                                                                                                                                                "argument": {"maybe": [{"variable": "dExpr"}]},
+                                                                                                                                                                                                                                                "function": {"variable": "hydra.ext.java.utils.javaReturnStatement"}}}},
+                                                                                                                                                                                                                                          "typeName": "hydra.ext.java.syntax.BlockStatement"}}]},
+                                                                                                                                                                                                                                  "function": {
+                                                                                                                                                                                                                                    "typeApplication": {
+                                                                                                                                                                                                                                      "body": {
+                                                                                                                                                                                                                                        "typeApplication": {
+                                                                                                                                                                                                                                          "body": {"function": {"primitive": "hydra.lib.flows.pure"}},
+                                                                                                                                                                                                                                          "type": {"variable": "hydra.graph.Graph"}}},
+                                                                                                                                                                                                                                      "type": {"list": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}},
+                                                                                                                                                                                                                              "domain": [{"variable": "hydra.ext.java.syntax.Expression"}],
+                                                                                                                                                                                                                              "parameter": "dExpr"}}},
+                                                                                                                                                                                                                        "function": {
                                                                                                                                                                                                                           "application": {
                                                                                                                                                                                                                             "argument": {
-                                                                                                                                                                                                                              "function": {
-                                                                                                                                                                                                                                "lambda": {
-                                                                                                                                                                                                                                  "body": {
-                                                                                                                                                                                                                                    "application": {
-                                                                                                                                                                                                                                      "argument": {
-                                                                                                                                                                                                                                        "list": [
-                                                                                                                                                                                                                                          {
-                                                                                                                                                                                                                                            "union": {
-                                                                                                                                                                                                                                              "field": {
-                                                                                                                                                                                                                                                "name": "statement",
-                                                                                                                                                                                                                                                "term": {
-                                                                                                                                                                                                                                                  "application": {
-                                                                                                                                                                                                                                                    "argument": {"maybe": [{"variable": "dExpr"}]},
-                                                                                                                                                                                                                                                    "function": {"variable": "hydra.ext.java.utils.javaReturnStatement"}}}},
-                                                                                                                                                                                                                                              "typeName": "hydra.ext.java.syntax.BlockStatement"}}]},
-                                                                                                                                                                                                                                      "function": {
-                                                                                                                                                                                                                                        "typeApplication": {
-                                                                                                                                                                                                                                          "body": {
-                                                                                                                                                                                                                                            "typeApplication": {
-                                                                                                                                                                                                                                              "body": {"function": {"primitive": "hydra.lib.flows.pure"}},
-                                                                                                                                                                                                                                              "type": {"variable": "hydra.graph.Graph"}}},
-                                                                                                                                                                                                                                          "type": {"list": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}},
-                                                                                                                                                                                                                                  "domain": [{"variable": "hydra.ext.java.syntax.Expression"}],
-                                                                                                                                                                                                                                  "parameter": "dExpr"}}},
-                                                                                                                                                                                                                            "function": {
                                                                                                                                                                                                                               "application": {
-                                                                                                                                                                                                                                "argument": {
-                                                                                                                                                                                                                                  "application": {
-                                                                                                                                                                                                                                    "argument": {"variable": "dApp"},
-                                                                                                                                                                                                                                    "function": {
-                                                                                                                                                                                                                                      "application": {
-                                                                                                                                                                                                                                        "argument": {"variable": "env"},
-                                                                                                                                                                                                                                        "function": {"variable": "hydra.ext.java.coder.encodeTerm"}}}}},
+                                                                                                                                                                                                                                "argument": {"variable": "d"},
                                                                                                                                                                                                                                 "function": {
+                                                                                                                                                                                                                                  "application": {
+                                                                                                                                                                                                                                    "argument": {"variable": "env"},
+                                                                                                                                                                                                                                    "function": {"variable": "hydra.ext.java.coder.encodeTerm"}}}}},
+                                                                                                                                                                                                                            "function": {
+                                                                                                                                                                                                                              "typeApplication": {
+                                                                                                                                                                                                                                "body": {
                                                                                                                                                                                                                                   "typeApplication": {
                                                                                                                                                                                                                                     "body": {
                                                                                                                                                                                                                                       "typeApplication": {
-                                                                                                                                                                                                                                        "body": {
-                                                                                                                                                                                                                                          "typeApplication": {
-                                                                                                                                                                                                                                            "body": {"function": {"primitive": "hydra.lib.flows.bind"}},
-                                                                                                                                                                                                                                            "type": {"variable": "hydra.graph.Graph"}}},
-                                                                                                                                                                                                                                        "type": {"variable": "hydra.ext.java.syntax.Expression"}}},
-                                                                                                                                                                                                                                    "type": {"list": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}}}}}},
+                                                                                                                                                                                                                                        "body": {"function": {"primitive": "hydra.lib.flows.bind"}},
+                                                                                                                                                                                                                                        "type": {"variable": "hydra.graph.Graph"}}},
+                                                                                                                                                                                                                                    "type": {"variable": "hydra.ext.java.syntax.Expression"}}},
+                                                                                                                                                                                                                                "type": {"list": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}}}},
                                                                                                                                                                                                                     "domain": [{"variable": "hydra.core.Term"}],
                                                                                                                                                                                                                     "parameter": "d"}}},
                                                                                                                                                                                                               "function": {
@@ -46454,16 +46502,11 @@
                                                                                                                                                                                                                                                                                                                                     "application": {
                                                                                                                                                                                                                                                                                                                                       "argument": {
                                                                                                                                                                                                                                                                                                                                         "application": {
-                                                                                                                                                                                                                                                                                                                                          "argument": {
-                                                                                                                                                                                                                                                                                                                                            "application": {
-                                                                                                                                                                                                                                                                                                                                              "argument": {"variable": "paramNames"},
-                                                                                                                                                                                                                                                                                                                                              "function": {
-                                                                                                                                                                                                                                                                                                                                                "typeApplication": {
-                                                                                                                                                                                                                                                                                                                                                  "body": {"function": {"primitive": "hydra.lib.lists.head"}},
-                                                                                                                                                                                                                                                                                                                                                  "type": {"variable": "hydra.core.Name"}}}}},
-                                                                                                                                                                                                                                                                                                                                          "function": {"variable": "hydra.ext.java.utils.variableToJavaIdentifier"}}},
+                                                                                                                                                                                                                                                                                                                                          "argument": {"variable": "jArg"},
+                                                                                                                                                                                                                                                                                                                                          "function": {
+                                                                                                                                                                                                                                                                                                                                            "variable": "hydra.ext.java.utils.javaExpressionToJavaUnaryExpression"}}},
                                                                                                                                                                                                                                                                                                                                       "function": {
-                                                                                                                                                                                                                                                                                                                                        "variable": "hydra.ext.java.utils.javaIdentifierToJavaRelationalExpression"}}},
+                                                                                                                                                                                                                                                                                                                                        "variable": "hydra.ext.java.utils.javaUnaryExpressionToJavaRelationalExpression"}}},
                                                                                                                                                                                                                                                                                                                                   "function": {"variable": "hydra.ext.java.utils.javaInstanceOf"}}}}},
                                                                                                                                                                                                                                                                                                                           "type": [
                                                                                                                                                                                                                                                                                                                             {
@@ -47129,178 +47172,25 @@
                                                           "function": {
                                                             "application": {
                                                               "argument": {
-                                                                "application": {
-                                                                  "argument": {
-                                                                    "function": {
-                                                                      "lambda": {
-                                                                        "body": {
-                                                                          "let": {
-                                                                            "bindings": [
-                                                                              {
-                                                                                "name": "assignments",
-                                                                                "term": {
-                                                                                  "application": {
-                                                                                    "argument": {
-                                                                                      "application": {
-                                                                                        "argument": {"variable": "jArgs"},
-                                                                                        "function": {
-                                                                                          "application": {
-                                                                                            "argument": {"variable": "paramNames"},
-                                                                                            "function": {
-                                                                                              "typeApplication": {
-                                                                                                "body": {
-                                                                                                  "typeApplication": {
-                                                                                                    "body": {"function": {"primitive": "hydra.lib.lists.zip"}},
-                                                                                                    "type": {"variable": "hydra.core.Name"}}},
-                                                                                                "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}}}},
-                                                                                    "function": {
-                                                                                      "application": {
-                                                                                        "argument": {
-                                                                                          "function": {
-                                                                                            "lambda": {
-                                                                                              "body": {
-                                                                                                "let": {
-                                                                                                  "bindings": [
-                                                                                                    {
-                                                                                                      "name": "paramName",
-                                                                                                      "term": {
-                                                                                                        "application": {
-                                                                                                          "argument": {"variable": "pair"},
-                                                                                                          "function": {
-                                                                                                            "typeApplication": {
-                                                                                                              "body": {
-                                                                                                                "typeApplication": {
-                                                                                                                  "body": {"function": {"primitive": "hydra.lib.pairs.first"}},
-                                                                                                                  "type": {"variable": "hydra.core.Name"}}},
-                                                                                                              "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}},
-                                                                                                      "type": [
-                                                                                                        {
-                                                                                                          "constraints": null,
-                                                                                                          "type": {"variable": "hydra.core.Name"},
-                                                                                                          "variables": []}]}],
-                                                                                                  "body": {
-                                                                                                    "let": {
-                                                                                                      "bindings": [
-                                                                                                        {
-                                                                                                          "name": "jArg",
-                                                                                                          "term": {
-                                                                                                            "application": {
-                                                                                                              "argument": {"variable": "pair"},
-                                                                                                              "function": {
-                                                                                                                "typeApplication": {
-                                                                                                                  "body": {
-                                                                                                                    "typeApplication": {
-                                                                                                                      "body": {"function": {"primitive": "hydra.lib.pairs.second"}},
-                                                                                                                      "type": {"variable": "hydra.core.Name"}}},
-                                                                                                                  "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}},
-                                                                                                          "type": [
-                                                                                                            {
-                                                                                                              "constraints": null,
-                                                                                                              "type": {"variable": "hydra.ext.java.syntax.Expression"},
-                                                                                                              "variables": []}]}],
-                                                                                                      "body": {
-                                                                                                        "union": {
-                                                                                                          "field": {
-                                                                                                            "name": "statement",
-                                                                                                            "term": {
-                                                                                                              "application": {
-                                                                                                                "argument": {"variable": "jArg"},
-                                                                                                                "function": {
-                                                                                                                  "application": {
-                                                                                                                    "argument": {
-                                                                                                                      "union": {
-                                                                                                                        "field": {
-                                                                                                                          "name": "expressionName",
-                                                                                                                          "term": {
-                                                                                                                            "application": {
-                                                                                                                              "argument": {
-                                                                                                                                "application": {
-                                                                                                                                  "argument": {"variable": "paramName"},
-                                                                                                                                  "function": {"variable": "hydra.ext.java.utils.variableToJavaIdentifier"}}},
-                                                                                                                              "function": {
-                                                                                                                                "variable": "hydra.ext.java.utils.javaIdentifierToJavaExpressionName"}}}},
-                                                                                                                        "typeName": "hydra.ext.java.syntax.LeftHandSide"}},
-                                                                                                                    "function": {"variable": "hydra.ext.java.utils.javaAssignmentStatement"}}}}}},
-                                                                                                          "typeName": "hydra.ext.java.syntax.BlockStatement"}}}}}},
-                                                                                              "domain": [
-                                                                                                {
-                                                                                                  "pair": {
-                                                                                                    "first": {"variable": "hydra.core.Name"},
-                                                                                                    "second": {"variable": "hydra.ext.java.syntax.Expression"}}}],
-                                                                                              "parameter": "pair"}}},
-                                                                                        "function": {
-                                                                                          "typeApplication": {
-                                                                                            "body": {
-                                                                                              "typeApplication": {
-                                                                                                "body": {"function": {"primitive": "hydra.lib.lists.map"}},
-                                                                                                "type": {
-                                                                                                  "pair": {
-                                                                                                    "first": {"variable": "hydra.core.Name"},
-                                                                                                    "second": {"variable": "hydra.ext.java.syntax.Expression"}}}}},
-                                                                                            "type": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}}},
-                                                                                "type": [
-                                                                                  {
-                                                                                    "constraints": null,
-                                                                                    "type": {"list": {"variable": "hydra.ext.java.syntax.BlockStatement"}},
-                                                                                    "variables": []}]}],
-                                                                            "body": {
-                                                                              "let": {
-                                                                                "bindings": [
-                                                                                  {
-                                                                                    "name": "continueStmt",
-                                                                                    "term": {
-                                                                                      "union": {
-                                                                                        "field": {
-                                                                                          "name": "statement",
-                                                                                          "term": {
-                                                                                            "union": {
-                                                                                              "field": {
-                                                                                                "name": "withoutTrailing",
-                                                                                                "term": {
-                                                                                                  "union": {
-                                                                                                    "field": {
-                                                                                                      "name": "continue",
-                                                                                                      "term": {
-                                                                                                        "wrap": {
-                                                                                                          "body": {
-                                                                                                            "typeApplication": {
-                                                                                                              "body": {"maybe": null},
-                                                                                                              "type": {"variable": "hydra.ext.java.syntax.Identifier"}}},
-                                                                                                          "typeName": "hydra.ext.java.syntax.ContinueStatement"}}},
-                                                                                                    "typeName": "hydra.ext.java.syntax.StatementWithoutTrailingSubstatement"}}},
-                                                                                              "typeName": "hydra.ext.java.syntax.Statement"}}},
-                                                                                        "typeName": "hydra.ext.java.syntax.BlockStatement"}},
-                                                                                    "type": [
-                                                                                      {
-                                                                                        "constraints": null,
-                                                                                        "type": {"variable": "hydra.ext.java.syntax.BlockStatement"},
-                                                                                        "variables": []}]}],
-                                                                                "body": {
-                                                                                  "application": {
-                                                                                    "argument": {
-                                                                                      "application": {
-                                                                                        "argument": {"list": [{"variable": "continueStmt"}]},
-                                                                                        "function": {
-                                                                                          "application": {
-                                                                                            "argument": {"variable": "assignments"},
-                                                                                            "function": {
-                                                                                              "typeApplication": {
-                                                                                                "body": {"function": {"primitive": "hydra.lib.lists.concat2"}},
-                                                                                                "type": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}}},
-                                                                                    "function": {
-                                                                                      "typeApplication": {
-                                                                                        "body": {
-                                                                                          "typeApplication": {
-                                                                                            "body": {"function": {"primitive": "hydra.lib.flows.pure"}},
-                                                                                            "type": {"variable": "hydra.graph.Graph"}}},
-                                                                                        "type": {"list": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}}}}}},
-                                                                        "domain": [{"list": {"variable": "hydra.ext.java.syntax.Expression"}}],
-                                                                        "parameter": "jArgs"}}},
-                                                                  "function": {
-                                                                    "application": {
-                                                                      "argument": {
+                                                                "let": {
+                                                                  "bindings": [
+                                                                    {
+                                                                      "name": "changePairs",
+                                                                      "term": {
                                                                         "application": {
-                                                                          "argument": {"variable": "gatherArgs"},
+                                                                          "argument": {
+                                                                            "application": {
+                                                                              "argument": {"variable": "gatherArgs"},
+                                                                              "function": {
+                                                                                "application": {
+                                                                                  "argument": {"variable": "paramNames"},
+                                                                                  "function": {
+                                                                                    "typeApplication": {
+                                                                                      "body": {
+                                                                                        "typeApplication": {
+                                                                                          "body": {"function": {"primitive": "hydra.lib.lists.zip"}},
+                                                                                          "type": {"variable": "hydra.core.Name"}}},
+                                                                                      "type": {"variable": "hydra.core.Term"}}}}}}},
                                                                           "function": {
                                                                             "application": {
                                                                               "argument": {
@@ -47308,33 +47198,332 @@
                                                                                   "lambda": {
                                                                                     "body": {
                                                                                       "application": {
-                                                                                        "argument": {"variable": "a"},
-                                                                                        "function": {
+                                                                                        "argument": {
                                                                                           "application": {
-                                                                                            "argument": {"variable": "env"},
-                                                                                            "function": {"variable": "hydra.ext.java.coder.encodeTerm"}}}}},
-                                                                                    "domain": [{"variable": "hydra.core.Term"}],
-                                                                                    "parameter": "a"}}},
+                                                                                            "argument": {
+                                                                                              "application": {
+                                                                                                "argument": {
+                                                                                                  "application": {
+                                                                                                    "argument": {"variable": "pair"},
+                                                                                                    "function": {
+                                                                                                      "typeApplication": {
+                                                                                                        "body": {
+                                                                                                          "typeApplication": {
+                                                                                                            "body": {"function": {"primitive": "hydra.lib.pairs.second"}},
+                                                                                                            "type": {"variable": "hydra.core.Name"}}},
+                                                                                                        "type": {"variable": "hydra.core.Term"}}}}},
+                                                                                                "function": {"variable": "hydra.rewriting.deannotateAndDetypeTerm"}}},
+                                                                                            "function": {
+                                                                                              "function": {
+                                                                                                "elimination": {
+                                                                                                  "union": {
+                                                                                                    "cases": [
+                                                                                                      {
+                                                                                                        "name": "variable",
+                                                                                                        "term": {
+                                                                                                          "function": {
+                                                                                                            "lambda": {
+                                                                                                              "body": {
+                                                                                                                "application": {
+                                                                                                                  "argument": {
+                                                                                                                    "application": {
+                                                                                                                      "argument": {"variable": "pair"},
+                                                                                                                      "function": {
+                                                                                                                        "typeApplication": {
+                                                                                                                          "body": {
+                                                                                                                            "typeApplication": {
+                                                                                                                              "body": {"function": {"primitive": "hydra.lib.pairs.first"}},
+                                                                                                                              "type": {"variable": "hydra.core.Name"}}},
+                                                                                                                          "type": {"variable": "hydra.core.Term"}}}}},
+                                                                                                                  "function": {
+                                                                                                                    "application": {
+                                                                                                                      "argument": {"variable": "n"},
+                                                                                                                      "function": {
+                                                                                                                        "typeApplication": {
+                                                                                                                          "body": {"function": {"primitive": "hydra.lib.equality.equal"}},
+                                                                                                                          "type": {"variable": "hydra.core.Name"}}}}}}},
+                                                                                                              "domain": [{"variable": "hydra.core.Name"}],
+                                                                                                              "parameter": "n"}}}}],
+                                                                                                    "default": [{"literal": {"boolean": false}}],
+                                                                                                    "typeName": "hydra.core.Term"}}}}}},
+                                                                                        "function": {"function": {"primitive": "hydra.lib.logic.not"}}}},
+                                                                                    "domain": [
+                                                                                      {
+                                                                                        "pair": {
+                                                                                          "first": {"variable": "hydra.core.Name"},
+                                                                                          "second": {"variable": "hydra.core.Term"}}}],
+                                                                                    "parameter": "pair"}}},
+                                                                              "function": {
+                                                                                "typeApplication": {
+                                                                                  "body": {"function": {"primitive": "hydra.lib.lists.filter"}},
+                                                                                  "type": {
+                                                                                    "pair": {
+                                                                                      "first": {"variable": "hydra.core.Name"},
+                                                                                      "second": {"variable": "hydra.core.Term"}}}}}}}}},
+                                                                      "type": [
+                                                                        {
+                                                                          "constraints": null,
+                                                                          "type": {
+                                                                            "list": {
+                                                                              "pair": {
+                                                                                "first": {"variable": "hydra.core.Name"},
+                                                                                "second": {"variable": "hydra.core.Term"}}}},
+                                                                          "variables": []}]}],
+                                                                  "body": {
+                                                                    "let": {
+                                                                      "bindings": [
+                                                                        {
+                                                                          "name": "changedParams",
+                                                                          "term": {
+                                                                            "application": {
+                                                                              "argument": {"variable": "changePairs"},
+                                                                              "function": {
+                                                                                "application": {
+                                                                                  "argument": {
+                                                                                    "typeApplication": {
+                                                                                      "body": {
+                                                                                        "typeApplication": {
+                                                                                          "body": {"function": {"primitive": "hydra.lib.pairs.first"}},
+                                                                                          "type": {"variable": "hydra.core.Name"}}},
+                                                                                      "type": {"variable": "hydra.core.Term"}}},
+                                                                                  "function": {
+                                                                                    "typeApplication": {
+                                                                                      "body": {
+                                                                                        "typeApplication": {
+                                                                                          "body": {"function": {"primitive": "hydra.lib.lists.map"}},
+                                                                                          "type": {
+                                                                                            "pair": {
+                                                                                              "first": {"variable": "hydra.core.Name"},
+                                                                                              "second": {"variable": "hydra.core.Term"}}}}},
+                                                                                      "type": {"variable": "hydra.core.Name"}}}}}}},
+                                                                          "type": [
+                                                                            {
+                                                                              "constraints": null,
+                                                                              "type": {"list": {"variable": "hydra.core.Name"}},
+                                                                              "variables": []}]}],
+                                                                      "body": {
+                                                                        "application": {
+                                                                          "argument": {
+                                                                            "function": {
+                                                                              "lambda": {
+                                                                                "body": {
+                                                                                  "let": {
+                                                                                    "bindings": [
+                                                                                      {
+                                                                                        "name": "assignments",
+                                                                                        "term": {
+                                                                                          "application": {
+                                                                                            "argument": {
+                                                                                              "application": {
+                                                                                                "argument": {"variable": "jChangedArgs"},
+                                                                                                "function": {
+                                                                                                  "application": {
+                                                                                                    "argument": {"variable": "changedParams"},
+                                                                                                    "function": {
+                                                                                                      "typeApplication": {
+                                                                                                        "body": {
+                                                                                                          "typeApplication": {
+                                                                                                            "body": {"function": {"primitive": "hydra.lib.lists.zip"}},
+                                                                                                            "type": {"variable": "hydra.core.Name"}}},
+                                                                                                        "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}}}},
+                                                                                            "function": {
+                                                                                              "application": {
+                                                                                                "argument": {
+                                                                                                  "function": {
+                                                                                                    "lambda": {
+                                                                                                      "body": {
+                                                                                                        "let": {
+                                                                                                          "bindings": [
+                                                                                                            {
+                                                                                                              "name": "paramName",
+                                                                                                              "term": {
+                                                                                                                "application": {
+                                                                                                                  "argument": {"variable": "pair"},
+                                                                                                                  "function": {
+                                                                                                                    "typeApplication": {
+                                                                                                                      "body": {
+                                                                                                                        "typeApplication": {
+                                                                                                                          "body": {"function": {"primitive": "hydra.lib.pairs.first"}},
+                                                                                                                          "type": {"variable": "hydra.core.Name"}}},
+                                                                                                                      "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}},
+                                                                                                              "type": [
+                                                                                                                {
+                                                                                                                  "constraints": null,
+                                                                                                                  "type": {"variable": "hydra.core.Name"},
+                                                                                                                  "variables": []}]}],
+                                                                                                          "body": {
+                                                                                                            "let": {
+                                                                                                              "bindings": [
+                                                                                                                {
+                                                                                                                  "name": "jArg",
+                                                                                                                  "term": {
+                                                                                                                    "application": {
+                                                                                                                      "argument": {"variable": "pair"},
+                                                                                                                      "function": {
+                                                                                                                        "typeApplication": {
+                                                                                                                          "body": {
+                                                                                                                            "typeApplication": {
+                                                                                                                              "body": {"function": {"primitive": "hydra.lib.pairs.second"}},
+                                                                                                                              "type": {"variable": "hydra.core.Name"}}},
+                                                                                                                          "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}},
+                                                                                                                  "type": [
+                                                                                                                    {
+                                                                                                                      "constraints": null,
+                                                                                                                      "type": {"variable": "hydra.ext.java.syntax.Expression"},
+                                                                                                                      "variables": []}]}],
+                                                                                                              "body": {
+                                                                                                                "union": {
+                                                                                                                  "field": {
+                                                                                                                    "name": "statement",
+                                                                                                                    "term": {
+                                                                                                                      "application": {
+                                                                                                                        "argument": {"variable": "jArg"},
+                                                                                                                        "function": {
+                                                                                                                          "application": {
+                                                                                                                            "argument": {
+                                                                                                                              "union": {
+                                                                                                                                "field": {
+                                                                                                                                  "name": "expressionName",
+                                                                                                                                  "term": {
+                                                                                                                                    "application": {
+                                                                                                                                      "argument": {
+                                                                                                                                        "application": {
+                                                                                                                                          "argument": {"variable": "paramName"},
+                                                                                                                                          "function": {"variable": "hydra.ext.java.utils.variableToJavaIdentifier"}}},
+                                                                                                                                      "function": {
+                                                                                                                                        "variable": "hydra.ext.java.utils.javaIdentifierToJavaExpressionName"}}}},
+                                                                                                                                "typeName": "hydra.ext.java.syntax.LeftHandSide"}},
+                                                                                                                            "function": {"variable": "hydra.ext.java.utils.javaAssignmentStatement"}}}}}},
+                                                                                                                  "typeName": "hydra.ext.java.syntax.BlockStatement"}}}}}},
+                                                                                                      "domain": [
+                                                                                                        {
+                                                                                                          "pair": {
+                                                                                                            "first": {"variable": "hydra.core.Name"},
+                                                                                                            "second": {"variable": "hydra.ext.java.syntax.Expression"}}}],
+                                                                                                      "parameter": "pair"}}},
+                                                                                                "function": {
+                                                                                                  "typeApplication": {
+                                                                                                    "body": {
+                                                                                                      "typeApplication": {
+                                                                                                        "body": {"function": {"primitive": "hydra.lib.lists.map"}},
+                                                                                                        "type": {
+                                                                                                          "pair": {
+                                                                                                            "first": {"variable": "hydra.core.Name"},
+                                                                                                            "second": {"variable": "hydra.ext.java.syntax.Expression"}}}}},
+                                                                                                    "type": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}}},
+                                                                                        "type": [
+                                                                                          {
+                                                                                            "constraints": null,
+                                                                                            "type": {"list": {"variable": "hydra.ext.java.syntax.BlockStatement"}},
+                                                                                            "variables": []}]}],
+                                                                                    "body": {
+                                                                                      "let": {
+                                                                                        "bindings": [
+                                                                                          {
+                                                                                            "name": "continueStmt",
+                                                                                            "term": {
+                                                                                              "union": {
+                                                                                                "field": {
+                                                                                                  "name": "statement",
+                                                                                                  "term": {
+                                                                                                    "union": {
+                                                                                                      "field": {
+                                                                                                        "name": "withoutTrailing",
+                                                                                                        "term": {
+                                                                                                          "union": {
+                                                                                                            "field": {
+                                                                                                              "name": "continue",
+                                                                                                              "term": {
+                                                                                                                "wrap": {
+                                                                                                                  "body": {
+                                                                                                                    "typeApplication": {
+                                                                                                                      "body": {"maybe": null},
+                                                                                                                      "type": {"variable": "hydra.ext.java.syntax.Identifier"}}},
+                                                                                                                  "typeName": "hydra.ext.java.syntax.ContinueStatement"}}},
+                                                                                                            "typeName": "hydra.ext.java.syntax.StatementWithoutTrailingSubstatement"}}},
+                                                                                                      "typeName": "hydra.ext.java.syntax.Statement"}}},
+                                                                                                "typeName": "hydra.ext.java.syntax.BlockStatement"}},
+                                                                                            "type": [
+                                                                                              {
+                                                                                                "constraints": null,
+                                                                                                "type": {"variable": "hydra.ext.java.syntax.BlockStatement"},
+                                                                                                "variables": []}]}],
+                                                                                        "body": {
+                                                                                          "application": {
+                                                                                            "argument": {
+                                                                                              "application": {
+                                                                                                "argument": {"list": [{"variable": "continueStmt"}]},
+                                                                                                "function": {
+                                                                                                  "application": {
+                                                                                                    "argument": {"variable": "assignments"},
+                                                                                                    "function": {
+                                                                                                      "typeApplication": {
+                                                                                                        "body": {"function": {"primitive": "hydra.lib.lists.concat2"}},
+                                                                                                        "type": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}}},
+                                                                                            "function": {
+                                                                                              "typeApplication": {
+                                                                                                "body": {
+                                                                                                  "typeApplication": {
+                                                                                                    "body": {"function": {"primitive": "hydra.lib.flows.pure"}},
+                                                                                                    "type": {"variable": "hydra.graph.Graph"}}},
+                                                                                                "type": {"list": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}}}}}},
+                                                                                "domain": [{"list": {"variable": "hydra.ext.java.syntax.Expression"}}],
+                                                                                "parameter": "jChangedArgs"}}},
+                                                                          "function": {
+                                                                            "application": {
+                                                                              "argument": {
+                                                                                "application": {
+                                                                                  "argument": {"variable": "changePairs"},
+                                                                                  "function": {
+                                                                                    "application": {
+                                                                                      "argument": {
+                                                                                        "function": {
+                                                                                          "lambda": {
+                                                                                            "body": {
+                                                                                              "application": {
+                                                                                                "argument": {
+                                                                                                  "application": {
+                                                                                                    "argument": {"variable": "pair"},
+                                                                                                    "function": {
+                                                                                                      "typeApplication": {
+                                                                                                        "body": {
+                                                                                                          "typeApplication": {
+                                                                                                            "body": {"function": {"primitive": "hydra.lib.pairs.second"}},
+                                                                                                            "type": {"variable": "hydra.core.Name"}}},
+                                                                                                        "type": {"variable": "hydra.core.Term"}}}}},
+                                                                                                "function": {
+                                                                                                  "application": {
+                                                                                                    "argument": {"variable": "env"},
+                                                                                                    "function": {"variable": "hydra.ext.java.coder.encodeTerm"}}}}},
+                                                                                            "domain": [
+                                                                                              {
+                                                                                                "pair": {
+                                                                                                  "first": {"variable": "hydra.core.Name"},
+                                                                                                  "second": {"variable": "hydra.core.Term"}}}],
+                                                                                            "parameter": "pair"}}},
+                                                                                      "function": {
+                                                                                        "typeApplication": {
+                                                                                          "body": {
+                                                                                            "typeApplication": {
+                                                                                              "body": {
+                                                                                                "typeApplication": {
+                                                                                                  "body": {"function": {"primitive": "hydra.lib.flows.mapList"}},
+                                                                                                  "type": {
+                                                                                                    "pair": {
+                                                                                                      "first": {"variable": "hydra.core.Name"},
+                                                                                                      "second": {"variable": "hydra.core.Term"}}}}},
+                                                                                              "type": {"variable": "hydra.graph.Graph"}}},
+                                                                                          "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}}}},
                                                                               "function": {
                                                                                 "typeApplication": {
                                                                                   "body": {
                                                                                     "typeApplication": {
                                                                                       "body": {
                                                                                         "typeApplication": {
-                                                                                          "body": {"function": {"primitive": "hydra.lib.flows.mapList"}},
-                                                                                          "type": {"variable": "hydra.core.Term"}}},
-                                                                                      "type": {"variable": "hydra.graph.Graph"}}},
-                                                                                  "type": {"variable": "hydra.ext.java.syntax.Expression"}}}}}}},
-                                                                      "function": {
-                                                                        "typeApplication": {
-                                                                          "body": {
-                                                                            "typeApplication": {
-                                                                              "body": {
-                                                                                "typeApplication": {
-                                                                                  "body": {"function": {"primitive": "hydra.lib.flows.bind"}},
-                                                                                  "type": {"variable": "hydra.graph.Graph"}}},
-                                                                              "type": {"list": {"variable": "hydra.ext.java.syntax.Expression"}}}},
-                                                                          "type": {"list": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}}}},
+                                                                                          "body": {"function": {"primitive": "hydra.lib.flows.bind"}},
+                                                                                          "type": {"variable": "hydra.graph.Graph"}}},
+                                                                                      "type": {"list": {"variable": "hydra.ext.java.syntax.Expression"}}}},
+                                                                                  "type": {"list": {"variable": "hydra.ext.java.syntax.BlockStatement"}}}}}}}}}}}},
                                                               "function": {
                                                                 "application": {
                                                                   "argument": {
