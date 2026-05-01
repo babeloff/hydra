@@ -1,3 +1,6 @@
+# rattler-build output (build artifacts — deeply nested, causes Zed/git to thrash)
+output/
+
 # Release verification logs
 verify-logs/
 
@@ -29,6 +32,7 @@ build
 .vscode
 
 # Python
+wheels/
 __pycache__/
 *.pyc
 .venv/

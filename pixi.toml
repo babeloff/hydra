@@ -10,64 +10,96 @@ channels = ["conda-forge"]
 platforms = ["linux-64"]
 
 [tasks.build-all]
-cmd = "nu pixi-scripts/build-all.nu"
+cmd = "pixi run -e haskell _sync-all"
 cwd = "."
+description = "Build all Hydra implementations (full sync matrix)"
 
 [tasks.docs-html]
 cmd = "pixi run -e docs docs-build-all-html"
 cwd = "."
+description = "Build all HTML documentation"
 
 [tasks.docs-pdf]
 cmd = "pixi run -e docs docs-build-all-pdf"
 cwd = "."
+description = "Build all PDF documentation"
 
 [tasks.docs-all]
 cmd = "pixi run -e docs docs-build-all"
 cwd = "."
+description = "Build all documentation (HTML and PDF)"
 
 [tasks.docs-serve]
 cmd = "python -m http.server 8080"
 cwd = "docs-output"
+description = "Serve built documentation on localhost:8080"
 
 [tasks.gh-pages-build]
 depends-on = ["docs-html"]
 cmd = "nu pixi-scripts/gh-pages-build.nu"
 cwd = "."
+description = "Build HTML documentation for GitHub Pages deployment"
 
 [tasks.build-java]
-cmd = "rattler-build build --recipe-dir recipes/hydra-java"
+cmd = "nu pixi-scripts/build-java.nu"
+cwd = "."
+description = "Build Java JARs from dist/java/<pkg>/ (gradle build in dependency order)"
 
 [tasks.build-python]
-cmd = "rattler-build build --recipe-dir recipes/hydra-python"
+cmd = "nu pixi-scripts/build-python.nu"
+cwd = "."
+description = "Build Python wheels from dist/python/<pkg>/ (python -m build in dependency order)"
+
+[tasks.publish-testpypi]
+cmd = "nu pixi-scripts/publish-python.nu testpypi"
+cwd = "."
+description = "Upload built Python wheels to TestPyPI (reads token from ~/.pypirc [testpypi])"
+
+[tasks.publish-pypi]
+cmd = "nu pixi-scripts/publish-python.nu"
+cwd = "."
+description = "Upload built Python wheels to PyPI (reads token from ~/.pypirc [pypi])"
 
 [tasks.build-scala]
-cmd = "rattler-build build --recipe-dir recipes/hydra-scala"
+cmd = "pixi run -e haskell sync-scala"
+cwd = "."
+description = "Regenerate the Scala implementation (sync DSL -> dist/scala/)"
 
 [tasks.build-haskell]
-cmd = "pixi run -e haskell hydra-build"
+cmd = "pixi run -e haskell sync-haskell"
 cwd = "."
+description = "Regenerate the Haskell implementation (Phase 1: DSL -> JSON + dist/haskell/)"
 
 [tasks.build-ext]
-cmd = "rattler-build build --recipe-dir recipes/hydra-ext"
+cmd = "pixi run -e haskell hydra-build"
+cwd = "."
+description = "Build the hydra-ext package (stack build hydra-ext)"
 
 [tasks.clean]
 cmd = "nu pixi-scripts/clean.nu"
 cwd = "."
+description = "Clean all build artifacts"
 
 [tasks.validate]
 cmd = "nu pixi-scripts/validate-setup.nu"
+description = "Validate project setup and environment"
 
 [tasks.sync-all]
 cmd = "pixi run -e haskell _sync-all"
 cwd = "."
+description = "Run full sync across all hosts and targets (tees to sync.log)"
 
 [tasks.benchmark]
 cmd = "pixi run -e haskell _benchmark"
 cwd = "."
+description = "Run cross-implementation benchmark tests"
 
 [dependencies]
 rattler-build = ">=0.20.0"
 nushell = ">=0.80.0"
+python = ">=3.12"
+python-build = "*"
+uv = "*"
 
 [feature.java.dependencies]
 openjdk = "17.*"
@@ -75,18 +107,22 @@ openjdk = "17.*"
 [feature.java.tasks.gradle]
 cmd = "./gradlew"
 env = { JAVA_HOME = "$CONDA_PREFIX" }
+description = "Run Gradle with the conda-managed JDK"
 
 [feature.java.tasks.gradle-tasks]
 cmd = "./gradlew tasks"
 env = { JAVA_HOME = "$CONDA_PREFIX" }
+description = "List all available Gradle tasks"
 
 [feature.java.tasks.gradle-build]
 cmd = "./gradlew build"
 env = { JAVA_HOME = "$CONDA_PREFIX" }
+description = "Build the Java project with Gradle"
 
 [feature.java.tasks.gradle-clean]
 cmd = "./gradlew clean"
 env = { JAVA_HOME = "$CONDA_PREFIX" }
+description = "Clean Java build artifacts with Gradle"
 
 [feature.python.dependencies]
 python = ">=3.12"
@@ -115,160 +151,203 @@ PKG_CONFIG_PATH = "$CONDA_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
 [feature.haskell.tasks.stack-setup]
 cmd = "stack setup --system-ghc"
 cwd = "."
+description = "Set up GHC toolchain via Stack"
 
 [feature.haskell.tasks.stack-build]
 cmd = "stack build --system-ghc"
 cwd = "."
+description = "Build all Stack packages"
 
 [feature.haskell.tasks.stack-test]
 cmd = "stack test --system-ghc"
 cwd = "."
+description = "Run all Stack test suites"
 
 [feature.haskell.tasks.stack-clean]
 cmd = "stack clean"
 cwd = "."
+description = "Clean Stack build artifacts"
 
 [feature.haskell.tasks.stack-ghci]
 cmd = "stack ghci --system-ghc"
 cwd = "."
+description = "Launch a GHCi REPL via Stack"
 
 [feature.haskell.tasks.stack-install]
 cmd = "stack install --system-ghc"
 cwd = "."
+description = "Install Stack-built executables to the local bin path"
 
 # Individual package builds for hydra-ext
 [feature.haskell.tasks.hydra-build]
 cmd = "stack build hydra-ext --system-ghc"
 cwd = "."
+description = "Build the hydra-ext package"
 
 [feature.haskell.tasks.hydra-ghci]
 cmd = "stack ghci hydra-ext --system-ghc"
 cwd = "."
+description = "Launch GHCi loaded with hydra-ext"
 
 [feature.haskell.tasks.hydra-test]
 cmd = "stack test hydra-ext --system-ghc"
 cwd = "."
+description = "Run the hydra-ext test suite"
 
 [feature.haskell.tasks.ext-ghci]
 cmd = "stack ghci hydra-ext --system-ghc"
 cwd = "."
+description = "Launch GHCi loaded with hydra-ext (alias for hydra-ghci)"
 
 # Combined development tasks
 [feature.haskell.tasks.ghci-all]
 cmd = "nu pixi-scripts/ghci-all.nu"
 cwd = "."
+description = "Launch GHCi loaded with all Haskell packages"
 
 [feature.haskell.tasks.ghci-all-fixed]
 cmd = "nu pixi-scripts/ghci-all-fixed.nu"
 cwd = "."
+description = "Launch GHCi with a fixed package set (avoids version conflicts)"
 
 [feature.haskell.tasks.ghci-system]
 cmd = "nu pixi-scripts/ghci-system.nu"
 cwd = "."
+description = "Launch GHCi using the system GHC directly"
 
 [feature.haskell.tasks.ghci-interactive]
 cmd = "stack ghci hydra-ext --system-ghc"
 cwd = "."
+description = "Launch an interactive GHCi session for hydra-ext"
 
 # Module and code exploration tasks
 [feature.haskell.tasks.haskell-modules]
 cmd = "find src -name '*.hs' | head -n 20"
 cwd = "heads/haskell"
+description = "List Haskell source modules in heads/haskell/src"
 
 [feature.haskell.tasks.haskell-functions]
 cmd = "nu ../pixi-scripts/haskell-functions.nu"
+description = "List top-level Haskell function definitions"
 
 # GraphSON generation tasks
 [feature.haskell.tasks.graphson-help]
 cmd = "ghc --make pixi-scripts/run-graphson.hs -o run-graphson && ./run-graphson"
 cwd = "."
+description = "Compile and run the GraphSON generation helper"
 
 [feature.haskell.tasks.run-copilot-graphson]
 cmd = "nu pixi-scripts/run-copilot-graphson.nu"
 cwd = "."
+description = "Generate GraphSON output from Copilot source data"
 
 [feature.haskell.tasks.run-example-graphson]
 cmd = "nu pixi-scripts/run-example-graphson.nu"
 cwd = "."
+description = "Generate GraphSON output from example source data"
 
 # Data checking tasks
 [feature.haskell.tasks.check-data]
 cmd = "ls -la data/genpg/sources/"
 cwd = "packages/hydra-ext"
+description = "List source data files in hydra-ext"
 
 [feature.haskell.tasks.check-graphson]
 cmd = "ls -la data/genpg/*.json"
 cwd = "packages/hydra-ext"
+description = "List generated GraphSON JSON files in hydra-ext"
 
 [feature.haskell.tasks.check-copilot-data]
 cmd = "head -n 3 data/genpg/copilot.json"
 cwd = "packages/hydra-ext"
+description = "Preview the first 3 lines of the Copilot JSON data file"
 
 [feature.haskell.tasks.check-sales-data]
 cmd = "head -n 3 data/genpg/sales.json"
 cwd = "packages/hydra-ext"
+description = "Preview the first 3 lines of the sales JSON data file"
 
 # Stack cache management
 [feature.haskell.tasks.clear-stack-cache-haskell]
 cmd = "stack clean --full && rm -rf .stack-work"
 cwd = "heads/haskell"
+description = "Clear Stack build cache for heads/haskell"
 
 [feature.haskell.tasks.clear-stack-cache-ext]
 cmd = "stack clean --full && rm -rf .stack-work"
 cwd = "packages/hydra-ext"
+description = "Clear Stack build cache for hydra-ext"
 
 [feature.haskell.tasks.clear-stack-cache-all]
 cmd = "stack clean --full && rm -rf .stack-work"
 cwd = "."
+description = "Clear all Stack build caches in the project root"
 
 # Unified Haskell tasks
 [feature.haskell.tasks.haskell-setup-all]
 depends-on = ["stack-setup"]
+description = "Set up all Haskell tooling"
 
 [feature.haskell.tasks.haskell-build-all]
 depends-on = ["stack-build", "hydra-build"]
+description = "Build all Haskell packages (stack-build + hydra-build)"
 
 [feature.haskell.tasks.haskell-test-all]
 depends-on = ["stack-test", "hydra-test"]
+description = "Run all Haskell test suites (stack-test + hydra-test)"
 
 [feature.haskell.tasks.haskell-clean-all]
 depends-on = ["stack-clean"]
+description = "Clean all Haskell build artifacts"
 
 # Code generation tasks using hydraExtModules
 [feature.haskell.tasks.generate-java]
 cmd = "nu pixi-scripts/generate-java.nu"
 cwd = "."
+description = "Generate Java source files from Haskell DSL modules"
 
 [feature.haskell.tasks.generate-haskell]
 cmd = "nu pixi-scripts/generate-haskell.nu"
 cwd = "."
+description = "Generate Haskell kernel files from DSL modules"
 
 # Alternative ghci task with minimal conda interference
 [feature.haskell.tasks.ghci-minimal]
 cmd = "nu pixi-scripts/ghci-minimal.nu"
 cwd = "."
+description = "Launch GHCi with minimal conda environment interference"
 
 # Benchmark tasks
 [feature.haskell.tasks._benchmark]
 cmd = "bash bin/run-benchmark-tests.sh"
 cwd = "."
+description = "Run benchmark tests (internal; use top-level benchmark task)"
 
 # Sync tasks (run individual sync scripts from haskell environment)
 [feature.haskell.tasks._sync-all]
 cmd = "bash -c 'bash bin/sync.sh 2>&1 | tee sync.log'"
 cwd = "."
+description = "Run full sync across all hosts and targets, tee output to sync.log (internal)"
 
 [feature.haskell.tasks.sync-haskell]
 cmd = "bash heads/haskell/bin/sync-haskell.sh"
 cwd = "."
+description = "Sync the Haskell implementation (Phase 1: DSL → JSON + Haskell kernel)"
 
 [feature.haskell.tasks.sync-java]
 cmd = "bash bin/sync-java.sh"
 cwd = "."
+description = "Sync the Java implementation from Haskell sources"
 
 [feature.haskell.tasks.sync-python]
 cmd = "bash bin/sync-python.sh"
 cwd = "."
+description = "Sync the Python implementation from Haskell sources"
+
+[feature.haskell.tasks.sync-scala]
+cmd = "bash bin/sync-scala.sh"
+cwd = "."
+description = "Sync the Scala implementation from Haskell sources"
 
 [feature.scala.dependencies]
 openjdk = "17.*"
@@ -287,6 +366,7 @@ DIAGRAM_PLANTUML_CLASSPATH = "$PIXI_PROJECT_ROOT/.pixi/envs/docs/lib/plantuml.ja
 [feature.docs.tasks.docs-setup]
 cmd = "gem install asciidoctor-diagram pygments.rb"
 cwd = "."
+description = "Install asciidoctor-diagram and pygments Ruby gems"
 
 [feature.ext.dependencies]
 openjdk = "17.*"
@@ -296,36 +376,43 @@ openjdk = "17.*"
 depends-on = ["docs-prepare", "docs-setup"]
 cmd = "asciidoctor -r asciidoctor-diagram -a data-uri -a allow-uri-read -o docs-output/index.html docs/index.adoc"
 cwd = "."
+description = "Build the main documentation HTML page"
 
 [feature.docs.tasks.docs-build-developer-guide]
 depends-on = ["docs-prepare", "docs-setup"]
 cmd = "asciidoctor -r asciidoctor-diagram -a data-uri -a allow-uri-read -o docs-output/developer-guide.html docs/developer-guide.adoc"
 cwd = "."
+description = "Build the developer guide as HTML"
 
 [feature.docs.tasks.docs-build-implementor-guide]
 depends-on = ["docs-prepare", "docs-setup"]
 cmd = "asciidoctor -r asciidoctor-diagram -a data-uri -a allow-uri-read -o docs-output/implementor-guide.html docs/implementor-guide.adoc"
 cwd = "."
+description = "Build the implementor guide as HTML"
 
 [feature.docs.tasks.docs-build-operator-guide]
 depends-on = ["docs-prepare", "docs-setup"]
 cmd = "asciidoctor -r asciidoctor-diagram -a data-uri -a allow-uri-read -o docs-output/operator-guide.html docs/operator-guide.adoc"
 cwd = "."
+description = "Build the operator guide as HTML"
 
 [feature.docs.tasks.docs-build-pdf-developer]
 depends-on = ["docs-prepare", "docs-setup"]
 cmd = "asciidoctor-pdf -r asciidoctor-diagram -a allow-uri-read -o docs-output/developer-guide.pdf docs/developer-guide.adoc"
 cwd = "."
+description = "Build the developer guide as PDF"
 
 [feature.docs.tasks.docs-build-pdf-implementor]
 depends-on = ["docs-prepare", "docs-setup"]
 cmd = "asciidoctor-pdf -r asciidoctor-diagram -a allow-uri-read -o docs-output/implementor-guide.pdf docs/implementor-guide.adoc"
 cwd = "."
+description = "Build the implementor guide as PDF"
 
 [feature.docs.tasks.docs-build-pdf-operator]
 depends-on = ["docs-prepare", "docs-setup"]
 cmd = "asciidoctor-pdf -r asciidoctor-diagram -a allow-uri-read -o docs-output/operator-guide.pdf docs/operator-guide.adoc"
 cwd = "."
+description = "Build the operator guide as PDF"
 
 [feature.docs.tasks.docs-build-all-html]
 depends-on = [
@@ -334,6 +421,7 @@ depends-on = [
     "docs-build-implementor-guide",
     "docs-build-operator-guide",
 ]
+description = "Build all HTML documentation files"
 
 [feature.docs.tasks.docs-build-all-pdf]
 depends-on = [
@@ -341,25 +429,31 @@ depends-on = [
     "docs-build-pdf-implementor",
     "docs-build-pdf-operator",
 ]
+description = "Build all PDF documentation files"
 
 [feature.docs.tasks.docs-build-all]
 depends-on = ["docs-build-all-html", "docs-build-all-pdf"]
+description = "Build all documentation (HTML and PDF)"
 
 [feature.docs.tasks.docs-clean]
 cmd = "rm -rf docs-output"
 cwd = "."
+description = "Remove the docs-output directory"
 
 [feature.docs.tasks.docs-setup-output]
 cmd = "mkdir -p docs-output"
 cwd = "."
+description = "Create the docs-output directory"
 
 [feature.docs.tasks.docs-copy-assets]
 cmd = "cp -r docs/images docs-output/ 2>/dev/null || true"
 cwd = "."
+description = "Copy image assets into the docs-output directory"
 
 [feature.docs.tasks.docs-generate-diagrams]
 cmd = "nu pixi-scripts/generate-diagrams.nu"
 cwd = "."
+description = "Generate PlantUML and Graphviz diagrams for documentation"
 
 [feature.docs.tasks.docs-prepare]
 depends-on = [
@@ -368,6 +462,7 @@ depends-on = [
     "docs-copy-assets",
     "docs-generate-diagrams",
 ]
+description = "Prepare the docs-output directory (clean, create, copy assets, generate diagrams)"
 
 [environments]
 default = { features = ["java"] }
